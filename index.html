@@ -180,7 +180,8 @@ button:active{transform:translateY(1px);box-shadow:none !important;}
 .fc-tag-alias{border:none;background:rgba(0,0,0,0);border-bottom:1px solid var(--brand-mid);outline:none;font-size:.78rem;color:var(--ink);width:90px;min-width:40px;padding:0 2px;margin:0 2px;}
 .fc-empty{font-size:.78rem;color:var(--muted);align-self:center;}
 
-.grp-cb-wrap{display:flex;flex-wrap:wrap;gap:4px 10px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);min-width:160px;max-height:220px;overflow-y:auto;}
+.grp-cb-wrap{display:inline-flex;flex-wrap:wrap;gap:4px 10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);min-width:160px;max-width:100%;min-height:45px;}
+.grp-cb-inline{padding:8px 10px;}
 .grp-cb-item{display:flex;align-items:center;gap:4px;font-size:.82rem;cursor:pointer;white-space:nowrap;}
 .grp-cb-item input{cursor:pointer;}
 
@@ -297,7 +298,7 @@ body{padding-bottom:28px;}
 
     <div class="flex-end" style="gap:10px;">
       <button class="btn btn-secondary" style="padding:10px 20px;" onclick="loadTemplate()">&#x1F52C; Load Template Data</button>
-      <button class="btn btn-primary" style="padding:10px 22px;" onclick="goStep(1)">Next: Configure Columns →</button>
+      <button class="btn btn-primary" style="padding:10px 22px;" onclick="goStep(1)">Configure Columns →</button>
     </div>
   </div>
 
@@ -370,12 +371,28 @@ body{padding-bottom:28px;}
     </div>
 
     <div class="card">
+      <h2>Analysis Columns</h2>
+      <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;">
+        <div>
+          <span class="label">Plate column:</span>
+          <select id="globalPlateCol" class="analysis-col-select" onchange="onGlobalPlateColChange()"><option value="">(none)</option></select>
+        </div>
+        <div>
+          <span class="label">Value column:</span>
+          <select id="globalValCol" class="analysis-col-select" onchange="onGlobalValColChange()"></select>
+        </div>
+      </div>
+      <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:10px;">
+        <div>
+          <span class="label">Group by:</span>
+          <div id="globalGroupColWrap" class="grp-cb-wrap grp-cb-inline"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
       <h2>Plate Heatmap</h2>
       <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
-        <div>
-          <span class="label">Color by column:</span>
-          <select id="heatmapCol" onchange="renderHeatmap()"></select>
-        </div>
         <div id="plateSel" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"></div>
       </div>
       <div id="heatmapLegend" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:.78rem;"></div>
@@ -389,11 +406,6 @@ body{padding-bottom:28px;}
           <div><span class="label">Group by:</span>
             <div id="barGroupColWrap" class="grp-cb-wrap"></div>
           </div>
-          <div class="group-select-row" style="flex-wrap:wrap;">
-            <div><span class="label">Value column:</span>
-              <select id="barValCol" class="analysis-col-select" onchange="renderBarChart()"></select>
-            </div>
-          </div>
         </div>
         <canvas id="barChart" style="max-height:320px;"></canvas>
       </div>
@@ -402,15 +414,9 @@ body{padding-bottom:28px;}
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
         <h2 style="margin-bottom:0;">Statistics Table</h2>
-        <button id="btnExportStat" class="btn btn-sm btn-secondary" onclick="exportStatCSV()">&#x2B07; Export Stats CSV</button>
+        <button id="btnExportStat" class="btn btn-sm btn-secondary" onclick="exportStatCSV()">Export Stats CSV</button>
       </div>
       <div class="group-select-row" style="margin-bottom:12px;flex-wrap:wrap;">
-        <div><span class="label">Plate column:</span>
-          <select id="statPlateCol" class="analysis-col-select" onchange="renderStatTables()"><option value="">(none)</option></select>
-        </div>
-        <div><span class="label">Value column:</span>
-          <select id="statValCol" class="analysis-col-select" onchange="renderStatTables()"></select>
-        </div>
       </div>
       <div class="stat-tabs">
         <button class="stat-tab active" id="stab-assay" onclick="switchStatTab('assay')">Assay Window</button>
@@ -428,8 +434,8 @@ body{padding-bottom:28px;}
             </div>
           </div>
         </div>
-        <p style="font-size:.78rem;color:var(--muted);margin-bottom:8px;">Compare each group vs control within each plate. FC=Fold Change; SSMD; Z&#x27;=Z-factor; S&#x2099;=pooled SD; D-ratio; p=Welch t-test.</p>
         <div id="statTableAssay"></div>
+        <p style="font-size:.78rem;color:var(--muted);margin-top:8px;">Compare each group vs control within each plate. FC=Fold Change; SSMD; Z&#x27;=Z-factor; S&#x2099;=pooled SD; D-ratio; p=Welch t-test.</p>
       </div>
       <div class="stat-tab-pane" id="stpane-disease">
         <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
@@ -493,7 +499,7 @@ body{padding-bottom:28px;}
     </div>
     <div class="flex-end">
       <button class="btn btn-secondary" style="padding:10px 20px;" onclick="goStep(1)">← Back</button>
-      <button class="btn btn-primary" style="padding:10px 22px;" onclick="goStep(3)">Next: Prism Export →</button>
+      <button class="btn btn-primary" style="padding:10px 22px;" onclick="goStep(3)">Prism Export →</button>
     </div>
   </div>
 
@@ -1450,14 +1456,49 @@ function renderMergedTable() {
 // ─────────────────────────────────────────────
 // HEATMAP
 // ─────────────────────────────────────────────
-function renderHeatmapSetup() {
-  const colSel = document.getElementById('heatmapCol');
-  colSel.innerHTML = state.mergedNumericCols.map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
+function getGlobalPlateCol() {
+  return document.getElementById('globalPlateCol')?.value || '';
+}
+function getGlobalValCol() {
+  return document.getElementById('globalValCol')?.value || '';
+}
+function onGlobalPlateColChange() {
+  if (!state.mergedData) return;
+  renderHeatmapSetup();
+  renderBarChart();
+  renderStatTables();
+}
+function onGlobalValColChange() {
+  if (!state.mergedData) return;
+  renderHeatmap();
+  renderBarChart();
+  renderStatTables();
+}
 
+// Push current global Group-by selection to all per-card Group-by checkboxes,
+// then re-render. Each card still has its own checkboxes (this just sets them).
+function applyGlobalGroupCols() {
+  const selected = new Set(getCheckedCols('globalGroupColWrap'));
+  const targets = ['barGroupColWrap', 'statGroupColAssayWrap', 'statGroupColDiseaseWrap', 'anovaGroupColWrap'];
+  targets.forEach(id => {
+    const wrap = document.getElementById(id);
+    if (!wrap) return;
+    wrap.querySelectorAll('input[type=checkbox]').forEach(cb => {
+      if (cb.disabled) return;
+      cb.checked = selected.has(cb.value);
+    });
+  });
+  renderBarChart();
+  renderStatTables();
+  if (typeof populateAnovaRefGroup === 'function') populateAnovaRefGroup();
+}
+
+function renderHeatmapSetup() {
   // Detect plates
+  const plateCol = getGlobalPlateCol();
   const platesSet = new Set();
-  if (state.designPlateCol) {
-    state.mergedData.rows.forEach(r => { if (r[state.designPlateCol]) platesSet.add(r[state.designPlateCol]); });
+  if (plateCol) {
+    state.mergedData.rows.forEach(r => { if (r[plateCol]) platesSet.add(r[plateCol]); });
   }
   const plates = [...platesSet];
   const plateSel = document.getElementById('plateSel');
@@ -1483,12 +1524,13 @@ function selectPlate(p, btn) {
 }
 
 function renderHeatmap() {
-  const col = document.getElementById('heatmapCol').value;
+  const col = getGlobalValCol();
   if (!col || !state.mergedData) return;
 
   let rows = state.mergedData.rows;
-  if (state._selectedPlate && state.designPlateCol) {
-    rows = rows.filter(r => r[state.designPlateCol] === state._selectedPlate);
+  const plateCol = getGlobalPlateCol();
+  if (state._selectedPlate && plateCol) {
+    rows = rows.filter(r => r[plateCol] === state._selectedPlate);
   }
 
   // Detect plate dimensions from wells
@@ -1655,18 +1697,23 @@ function populateAnalysisSelects() {
     if (ai !== -1) return -1; if (bi !== -1) return 1; return 0;
   });
   populateGrpCbWrap('barGroupColWrap', sortByPref(allCols, preferred), 'renderBarChart()', _grpDefaultSet(allCols), emptyCols);
-  const barValSel = document.getElementById('barValCol');
-  if (barValSel) {
-    const pickNum = numCols[0] || allCols.find(c => !emptyCols.has(c));
-    barValSel.innerHTML = toOptsAll(allCols, pickNum);
+
+  // Global plate col — show ALL cols + (none); default to designPlateCol if available
+  const globalPlateSel = document.getElementById('globalPlateCol');
+  if (globalPlateSel) {
+    const cur = state.designPlateCol && allCols.includes(state.designPlateCol) ? state.designPlateCol : '';
+    globalPlateSel.innerHTML = `<option value=""${cur===''?' selected':''}>(none)</option>` + toOptsAll(allCols, cur);
   }
 
-  // Stat plate col — show ALL cols + (none); default to designPlateCol if available
-  const statPlateSel = document.getElementById('statPlateCol');
-  if (statPlateSel) {
-    const cur = state.designPlateCol && allCols.includes(state.designPlateCol) ? state.designPlateCol : '';
-    statPlateSel.innerHTML = `<option value=""${cur===''?' selected':''}>(none)</option>` + toOptsAll(allCols, cur);
+  // Global value col — show ALL cols, default to first numeric
+  const globalValSel = document.getElementById('globalValCol');
+  if (globalValSel) {
+    const pickNum = numCols[0] || allCols.find(c => !emptyCols.has(c));
+    globalValSel.innerHTML = toOptsAll(allCols, pickNum);
   }
+
+  // Global Group by — master selector pushes to per-card Group-by on change
+  populateGrpCbWrap('globalGroupColWrap', sortByPref(allCols, preferred), 'applyGlobalGroupCols()', _grpDefaultSet(allCols), emptyCols);
 
   // Stat group cols (assay = siRNA-like, disease = condition-like)
   const sirnaPref = ['siRNA','sample_type','gene_symbol','treatment','group'];
@@ -1679,13 +1726,6 @@ function populateAnalysisSelects() {
   });
   populateGrpCbWrap('statGroupColAssayWrap',   sortBySim(allCols, sirnaPref), "onStatGroupColChange('assay')",   _grpDefaultSet(allCols), emptyCols);
   populateGrpCbWrap('statGroupColDiseaseWrap', sortBySim(allCols, condPref),  "onStatGroupColChange('disease')", _grpDefaultSet(allCols), emptyCols);
-
-  // Stat val col — show ALL cols, default to first numeric
-  const statValSel = document.getElementById('statValCol');
-  if (statValSel) {
-    const pickNum = numCols[0] || allCols.find(c => !emptyCols.has(c));
-    statValSel.innerHTML = toOptsAll(allCols, pickNum);
-  }
 
   // ANOVA selectors — show ALL cols
   populateGrpCbWrap('anovaGroupColWrap', sortBySim(allCols, sirnaPref), 'populateAnovaRefGroup()', _grpDefaultSet(allCols), emptyCols);
@@ -1711,10 +1751,14 @@ let _barChartInst = null;
 function renderBarChart() {
   const canvas = document.getElementById('barChart');
   if (!canvas || !state.mergedData) return;
-  const valCol = document.getElementById('barValCol')?.value;
+  const valCol = getGlobalValCol();
   if (!valCol) return;
   const groupCols = getCheckedCols('barGroupColWrap');
   if (!groupCols.length) return;
+
+  // Honor global plate col: when set, prepend to group cols so bars are split per plate
+  const plateCol = getGlobalPlateCol();
+  const effGroupCols = (plateCol && !groupCols.includes(plateCol)) ? [plateCol, ...groupCols] : groupCols;
 
   const rows = state.mergedData.rows.filter(r =>
     String(r['is_masked'] || '').toLowerCase() !== 'true'
@@ -1723,7 +1767,7 @@ function renderBarChart() {
   // Aggregate: group key → array of numeric values
   const agg = {};
   for (const row of rows) {
-    const key = makeGrpKey(row, groupCols);
+    const key = makeGrpKey(row, effGroupCols);
     const v = parseFloat(row[valCol]);
     if (isNaN(v)) continue;
     if (!agg[key]) agg[key] = [];
@@ -2214,8 +2258,8 @@ function statTblFilter(tid) {
 
 function renderStatTables() {
   if (!state.mergedData) return;
-  const plateCol  = document.getElementById('statPlateCol')?.value || '';
-  const valCol    = document.getElementById('statValCol')?.value;
+  const plateCol  = getGlobalPlateCol();
+  const valCol    = getGlobalValCol();
   if (!valCol) return;
 
   const assayGroupCols   = getCheckedCols('statGroupColAssayWrap');
@@ -2327,8 +2371,8 @@ function computeDiseaseStatsPerPlate(rows, plateCol, groupCols, diseaseCol, ctrl
 function exportStatCSV() {
   const _btn = document.getElementById('btnExportStat');
   if (_curStatTab === 'anova') { _btnWarn(_btn, '⚠ Use Run 2-way ANOVA for ANOVA results.'); return; }
-  const plateCol  = document.getElementById('statPlateCol')?.value || '';
-  const valCol    = document.getElementById('statValCol')?.value;
+  const plateCol  = getGlobalPlateCol();
+  const valCol    = getGlobalValCol();
   if (!valCol || !state.mergedData) { _btnWarn(_btn, '⚠ No data or value column not set.'); return; }
   const wrapId   = _curStatTab === 'assay' ? 'statGroupColAssayWrap' : 'statGroupColDiseaseWrap';
   const groupCols = getCheckedCols(wrapId);
@@ -3364,7 +3408,7 @@ function runAnovaTable() {
   if (!state.mergedData) { _btnWarn(_btn, '⚠ No merged data.'); return; }
   const groupCols = getCheckedCols('anovaGroupColWrap');
   const doseCol   = document.getElementById('anovaDoseCol')?.value;
-  const valCol    = document.getElementById('statValCol')?.value;  // shared with Statistics Table
+  const valCol    = getGlobalValCol();
   const refGroup  = document.getElementById('anovaRefGroup')?.value;
   const pairMode  = document.getElementById('anovaPairMode')?.value || 'dunnett';
   const el = document.getElementById('anovaResult');
