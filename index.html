@@ -119,9 +119,9 @@ button:active{transform:translateY(1px);box-shadow:none !important;}
 .btn-success{background:var(--ok);border-color:var(--ok);color:#fff;}
 .btn-sm{padding:6px 10px;font-size:.8rem;border-radius:8px;}
 
-.stat-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 18px;box-shadow:var(--shadow);}
-.stat-card .val{font-size:1.6rem;font-weight:700;color:var(--brand);line-height:1.1;}
-.stat-card .lbl{font-size:.78rem;color:var(--muted);margin-top:4px;}
+.stat-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:8px 14px;box-shadow:var(--shadow);}
+.stat-card .val{font-size:1.25rem;font-weight:700;color:var(--brand);line-height:1.1;}
+.stat-card .lbl{font-size:.78rem;color:var(--muted);margin-top:2px;}
 .label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:4px;}
 .ok{color:var(--ok);} .warn{color:var(--warn);} .err{color:var(--err);}
 .flex-end{display:flex;justify-content:flex-end;gap:10px;margin-top:8px;}
@@ -231,7 +231,7 @@ body{padding-bottom:28px;}
 </head>
 <body>
 <header>
-  <h1>One-Stop Analysis v1.0</h1>
+  <h1>One-Stop Analysis v1.2</h1>
   <p>Merge assay design + result files, explore heatmaps/charts, and export Prism-ready tables.</p>
   <div class="author">By ILYH</div>
 </header>
@@ -277,11 +277,15 @@ body{padding-bottom:28px;}
             <p style="margin-top:4px;font-size:.78rem;">Hold Ctrl/⌘ to select multiple files</p>
           </label>
           <div class="file-info" id="resultInfo" style="display:none"></div>
+          <div id="resultFileNames" style="display:none;margin-top:18px;margin-bottom:10px;"></div>
           <h2 style="margin-top:14px;">Well Column Detection</h2>
           <div id="resultWellSel"></div>
         </div>
         <div class="card" id="resultPreviewCard" style="display:none">
-          <h2>Result Preview</h2>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <h2 style="margin:0;">Result Preview</h2>
+            <div id="resultPreviewTabs" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+          </div>
           <div class="table-wrap" id="resultPreview"></div>
         </div>
       </div>
@@ -297,7 +301,7 @@ body{padding-bottom:28px;}
     </div>
 
     <div class="flex-end" style="gap:10px;">
-      <button class="btn btn-secondary" style="padding:10px 20px;" onclick="loadTemplate()">&#x1F52C; Load Template Data</button>
+      <button class="btn btn-secondary" style="padding:10px 20px;" onclick="loadTemplate()">Load Template Data</button>
       <button class="btn btn-primary" style="padding:10px 22px;" onclick="goStep(1)">Configure Columns →</button>
     </div>
   </div>
@@ -371,7 +375,7 @@ body{padding-bottom:28px;}
     </div>
 
     <div class="card">
-      <h2>Analysis Columns</h2>
+      <h2>Analysis Columns (Apply to all)</h2>
       <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;">
         <div>
           <span class="label">Plate column:</span>
@@ -392,16 +396,15 @@ body{padding-bottom:28px;}
 
     <div class="card">
       <h2>Plate Heatmap</h2>
-      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
-        <div id="plateSel" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"></div>
-      </div>
+      <div id="heatmapPlateTabs" style="display:none;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px;"></div>
       <div id="heatmapLegend" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:.78rem;"></div>
       <div id="heatmapWrap"></div>
     </div>
 
     <div class="charts-row" style="grid-template-columns:1fr;">
       <div class="chart-card">
-        <h2>Group Bar Chart</h2>
+        <h2>Bar Chart</h2>
+        <div id="barPlateTabs" style="display:none;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px;"></div>
         <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
           <div><span class="label">Group by:</span>
             <div id="barGroupColWrap" class="grp-cb-wrap"></div>
@@ -429,6 +432,9 @@ body{padding-bottom:28px;}
             <div id="statGroupColAssayWrap" class="grp-cb-wrap"></div>
           </div>
           <div class="group-select-row" style="flex-wrap:wrap;">
+            <div><span class="label">Plate column:</span>
+              <select id="statPlateColAssay" class="analysis-col-select" onchange="onStatPlateColChange('assay')" style="min-width:120px;"><option value="">(none)</option></select>
+            </div>
             <div><span class="label">Control group:</span>
               <div id="statCtrlSelAssay" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;"></div>
             </div>
@@ -443,6 +449,9 @@ body{padding-bottom:28px;}
             <div id="statGroupColDiseaseWrap" class="grp-cb-wrap"></div>
           </div>
           <div class="group-select-row" style="flex-wrap:wrap;">
+            <div><span class="label">Plate column:</span>
+              <select id="statPlateColDisease" class="analysis-col-select" onchange="onStatPlateColChange('disease')" style="min-width:120px;"><option value="">(none)</option></select>
+            </div>
             <div>
               <span class="label">Disease column:</span>
               <select id="diseaseColSel" class="analysis-col-select" onchange="onDiseaseColChange()" style="min-width:140px;">
@@ -456,7 +465,6 @@ body{padding-bottom:28px;}
             </div>
           </div>
         </div>
-        <p style="font-size:.78rem;color:var(--muted);margin-bottom:8px;">Compare each condition vs control within each plate. E.g., disease conditions vs Normal.</p>
         <div id="statTableDisease"></div>
       </div>
       <div class="stat-tab-pane" id="stpane-anova">
@@ -538,8 +546,8 @@ body{padding-bottom:28px;}
       <!-- XY config -->
       <div id="prism-cfg-xy" style="display:none">
         <div class="group-select-row" style="margin-bottom:10px;flex-wrap:wrap;">
-          <div><span class="label">X axis:</span><select id="pxy-x" class="analysis-col-select"></select></div>
-          <div><span class="label">Y value:</span><select id="pxy-y" class="analysis-col-select"></select></div>
+          <div><span class="label">X axis:</span><select id="pxy-x" class="analysis-col-select" onchange="_syncGroupByExclusions('pxy-grp-wrap',this.value,document.getElementById('pxy-y')?.value)"></select></div>
+          <div><span class="label">Y value:</span><select id="pxy-y" class="analysis-col-select" onchange="_syncGroupByExclusions('pxy-grp-wrap',document.getElementById('pxy-x')?.value,this.value)"></select></div>
           <div style="display:flex;flex-direction:column;gap:4px;"><span class="label">Group by:</span><div id="pxy-grp-wrap" style="display:flex;flex-wrap:wrap;gap:4px 12px;border:1px solid var(--line);border-radius:6px;padding:6px;min-width:160px;"></div></div>
         </div>
         <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.84rem;margin-top:6px;">
@@ -560,8 +568,8 @@ body{padding-bottom:28px;}
       <!-- Column config -->
       <div id="prism-cfg-column" style="display:none">
         <div class="group-select-row" style="flex-wrap:wrap;">
-          <div><span class="label">Y value:</span><select id="pcol-y" class="analysis-col-select"></select></div>
-          <div><span class="label">Row labels:</span><select id="pcol-rl" class="analysis-col-select"><option value="">(none)</option></select></div>
+          <div><span class="label">Y value:</span><select id="pcol-y" class="analysis-col-select" onchange="_syncGroupByExclusions('pcol-grp-wrap',this.value,document.getElementById('pcol-rl')?.value)"></select></div>
+          <div><span class="label">Row labels:</span><select id="pcol-rl" class="analysis-col-select" onchange="_syncGroupByExclusions('pcol-grp-wrap',document.getElementById('pcol-y')?.value,this.value)"><option value="">(none)</option></select></div>
           <div style="display:flex;flex-direction:column;gap:4px;"><span class="label">Group by:</span><div id="pcol-grp-wrap" style="display:flex;flex-wrap:wrap;gap:4px 12px;border:1px solid var(--line);border-radius:6px;padding:6px;min-width:160px;"></div></div>
         </div>
         <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.84rem;margin-top:8px;">
@@ -574,8 +582,8 @@ body{padding-bottom:28px;}
       <!-- Grouped config -->
       <div id="prism-cfg-grouped" style="display:none">
         <div class="group-select-row" style="flex-wrap:wrap;">
-          <div><span class="label">Y value:</span><select id="pgrp-y" class="analysis-col-select"></select></div>
-          <div><span class="label">Row factor:</span><select id="pgrp-row" class="analysis-col-select"></select></div>
+          <div><span class="label">Y value:</span><select id="pgrp-y" class="analysis-col-select" onchange="_syncGroupByExclusions('pgrp-col-wrap',this.value,document.getElementById('pgrp-row')?.value)"></select></div>
+          <div><span class="label">Row factor:</span><select id="pgrp-row" class="analysis-col-select" onchange="_syncGroupByExclusions('pgrp-col-wrap',document.getElementById('pgrp-y')?.value,this.value)"></select></div>
           <div style="display:flex;flex-direction:column;gap:4px;"><span class="label">Column group by:</span><div id="pgrp-col-wrap" style="display:flex;flex-wrap:wrap;gap:4px 12px;border:1px solid var(--line);border-radius:6px;padding:6px;min-width:160px;"></div></div>
         </div>
         <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.84rem;margin-top:8px;">
@@ -918,6 +926,17 @@ function onAllResultsLoaded() {
   info.style.display = 'block';
   info.innerHTML = `✔ ${state.resultFiles.length} file(s) loaded — <b>${allRows.length}</b> total rows, <b>${allHeaders.length}</b> columns`;
 
+  // File name chips above Well Column Detection
+  const namesDiv = document.getElementById('resultFileNames');
+  if (namesDiv) {
+    namesDiv.style.display = 'flex';
+    namesDiv.style.flexWrap = 'wrap';
+    namesDiv.style.gap = '6px';
+    namesDiv.innerHTML = state.resultFiles.map((f, i) =>
+      `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--panel-2);border:1px solid var(--line);border-radius:20px;padding:3px 10px 3px 12px;font-size:.78rem;color:var(--ink);white-space:nowrap;max-width:300px;" title="${escHtml(f.name)}"><span style="overflow:hidden;text-overflow:ellipsis;max-width:220px;">${escHtml(f.name)}</span><button onclick="removeResultFile(${i})" style="background:none;border:none;cursor:pointer;padding:0;line-height:1;font-size:1rem;color:var(--muted);" title="Remove this file">&times;</button></span>`
+    ).join('');
+  }
+
   const rWellCard = document.getElementById('resultWellCard');
   if (rWellCard) rWellCard.style.display = 'block';
   buildWellSelUI('resultWellSel', allHeaders, (wCol, pCol) => {
@@ -926,9 +945,90 @@ function onAllResultsLoaded() {
   const rRow = document.getElementById('resultRowCount');
   if (rRow) rRow.textContent = allRows.length + ' rows';
   document.getElementById('resultPreviewCard').style.display = 'block';
-  renderTable('resultPreview', state.resultData, 100);
+  renderResultPreviewTabs(0);
   buildAllFileColSelectors();
   checkPlateMismatch();
+}
+
+function removeResultFile(fi) {
+  state.resultFiles.splice(fi, 1);
+  // Re-index fileSelectedCols and fileColRows (keys are 0-based numeric indices)
+  const reindex = (map) => {
+    const newMap = new Map();
+    map.forEach((val, key) => {
+      if (key < fi) newMap.set(key, val);
+      else if (key > fi) newMap.set(key - 1, val);
+    });
+    return newMap;
+  };
+  if (state.fileSelectedCols) state.fileSelectedCols = reindex(state.fileSelectedCols);
+  if (state.fileColRows)      state.fileColRows      = reindex(state.fileColRows);
+  if (state.fileColAliases)   state.fileColAliases   = reindex(state.fileColAliases);
+  if (!state.resultFiles.length) {
+    // All files removed — reset UI
+    document.getElementById('resultInfo').style.display = 'none';
+    document.getElementById('resultFileNames').style.display = 'none';
+    const rWellCard = document.getElementById('resultWellCard');
+    if (rWellCard) rWellCard.style.display = 'none';
+    document.getElementById('resultPreviewCard').style.display = 'none';
+    state.resultData = null;
+    return;
+  }
+  onAllResultsLoaded();
+}
+
+function removeResultFile(fi) {
+  state.resultFiles.splice(fi, 1);
+  // Re-index Maps whose keys are 0-based file indices
+  const reindex = map => {
+    if (!map) return map;
+    const m2 = new Map();
+    map.forEach((val, key) => {
+      if (key < fi) m2.set(key, val);
+      else if (key > fi) m2.set(key - 1, val);
+    });
+    return m2;
+  };
+  state.fileSelectedCols = reindex(state.fileSelectedCols);
+  state.fileColRows      = reindex(state.fileColRows);
+  state.fileColAliases   = reindex(state.fileColAliases);
+  if (!state.resultFiles.length) {
+    document.getElementById('resultInfo').style.display = 'none';
+    const nd = document.getElementById('resultFileNames');
+    if (nd) { nd.style.display = 'none'; nd.innerHTML = ''; }
+    const rWellCard = document.getElementById('resultWellCard');
+    if (rWellCard) rWellCard.style.display = 'none';
+    document.getElementById('resultPreviewCard').style.display = 'none';
+    state.resultData = null;
+    return;
+  }
+  onAllResultsLoaded();
+}
+
+function renderResultPreviewTabs(activeIdx) {
+  const tabsEl = document.getElementById('resultPreviewTabs');
+  const previewEl = document.getElementById('resultPreview');
+  if (!tabsEl || !previewEl || !state.resultFiles.length) return;
+
+  // Build tabs — only shown when >1 file
+  if (state.resultFiles.length === 1) {
+    tabsEl.innerHTML = '';
+    renderTable('resultPreview', state.resultFiles[0].data, Infinity);
+    return;
+  }
+
+  tabsEl.innerHTML = state.resultFiles.map((f, i) => {
+    const label = f.name.replace(/\.[^.]+$/, '').slice(0, 28);
+    const active = i === activeIdx;
+    return `<button onclick="renderResultPreviewTabs(${i})" style="` +
+      `padding:4px 12px;border-radius:20px;border:1px solid ${active ? 'var(--brand)' : 'var(--line)'};` +
+      `background:${active ? 'var(--brand)' : 'var(--panel-2)'};` +
+      `color:${active ? '#fff' : 'var(--ink)'};` +
+      `font-size:.78rem;cursor:pointer;white-space:nowrap;` +
+      `" title="${escHtml(f.name)}">${escHtml(label)}</button>`;
+  }).join('');
+
+  renderTable('resultPreview', state.resultFiles[activeIdx].data, Infinity);
 }
 
 // ─────────────────────────────────────────────
@@ -988,6 +1088,17 @@ function fcSyncFromRows(fi) {
   state.fileSelectedCols.set(fi, selSet);
   if (!state.fileColAliases) state.fileColAliases = new Map();
   state.fileColAliases.set(fi, aliasMap);
+  // Keep Computed Columns dropdowns in sync with any alias changes
+  if (state.calcRules && state.calcRules.length) {
+    // Refresh auto-generated output column names before re-rendering
+    state.calcRules.forEach((rule, ri) => {
+      if (!rule._nameManual) {
+        const fresh = calcAutoName(ri);
+        if (fresh) rule.name = fresh;
+      }
+    });
+    renderCalcRules();
+  }
 }
 
 function renderFcRow(fi) {
@@ -1109,7 +1220,7 @@ const VAR_NAMES = ['a','b','c','d','e'];
 
 function addCalcRule() {
   const slots = ['a','b'].map(v => ({ varName: v, fileIdx: 0, col: '' }));
-  state.calcRules.push({ name: '', slots, formula: 'a/b' });
+  state.calcRules.push({ name: '', _nameManual: false, slots, formula: 'a/b' });
   renderCalcRules();
 }
 
@@ -1208,7 +1319,7 @@ function renderCalcRules() {
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <div style="display:flex;align-items:center;gap:8px;">
           <span class="label" style="margin:0;">Output column name:</span>
-          <input type="text" id="crname_${i}" placeholder="auto" value="${escHtml(rule.name)}" data-prev-auto="${escHtml(rule.name)}" style="width:230px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:.84rem;background:#fff;color:var(--ink);outline:none;" onchange="state.calcRules[${i}].name=this.value;this.setAttribute('data-prev-auto','')" />
+          <input type="text" id="crname_${i}" placeholder="auto" value="${escHtml(rule.name)}" data-prev-auto="${escHtml(rule.name)}" style="width:230px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:.84rem;background:#fff;color:var(--ink);outline:none;" onchange="state.calcRules[${i}].name=this.value;state.calcRules[${i}]._nameManual=!!this.value;this.setAttribute('data-prev-auto','')" />
         </div>
         <button style="width:34px;height:34px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer;font-size:1rem;display:inline-flex;align-items:center;justify-content:center;padding:0;color:var(--err);" onclick="removeCalcRule(${i})" title="Remove rule">&#x2715;</button>
       </div>
@@ -1240,16 +1351,12 @@ function calcAutoName(ri) {
 
 function onCalcColChange(ri, si, val) {
   state.calcRules[ri].slots[si].col = val;
-  // Always update name if it hasn't been manually edited (matches previous auto value or empty)
   const rule = state.calcRules[ri];
-  const prevAuto = calcAutoName(ri);
-  // update col first then regenerate
-  const ni = document.getElementById('crname_' + ri);
-  if (!ni) return;
-  if (!rule.name || rule.name === (ni ? ni.getAttribute('data-prev-auto') : '')) {
+  // Re-generate output name unless the user manually typed one
+  if (!rule._nameManual) {
     rule.name = calcAutoName(ri);
-    ni.value = rule.name;
-    ni.setAttribute('data-prev-auto', rule.name);
+    const ni = document.getElementById('crname_' + ri);
+    if (ni) { ni.value = rule.name; ni.setAttribute('data-prev-auto', rule.name); }
   }
 }
 function onCalcFileChange(ri, si, newFi) {
@@ -1464,22 +1571,52 @@ function getGlobalValCol() {
 }
 function onGlobalPlateColChange() {
   if (!state.mergedData) return;
+  const gp = document.getElementById('globalPlateCol')?.value || '';
+  const gv = getGlobalValCol();
+  _syncGroupByExclusions('globalGroupColWrap', gp, gv);
+  _syncGroupByExclusions('barGroupColWrap', gp, gv);
+  // Sync to stat local plate selects (one-way)
+  ['statPlateColAssay','statPlateColDisease'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.querySelector(`option[value="${CSS.escape(gp)}"]`)) {
+      el.value = gp;
+      onStatPlateColChange(id === 'statPlateColAssay' ? 'assay' : 'disease');
+    }
+  });
   renderHeatmapSetup();
   renderBarChart();
   renderStatTables();
 }
+
+// Disable only the checkboxes whose value matches one of the excluded cols; re-enable all others.
+function _syncGroupByExclusions(wrapId, ...excludedCols) {
+  const excSet = new Set(excludedCols.filter(Boolean));
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  wrap.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    const shouldDisable = excSet.has(cb.value);
+    cb.disabled = shouldDisable;
+    if (shouldDisable) cb.checked = false;
+    const lbl = cb.closest('label');
+    if (lbl) { lbl.style.opacity = shouldDisable ? '0.35' : ''; lbl.style.cursor = shouldDisable ? 'not-allowed' : 'pointer'; }
+  });
+}
 function onGlobalValColChange() {
   if (!state.mergedData) return;
+  const gv = getGlobalValCol();
+  const gp = getGlobalPlateCol();
+  _syncGroupByExclusions('globalGroupColWrap', gp, gv);
+  _syncGroupByExclusions('barGroupColWrap', gp, gv);
   renderHeatmap();
   renderBarChart();
   renderStatTables();
 }
 
-// Push current global Group-by selection to all per-card Group-by checkboxes,
-// then re-render. Each card still has its own checkboxes (this just sets them).
+// Push current global Group-by selection to Bar Chart and Assay stat Group-by checkboxes.
+// Disease Window has its own independent Group-by (must exclude disease col), so it is NOT synced here.
 function applyGlobalGroupCols() {
   const selected = new Set(getCheckedCols('globalGroupColWrap'));
-  const targets = ['barGroupColWrap', 'statGroupColAssayWrap', 'statGroupColDiseaseWrap', 'anovaGroupColWrap'];
+  const targets = ['barGroupColWrap', 'statGroupColAssayWrap', 'anovaGroupColWrap'];
   targets.forEach(id => {
     const wrap = document.getElementById(id);
     if (!wrap) return;
@@ -1491,36 +1628,63 @@ function applyGlobalGroupCols() {
   renderBarChart();
   renderStatTables();
   if (typeof populateAnovaRefGroup === 'function') populateAnovaRefGroup();
+  populateCtrlGroupSel(null, 'assay');
+  populateCtrlGroupSel(null, 'disease');
+  // Sync global plate col → stat local plate selects (one-way only)
+  const gp = document.getElementById('globalPlateCol')?.value || '';
+  ['statPlateColAssay','statPlateColDisease'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.querySelector(`option[value="${CSS.escape(gp)}"]`)) el.value = gp;
+  });
+}
+
+function _buildPlateTabs(tabsElId, plates, stateKey, renderFn) {
+  const tabsEl = document.getElementById(tabsElId);
+  if (!tabsEl) return;
+  if (plates.length > 1) {
+    tabsEl.style.display = 'flex';
+    tabsEl.innerHTML = '<span class="label" style="display:inline;margin-bottom:0;margin-right:4px;">Plate:</span>' + plates.map((p, i) => {
+      const active = i === 0;
+      return `<button onclick="_selectPlateFor('${tabsElId}','${stateKey}',${escHtml(JSON.stringify(p))},this)" style="padding:3px 12px;border-radius:20px;border:1px solid ${active?'var(--brand)':'var(--line)'};background:${active?'var(--brand)':'var(--panel-2)'};color:${active?'#fff':'var(--ink)'};font-size:.78rem;font-weight:normal;cursor:pointer;white-space:nowrap;">${escHtml(String(p))}</button>`;
+    }).join('');
+    state[stateKey] = plates[0];
+  } else {
+    tabsEl.style.display = 'none';
+    tabsEl.innerHTML = '';
+    state[stateKey] = plates[0] || null;
+  }
+}
+
+function _selectPlateFor(tabsElId, stateKey, p, btn) {
+  state[stateKey] = p;
+  document.querySelectorAll('#' + tabsElId + ' button').forEach(b => {
+    b.style.background = 'var(--panel-2)';
+    b.style.borderColor = 'var(--line)';
+    b.style.color = 'var(--ink)';
+  });
+  btn.style.background = 'var(--brand)';
+  btn.style.borderColor = 'var(--brand)';
+  btn.style.color = '#fff';
+  if (stateKey === '_heatmapPlate') renderHeatmap();
+  if (stateKey === '_barPlate') renderBarChart();
 }
 
 function renderHeatmapSetup() {
-  // Detect plates
   const plateCol = getGlobalPlateCol();
   const platesSet = new Set();
   if (plateCol) {
     state.mergedData.rows.forEach(r => { if (r[plateCol]) platesSet.add(r[plateCol]); });
   }
-  const plates = [...platesSet];
-  const plateSel = document.getElementById('plateSel');
-  if (plates.length > 1) {
-    plateSel.innerHTML = '<span class="label">Plate:</span>' + plates.map((p, i) =>
-      `<button class="btn btn-sm ${i===0?'btn-primary':'btn-secondary'}" onclick='selectPlate(${JSON.stringify(p)}, this)'>${escHtml(p)}</button>`
-    ).join('');
-    state._selectedPlate = plates[0];
-  } else {
-    plateSel.innerHTML = '';
-    state._selectedPlate = plates[0] || null;
-  }
+  const plates = [...platesSet].sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}));
+  _buildPlateTabs('heatmapPlateTabs', plates, '_heatmapPlate', renderHeatmap);
+  _buildPlateTabs('barPlateTabs',     plates, '_barPlate',     renderBarChart);
   renderHeatmap();
+  renderBarChart();
 }
 
 function selectPlate(p, btn) {
-  state._selectedPlate = p;
-  document.querySelectorAll('#plateSel button').forEach(b => {
-    b.className = 'btn btn-sm btn-secondary';
-  });
-  btn.className = 'btn btn-sm btn-primary';
-  renderHeatmap();
+  // legacy shim — no longer used but kept for safety
+  _selectPlateFor('heatmapPlateTabs', '_heatmapPlate', p, btn);
 }
 
 function renderHeatmap() {
@@ -1529,8 +1693,8 @@ function renderHeatmap() {
 
   let rows = state.mergedData.rows;
   const plateCol = getGlobalPlateCol();
-  if (state._selectedPlate && plateCol) {
-    rows = rows.filter(r => r[plateCol] === state._selectedPlate);
+  if (state._heatmapPlate && plateCol) {
+    rows = rows.filter(r => r[plateCol] === state._heatmapPlate);
   }
 
   // Detect plate dimensions from wells
@@ -1703,6 +1867,11 @@ function populateAnalysisSelects() {
   if (globalPlateSel) {
     const cur = state.designPlateCol && allCols.includes(state.designPlateCol) ? state.designPlateCol : '';
     globalPlateSel.innerHTML = `<option value=""${cur===''?' selected':''}>(none)</option>` + toOptsAll(allCols, cur);
+    // Apply per-column exclusion after checkboxes are rendered
+    setTimeout(() => {
+      _syncGroupByExclusions('globalGroupColWrap', cur, getGlobalValCol());
+      _syncGroupByExclusions('barGroupColWrap', cur, getGlobalValCol());
+    }, 0);
   }
 
   // Global value col — show ALL cols, default to first numeric
@@ -1727,6 +1896,14 @@ function populateAnalysisSelects() {
   populateGrpCbWrap('statGroupColAssayWrap',   sortBySim(allCols, sirnaPref), "onStatGroupColChange('assay')",   _grpDefaultSet(allCols), emptyCols);
   populateGrpCbWrap('statGroupColDiseaseWrap', sortBySim(allCols, condPref),  "onStatGroupColChange('disease')", _grpDefaultSet(allCols), emptyCols);
 
+  // Stat local plate column selectors — default to global plate col
+  const globalPlateVal = document.getElementById('globalPlateCol')?.value || '';
+  const statPlateOpts = `<option value="">(none)</option>` + toOptsAll(allCols, globalPlateVal);
+  const spAssay = document.getElementById('statPlateColAssay');
+  if (spAssay) { spAssay.innerHTML = statPlateOpts; if (globalPlateVal) setTimeout(() => onStatPlateColChange('assay'), 0); }
+  const spDisease = document.getElementById('statPlateColDisease');
+  if (spDisease) { spDisease.innerHTML = statPlateOpts; if (globalPlateVal) setTimeout(() => onStatPlateColChange('disease'), 0); }
+
   // ANOVA selectors — show ALL cols
   populateGrpCbWrap('anovaGroupColWrap', sortBySim(allCols, sirnaPref), 'populateAnovaRefGroup()', _grpDefaultSet(allCols), emptyCols);
   const anovaDoseSel = document.getElementById('anovaDoseCol');
@@ -1735,11 +1912,14 @@ function populateAnalysisSelects() {
   // Ctrl group from assay group col
   populateCtrlGroupSel(null, 'assay');
   populateCtrlGroupSel(null, 'disease');
-  // Disease col selector — show ALL cols, empty disabled
+  // Disease col selector — show ALL cols, empty disabled; auto-select condition-like col
   const dcSel = document.getElementById('diseaseColSel');
   if (dcSel) {
-    const cur = dcSel.value && allCols.includes(dcSel.value) ? dcSel.value : '';
+    const DISEASE_COL_RE = /^condition$|^cond$|disease|treatment|group$/i;
+    const autoDisease = allCols.find(c => !emptyCols.has(c) && DISEASE_COL_RE.test(c)) || '';
+    const cur = (dcSel.value && allCols.includes(dcSel.value)) ? dcSel.value : autoDisease;
     dcSel.innerHTML = `<option value=""${cur===''?' selected':''}>(none)</option>` + toOptsAll(allCols, cur);
+    if (cur) setTimeout(() => { dcSel.value = cur; onDiseaseColChange(); }, 0);
   }
   populateAnovaRefGroup();
 }
@@ -1756,13 +1936,16 @@ function renderBarChart() {
   const groupCols = getCheckedCols('barGroupColWrap');
   if (!groupCols.length) return;
 
-  // Honor global plate col: when set, prepend to group cols so bars are split per plate
+  // Honor global plate col: when a specific plate is selected, filter rows to that plate.
+  // If no plate is selected (single plate or no plate col), show all rows.
   const plateCol = getGlobalPlateCol();
-  const effGroupCols = (plateCol && !groupCols.includes(plateCol)) ? [plateCol, ...groupCols] : groupCols;
-
-  const rows = state.mergedData.rows.filter(r =>
+  let rows = state.mergedData.rows.filter(r =>
     String(r['is_masked'] || '').toLowerCase() !== 'true'
   );
+  if (plateCol && state._barPlate != null) {
+    rows = rows.filter(r => r[plateCol] === state._barPlate);
+  }
+  const effGroupCols = groupCols;
 
   // Aggregate: group key → array of numeric values
   const agg = {};
@@ -1791,6 +1974,35 @@ function renderBarChart() {
   const bgColors = labels.map((_,i) => palette[i % palette.length] + 'cc');
   const bdColors = labels.map((_,i) => palette[i % palette.length]);
 
+  const seBarPlugin = {
+    id: '_seErrorBars',
+    afterDraw(chart) {
+      const { ctx, scales: { y } } = chart;
+      const meta = chart.getDatasetMeta(0);
+      ctx.save();
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 1.5;
+      means.forEach((mean, i) => {
+        const se = errors[i];
+        if (!se) return;
+        const bar = meta.data[i];
+        const xPos = bar.x;
+        const yTop    = y.getPixelForValue(mean + se);
+        const yBottom = y.getPixelForValue(mean - se);
+        const cap = Math.max(4, bar.width * 0.2);
+        ctx.beginPath();
+        ctx.moveTo(xPos, yTop);
+        ctx.lineTo(xPos, yBottom);
+        ctx.moveTo(xPos - cap, yTop);
+        ctx.lineTo(xPos + cap, yTop);
+        ctx.moveTo(xPos - cap, yBottom);
+        ctx.lineTo(xPos + cap, yBottom);
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+  };
+
   if (_barChartInst) { _barChartInst.destroy(); _barChartInst = null; }
   _barChartInst = new Chart(canvas, {
     type: 'bar',
@@ -1812,7 +2024,7 @@ function renderBarChart() {
           callbacks: {
             afterLabel: (ctx) => {
               const k = labels[ctx.dataIndex];
-              return `n=${agg[k].length}  SEM±${errors[ctx.dataIndex].toFixed(3)}`;
+              return `n=${agg[k].length}  SE±${errors[ctx.dataIndex].toFixed(3)}`;
             },
           },
         },
@@ -1822,6 +2034,7 @@ function renderBarChart() {
         x: { ticks: { maxRotation: 45 } },
       },
     },
+    plugins: [seBarPlugin],
   });
 }
 
@@ -1912,6 +2125,14 @@ function switchStatTab(tab) {
   const paneEl = document.getElementById('stpane-' + tab);
   if (tabEl) tabEl.classList.add('active');
   if (paneEl) paneEl.classList.add('active');
+}
+
+function onStatPlateColChange(tab) {
+  const selId  = tab === 'assay' ? 'statPlateColAssay'   : 'statPlateColDisease';
+  const wrapId = tab === 'assay' ? 'statGroupColAssayWrap' : 'statGroupColDiseaseWrap';
+  const val = document.getElementById(selId)?.value || '';
+  _syncGroupByExclusions(wrapId, val);
+  renderStatTables();
 }
 
 function onStatGroupColChange(tab) {
@@ -2100,6 +2321,7 @@ function renderStatPerPlateHtml(plateData, groupCols) {
   for (const { plate, stats } of plateData) {
     for (const s of stats) allRows.push({ plate, ...s });
   }
+  const hasPlate = plateData.length > 0 && plateData.some(p => p.plate != null);
 
   // build unique table id
   const tid = 'sttbl_' + Math.random().toString(36).slice(2,8);
@@ -2112,14 +2334,15 @@ function renderStatPerPlateHtml(plateData, groupCols) {
     return out;
   }
 
-  // header columns: Group (combined) + individual gcols (only if >1) + stat cols
+  // header columns: Plate (if present) + Group (combined) + individual gcols (only if >1) + stat cols
   const showIndivCols = gcols.length > 1;
-  const allCols = ['Group', ...(showIndivCols ? gcols : []), ...statCols];
+  const allCols = [...(hasPlate ? ['Plate'] : []), 'Group', ...(showIndivCols ? gcols : []), ...statCols];
 
   function rowToVals(s) {
     const gv = getGroupVals(s);
     const pFmt = s.p == null || isNaN(s.p) ? '\u2014' : s.p < 0.0001 ? s.p.toExponential(2) : s.p.toFixed(4);
     return {
+      'Plate': s.plate != null ? String(s.plate) : '\u2014',
       ...gv,
       'n': String(s.n),
       'Mean': f4(s.mean), 'SD': f4(s.sd), 'CV%': fPct(s.cv_pct),
@@ -2151,8 +2374,11 @@ function renderStatPerPlateHtml(plateData, groupCols) {
   const safeId = tid;
 
   let html = `<div id="${safeId}_wrap">`;
-  // filter inputs: one for the combined Group + one per individual col (if >1)
+  // filter inputs: Plate (if present) + Group + individual cols
   html += `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">`;
+  if (hasPlate) {
+    html += `<input type="text" placeholder="Filter Plate…" style="height:30px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.8rem;background:#fff;color:var(--ink);outline:none;min-width:100px;max-width:160px;" oninput="statTblFilter('${safeId}')" data-filtercol="Plate" />`;
+  }
   html += `<input type="text" placeholder="Filter Group…" style="height:30px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.8rem;background:#fff;color:var(--ink);outline:none;min-width:120px;max-width:200px;" oninput="statTblFilter('${safeId}')" data-filtercol="Group" />`;
   if (showIndivCols) {
     gcols.forEach(col => {
@@ -2176,9 +2402,12 @@ function renderStatPerPlateHtml(plateData, groupCols) {
     html += `<tr data-isctrl="${s.isCtrl?1:0}" style="${bg}">`;
     allCols.forEach((col, ci) => {
       const v = vals[col] ?? '\u2014';
+      const isPlate = col === 'Plate';
       const isGroup = col === 'Group';
       const isIndiv = showIndivCols && gcols.includes(col);
-      if (isGroup) {
+      if (isPlate) {
+        html += `<td style="white-space:nowrap;font-weight:600;color:var(--muted);" data-col="Plate" data-v="${escHtml(v)}">${escHtml(v)}</td>`;
+      } else if (isGroup) {
         html += `<td style="white-space:nowrap;font-weight:600;" data-col="Group" data-v="${escHtml(v)}">${escHtml(v)}${s.isCtrl ? ' <span style="font-size:.62rem;background:var(--brand-soft);color:var(--brand);border:1px solid var(--line);border-radius:4px;padding:0 4px;">ctrl</span>' : ''}</td>`;
       } else if (isIndiv) {
         html += `<td style="white-space:nowrap;" data-col="${escHtml(col)}" data-v="${escHtml(v)}">${escHtml(v)}</td>`;
@@ -2258,16 +2487,17 @@ function statTblFilter(tid) {
 
 function renderStatTables() {
   if (!state.mergedData) return;
-  const plateCol  = getGlobalPlateCol();
-  const valCol    = getGlobalValCol();
+  const valCol = getGlobalValCol();
   if (!valCol) return;
 
   const assayGroupCols   = getCheckedCols('statGroupColAssayWrap');
   const diseaseGroupCols = getCheckedCols('statGroupColDiseaseWrap');
+  const assayPlateCol    = document.getElementById('statPlateColAssay')?.value  || '';
+  const diseasePlateCol  = document.getElementById('statPlateColDisease')?.value || '';
 
   if (assayGroupCols.length) {
     const assayCtrl = getCtrlGroupAssay();
-    const d = computeFullStatsPerPlate(state.mergedData.rows, plateCol, assayGroupCols, valCol, assayCtrl);
+    const d = computeFullStatsPerPlate(state.mergedData.rows, assayPlateCol, assayGroupCols, valCol, assayCtrl);
     const el = document.getElementById('statTableAssay');
     if (el) el.innerHTML = renderStatPerPlateHtml(d, assayGroupCols);
   }
@@ -2277,12 +2507,12 @@ function renderStatTables() {
     if (diseaseCol) {
       // Disease col mode: ctrl = chosen ctrl value from Disease column
       const diseaseCtrlVal = getCtrlGroupDisease();
-      d = computeDiseaseStatsPerPlate(state.mergedData.rows, plateCol, diseaseGroupCols, diseaseCol, diseaseCtrlVal, valCol);
+      d = computeDiseaseStatsPerPlate(state.mergedData.rows, diseasePlateCol, diseaseGroupCols, diseaseCol, diseaseCtrlVal, valCol);
       const el = document.getElementById('statTableDisease');
       if (el) el.innerHTML = renderStatPerPlateHtml(d, diseaseGroupCols);
     } else if (diseaseGroupCols.length) {
       const diseaseCtrl = getCtrlGroupDisease();
-      d = computeFullStatsPerPlate(state.mergedData.rows, plateCol, diseaseGroupCols, valCol, diseaseCtrl);
+      d = computeFullStatsPerPlate(state.mergedData.rows, diseasePlateCol, diseaseGroupCols, valCol, diseaseCtrl);
       const el = document.getElementById('statTableDisease');
       if (el) el.innerHTML = renderStatPerPlateHtml(d, diseaseGroupCols);
     }
@@ -2457,22 +2687,52 @@ function populatePrismSelectors() {
   const rows = state.mergedData.rows;
   // A column is considered numeric only if ALL non-empty values are numeric
   const numCols = headers.filter(h => {
-    const vals = rows.map(r => String(r[h] ?? '')).filter(v => v !== '');
+    const vals = rows.map(r => String(r[h] ?? '')).filter(v => v !== '' && v !== 'NA');
     return vals.length > 0 && vals.every(v => !isNaN(parseFloat(v)) && isFinite(parseFloat(v)));
   });
   const catCols = headers.filter(h => !numCols.includes(h));
+
+  // Defaults from Analysis Columns
+  const globalVal   = getGlobalValCol();
+  const globalGrp   = getCheckedCols('globalGroupColWrap');
+  const anovaDose   = document.getElementById('anovaDoseCol')?.value || '';
+
+  // Helper: pick default value for a <select> (val if present, else first option)
+  const pickSel = (id, prefer) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (prefer && el.querySelector(`option[value="${CSS.escape(prefer)}"]`)) el.value = prefer;
+  };
+  // Helper: check boxes matching a set
+  const pickChk = (containerId, preferred) => {
+    const pSet = new Set(preferred);
+    const cont = document.getElementById(containerId);
+    if (!cont) return;
+    cont.querySelectorAll('input[type=checkbox]').forEach(cb => {
+      cb.checked = pSet.size ? pSet.has(cb.value) : false;
+    });
+  };
+
   fillPSel('pxy-x', headers);
+  pickSel('pxy-x', anovaDose || (numCols[0] || headers[0]));
   fillPSel('pxy-y', numCols);
-  buildPrismChkList('pxy-grp-wrap', headers, catCols.slice(0, 1));
+  pickSel('pxy-y', globalVal);
+  buildPrismChkList('pxy-grp-wrap', headers, globalGrp.length ? globalGrp : catCols.slice(0, 1));
   fillPSel('pxy-fc', headers, true);
+
   fillPSel('pcol-y', numCols);
+  pickSel('pcol-y', globalVal);
   fillPSel('pcol-rl', headers, true);
-  buildPrismChkList('pcol-grp-wrap', headers, catCols.slice(0, 1));
+  buildPrismChkList('pcol-grp-wrap', headers, globalGrp.length ? globalGrp : catCols.slice(0, 1));
   fillPSel('pcol-fc', headers, true);
+
   fillPSel('pgrp-y', numCols);
+  pickSel('pgrp-y', globalVal);
   fillPSel('pgrp-row', headers);
-  buildPrismChkList('pgrp-col-wrap', headers, catCols.slice(0, 1));
+  pickSel('pgrp-row', anovaDose || headers[0]);
+  buildPrismChkList('pgrp-col-wrap', headers, globalGrp.length ? globalGrp : catCols.slice(0, 1));
   fillPSel('pgrp-fc', headers, true);
+
   // Split by
   const splitSel = document.getElementById('pSplitCol');
   if (splitSel) {
@@ -2480,6 +2740,19 @@ function populatePrismSelectors() {
     const plateCol = state.designPlateCol || '';
     if (plateCol && headers.includes(plateCol)) splitSel.value = plateCol;
   }
+
+  // Apply initial exclusions to group-by checkboxes
+  setTimeout(() => {
+    const xyX = document.getElementById('pxy-x')?.value || '';
+    const xyY = document.getElementById('pxy-y')?.value || '';
+    _syncGroupByExclusions('pxy-grp-wrap', xyX, xyY);
+    const colY = document.getElementById('pcol-y')?.value || '';
+    const colRl = document.getElementById('pcol-rl')?.value || '';
+    _syncGroupByExclusions('pcol-grp-wrap', colY, colRl);
+    const grpY = document.getElementById('pgrp-y')?.value || '';
+    const grpRow = document.getElementById('pgrp-row')?.value || '';
+    _syncGroupByExclusions('pgrp-col-wrap', grpY, grpRow);
+  }, 0);
 }
 
 function fillPSel(id, cols, addNone = false) {
@@ -2855,7 +3128,7 @@ function doPrismTransform(){
   if(!_prismSelectedType){_btnWarn(_btn,'⚠ Select a table type first.');return;}
   if(!state.mergedData||!state.mergedData.rows.length){_btnWarn(_btn,'⚠ No merged data.');return;}
   const splitCol=document.getElementById('pSplitCol')?.value||'';
-  const allData=state.mergedData.rows;
+  const allData=state.mergedData.rows.filter(r=>String(r['is_masked']||'').toLowerCase()!=='true');
   const getTxResult=(data,label)=>{
     if(_prismSelectedType==='xy')return txPrismXY(data,label);
     if(_prismSelectedType==='column')return txPrismColumn(data,label);
@@ -3071,93 +3344,117 @@ function setPlateMatchMode(mode) {
 // TEMPLATE DATA LOADER
 // ─────────────────────────────────────────────
 function loadTemplate() {
-  const designCSV = `Well,Plate,Condition,siRNA,Ins
-A01,P1,Normal,siNTC,0
-A02,P1,Normal,siNTC,0.1
-A03,P1,Normal,siNTC,1
-A04,P1,Normal,siNTC,10
-A05,P1,Normal,siNTC,100
-A06,P1,Normal,siGene1,0
-A07,P1,Normal,siGene1,0.1
-A08,P1,Normal,siGene1,1
-A09,P1,Normal,siGene1,10
-A10,P1,Normal,siGene1,100
-B01,P1,Disease,siNTC,0
-B02,P1,Disease,siNTC,0.1
-B03,P1,Disease,siNTC,1
-B04,P1,Disease,siNTC,10
-B05,P1,Disease,siNTC,100
-B06,P1,Disease,siGene1,0
-B07,P1,Disease,siGene1,0.1
-B08,P1,Disease,siGene1,1
-B09,P1,Disease,siGene1,10
-B10,P1,Disease,siGene1,100
-C01,P2,Normal,siNTC,0
-C02,P2,Normal,siNTC,0.1
-C03,P2,Normal,siNTC,1
-C04,P2,Normal,siNTC,10
-C05,P2,Normal,siNTC,100
-C06,P2,Normal,siGene1,0
-C07,P2,Normal,siGene1,0.1
-C08,P2,Normal,siGene1,1
-C09,P2,Normal,siGene1,10
-C10,P2,Normal,siGene1,100
-D01,P2,Disease,siNTC,0
-D02,P2,Disease,siNTC,0.1
-D03,P2,Disease,siNTC,1
-D04,P2,Disease,siNTC,10
-D05,P2,Disease,siNTC,100
-D06,P2,Disease,siGene1,0
-D07,P2,Disease,siGene1,0.1
-D08,P2,Disease,siGene1,1
-D09,P2,Disease,siGene1,10
-D10,P2,Disease,siGene1,100`;
+  // 384-well plate: middle 240 wells = rows C-N (12 rows) × cols 3-22 (20 cols)
+  const PLATE_ROWS = ['C','D','E','F','G','H','I','J','K','L','M','N'];
+  const PLATE_COLS = Array.from({length:20}, (_,i) => i+3); // 3..22
+
+  // 6 siRNA, 2 rows each → 12 rows
+  const siRNAs   = ['siNTC','siGene1','siGene2','siGene3','siGene4','siGene5'];
+  const siFactors = {siNTC:1.0, siGene1:0.85, siGene2:0.70, siGene3:0.60, siGene4:0.90, siGene5:0.75};
+
+  // 5 insulin doses, 4 cols each → 20 cols
+  const insDoses = [0, 0.1, 1, 10, 100];
 
   // Seed-based pseudo-random for reproducibility
   let seed = 42;
-  const rng = () => { seed = (seed * 1664525 + 1013904223) & 0xffffffff; return (seed >>> 0) / 4294967296; };
-  const noisy = (v, sd=0.03) => Math.max(0, v + (rng()-0.5)*2*sd);
-
-  // pt_ratio: sigmoid dose-response, Disease has ~30% attenuation
+  const rng   = () => { seed = (seed*1664525+1013904223)&0xffffffff; return (seed>>>0)/4294967296; };
+  const noisy = (v, sd=0.04) => Math.max(0.0001, v + (rng()-0.5)*2*sd);
   const sigmoid = (dose, hill=1.5, ec50=3) => 1/(1+Math.pow(ec50/Math.max(dose,0.001),hill));
-  const dParsed = Papa.parse(designCSV.trim(), {header:true, skipEmptyLines:true});
-  const resultRows = dParsed.data.map(row => {
-    const ins = parseFloat(row.Ins) || 0;
-    const base = row.Condition === 'Disease' ? 0.70 : 1.0;
-    const resp = row.siRNA === 'siGene1' ? 0.85 : 1.0;
-    const v = noisy(base * resp * sigmoid(ins), 0.04);
-    return { Well: row.Well, Plate: row.Plate, pt_ratio: v.toFixed(4) };
-  });
-  const resultHeaders = ['Well','Plate','pt_ratio'];
-  const resultFileData = { headers: resultHeaders, rows: resultRows };
 
-  state.designData = { headers: dParsed.meta.fields, rows: dParsed.data };
-  state.designWellCol = 'Well';
-  state.designPlateCol = 'Plate';
-  state.resultFiles = [{ name: 'template_result.csv', data: resultFileData }];
-  state.resultData = resultFileData;
-  state.resultWellCol = 'Well';
-  state.resultPlateCol = 'Plate';
+  const designRows = [];
+  const p1Rows    = []; // Normal
+  const p2Rows    = []; // Disease
+
+  // A handful of wells flagged as outliers (omit=1) with extreme result values
+  const OUTLIER_WELLS = new Set(['D05','G11','J17','L07','E19']);
+
+  for (let ri = 0; ri < PLATE_ROWS.length; ri++) {
+    const rowLetter = PLATE_ROWS[ri];
+    const siRNA     = siRNAs[Math.floor(ri/2)];   // 2 rows per siRNA
+    const siFactor  = siFactors[siRNA];
+    for (let ci = 0; ci < PLATE_COLS.length; ci++) {
+      const colNum = PLATE_COLS[ci];
+      const well   = `${rowLetter}${String(colNum).padStart(2,'0')}`;
+      // Each half (left 10 = Normal, right 10 = Disease) gets the same 5 doses × 2 reps
+      const ci_half = ci < 10 ? ci : ci - 10;
+      const ins    = insDoses[Math.floor(ci_half / 2)];  // 2 reps per dose per condition
+      const isOutlier = OUTLIER_WELLS.has(well);
+
+      const Condition = ci < 10 ? 'Normal' : 'Disease';
+      const condFactor = Condition === 'Disease' ? 0.70 : 1.0;
+      designRows.push({ Well: well, siRNA, Ins: ins, Condition, Omit: isOutlier ? 1 : 0 });
+
+      // P1: both conditions present (Disease = 70% attenuated vs Normal)
+      const p1v = isOutlier
+        ? noisy(condFactor * siFactor * sigmoid(ins) * (rng() > 0.5 ? 4.5 : 0.05), 0.02)
+        : noisy(condFactor * siFactor * sigmoid(ins), 0.04);
+      p1Rows.push({ Well: well, Ratio: p1v.toFixed(4) });
+
+      // P2: independent replicate plate (same layout, independent noise)
+      const p2v = isOutlier
+        ? noisy(condFactor * siFactor * sigmoid(ins) * (rng() > 0.5 ? 4.5 : 0.05), 0.02)
+        : noisy(condFactor * siFactor * sigmoid(ins), 0.04);
+      p2Rows.push({ Well: well, Ratio: p2v.toFixed(4) });
+    }
+  }
+
+  const designHeaders = ['Well','siRNA','Ins','Condition','Omit'];
+  const resultHeaders = ['Well','Ratio'];
+  const designData  = { headers: designHeaders, rows: designRows };
+  const p1FileData  = { headers: resultHeaders, rows: p1Rows };
+  const p2FileData  = { headers: resultHeaders, rows: p2Rows };
+
+  state.designData     = designData;
+  state.designWellCol  = 'Well';
+  state.designPlateCol = '';
+  state.resultFiles    = [
+    { name: 'template_result_P1.csv', data: p1FileData },
+    { name: 'template_result_P2.csv', data: p2FileData }
+  ];
+  state.resultData     = p1FileData;
+  state.resultWellCol  = 'Well';
+  state.resultPlateCol = '';
   if (!state.fileSelectedCols) state.fileSelectedCols = new Map();
-  state.fileSelectedCols.set(0, new Set(['pt_ratio']));
+  state.fileSelectedCols.set(0, new Set(['Ratio']));
+  state.fileSelectedCols.set(1, new Set(['Ratio']));
   if (!state.fileColRows) state.fileColRows = new Map();
-  state.fileColRows.set(0, [{ col: 'pt_ratio', alias: 'pt_ratio' }]);
+  state.fileColRows.set(0, [{ col: 'Ratio', alias: 'P1_ratio' }]);
+  state.fileColRows.set(1, [{ col: 'Ratio', alias: 'P2_ratio' }]);
+  // Populate fileColAliases so Computed Columns see the correct output names
+  if (!state.fileColAliases) state.fileColAliases = new Map();
+  state.fileColAliases.set(0, new Map([['Ratio', 'P1_ratio']]));
+  state.fileColAliases.set(1, new Map([['Ratio', 'P2_ratio']]));
+
+  // Pre-configure the omit column
+  state.omitCol   = 'Omit';
+  state.omitValue = '1';
 
   const designInfo = document.getElementById('designInfo');
-  if (designInfo) { designInfo.style.display='block'; designInfo.innerHTML=`&#x2714; Template design — <b>${state.designData.rows.length}</b> rows, <b>${state.designData.headers.length}</b> cols`; }
+  if (designInfo) { designInfo.style.display='block'; designInfo.innerHTML=`&#x2714; Template design — <b>${designRows.length}</b> rows, <b>${designHeaders.length}</b> cols (384-well middle 240 wells, incl. <b>omit</b> column — 5 outlier wells marked 1)`; }
   const dWC = document.getElementById('designWellCard'); if(dWC) dWC.style.display='block';
-  const dWS = document.getElementById('designWellSel'); if(dWS) dWS.innerHTML='<span class="ok">&#x2714; Well: <b>Well</b> | Plate: <b>Plate</b></span>';
-  const dRC = document.getElementById('designRowCount'); if(dRC) dRC.textContent=state.designData.rows.length+' rows';
+  const dWS = document.getElementById('designWellSel'); if(dWS) dWS.innerHTML='<span class="ok">&#x2714; Well: <b>Well</b></span>';
+  const dRC = document.getElementById('designRowCount'); if(dRC) dRC.textContent=designRows.length+' rows';
   const dPC = document.getElementById('designPreviewCard'); if(dPC) dPC.style.display='block';
-  renderTable('designPreview', state.designData, 50);
+  renderTable('designPreview', designData, Infinity);
 
   const resultInfo = document.getElementById('resultInfo');
-  if (resultInfo) { resultInfo.style.display='block'; resultInfo.innerHTML=`&#x2714; Template result — <b>${resultRows.length}</b> rows, <b>${resultHeaders.length}</b> cols`; }
+  if (resultInfo) { resultInfo.style.display='block'; resultInfo.innerHTML=`&#x2714; Template result — 2 files (P1 &amp; P2), <b>${p1Rows.length}</b> rows each`; }
   const rWC = document.getElementById('resultWellCard'); if(rWC) rWC.style.display='block';
-  const rWS = document.getElementById('resultWellSel'); if(rWS) rWS.innerHTML='<span class="ok">&#x2714; Well: <b>Well</b> | Plate: <b>Plate</b></span>';
-  const rRC = document.getElementById('resultRowCount'); if(rRC) rRC.textContent=resultRows.length+' rows';
+  const rWS = document.getElementById('resultWellSel'); if(rWS) rWS.innerHTML='<span class="ok">&#x2714; Well: <b>Well</b> | P1_ratio / P2_ratio</span>';
+  const rRC = document.getElementById('resultRowCount'); if(rRC) rRC.textContent=(p1Rows.length+p2Rows.length)+' rows total';
   const rPC = document.getElementById('resultPreviewCard'); if(rPC) rPC.style.display='block';
-  renderTable('resultPreview', resultFileData, 50);
+  renderResultPreviewTabs(0);
+
+  // File name chips
+  const namesDiv = document.getElementById('resultFileNames');
+  if (namesDiv) {
+    namesDiv.style.display = 'flex';
+    namesDiv.style.flexWrap = 'wrap';
+    namesDiv.style.gap = '6px';
+    namesDiv.innerHTML = state.resultFiles.map((f, i) =>
+      `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--panel-2);border:1px solid var(--line);border-radius:20px;padding:3px 10px 3px 12px;font-size:.78rem;color:var(--ink);white-space:nowrap;max-width:300px;" title="${escHtml(f.name)}"><span style="overflow:hidden;text-overflow:ellipsis;max-width:220px;">${escHtml(f.name)}</span><button onclick="removeResultFile(${i})" style="background:none;border:none;cursor:pointer;padding:0;line-height:1;font-size:1rem;color:var(--muted);" title="Remove this file">&times;</button></span>`
+    ).join('');
+  }
 
   buildAllFileColSelectors();
   checkPlateMismatch();
