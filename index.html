@@ -83,7 +83,7 @@ main{max-width:1200px;margin:0 auto;padding:16px;}
 .panel.active{display:block;}
 
 /* Upload zone */
-.upload-zone{display:block;border:2px dashed var(--line);border-radius:var(--r);padding:32px;text-align:center;cursor:pointer;transition:.2s;background:var(--panel-2);}
+.upload-zone{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:130px;border:2px dashed var(--line);border-radius:var(--r);padding:32px;text-align:center;cursor:pointer;transition:.2s;background:var(--panel-2);}
 .upload-zone:hover,.upload-zone.drag{border-color:var(--brand);background:var(--brand-soft);}
 .upload-zone input{display:none;}
 .upload-zone .icon{font-size:2.5rem;margin-bottom:8px;display:block;}
@@ -117,7 +117,7 @@ button:active{transform:translateY(1px);box-shadow:none !important;}
 .btn-secondary{background:#fff;border-color:var(--line);color:var(--ink);}
 .btn-secondary:hover{background:var(--panel-2);}
 .btn-success{background:var(--ok);border-color:var(--ok);color:#fff;}
-.btn-sm{padding:6px 10px;font-size:.8rem;border-radius:8px;}
+.btn-sm{padding:8px 10px;font-size:.8rem;border-radius:8px;}
 
 .stat-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:8px 14px;box-shadow:var(--shadow);}
 .stat-card .val{font-size:1.25rem;font-weight:700;color:var(--brand);line-height:1.1;}
@@ -215,8 +215,12 @@ button:active{transform:translateY(1px);box-shadow:none !important;}
 .stat-tab-pane.active{display:block;}
 
 /* Upload two-column layout */
-.upload-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;align-items:start;}
+.upload-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;align-items:stretch;}
+.upload-cols .mk-slot{min-height:0;}
+.upload-cols .mk-slot>.card{height:100%;box-sizing:border-box;}
+.upload-cols>#designPreviewCard,.upload-cols>#resultPreviewCard{height:100%;}
 .upload-col{display:flex;flex-direction:column;gap:16px;min-width:0;}
+.upload-col>.card{flex:1;}
 @media(max-width:700px){.upload-cols{grid-template-columns:1fr;}}
 
 /* Classic select style */
@@ -231,7 +235,7 @@ body{padding-bottom:28px;}
 </head>
 <body>
 <header>
-  <h1>One-Stop Analysis v1.2</h1>
+  <h1>One-Stop Analysis v1.3</h1>
   <p>Merge assay design + result files, explore heatmaps/charts, and export Prism-ready tables.</p>
   <div class="author">By ILYH</div>
 </header>
@@ -247,60 +251,60 @@ body{padding-bottom:28px;}
   <!-- STEP 0: Upload -->
   <div class="panel active" id="panel0">
     <div class="upload-cols">
-      <div class="upload-col">
-        <div class="card">
-          <h2>Design File</h2>
+      <!-- Row 1: upload cards -->
+      <div class="card">
+          <h2>Metadata File</h2>
           <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px;">CSV/TSV with well mapping and metadata columns.</p>
           <label class="upload-zone" id="designZone">
             <input type="file" id="designFile" accept=".csv,.tsv,.txt" />
             <div class="icon">🧬</div>
             <p><strong>Click to upload</strong> or drag &amp; drop</p>
           </label>
-          <div class="file-info" id="designInfo" style="display:none"></div>
-          <h2 style="margin-top:14px;">Well Column Detection</h2>
-          <div id="designWellSel"></div>
-        </div>
-        <div class="card" id="designPreviewCard" style="display:none">
-          <h2>Design Preview</h2>
-          <div class="table-wrap" id="designPreview"></div>
-        </div>
+          <div id="designFileNames" style="display:none;margin-top:10px;margin-bottom:2px;flex-wrap:wrap;gap:6px;"></div>
+          <div id="designInfo" style="display:none;font-size:.82rem;color:var(--muted);margin-top:4px;"></div>
       </div>
-
-      <div class="upload-col">
-        <div class="card">
+      <div class="card">
           <h2>Result File(s)</h2>
-          <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px;"><strong>Multiple CSV/TSV files allowed</strong> — columns will be merged by well.</p>
+          <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px;">Multiple CSV/TSV files allowed — columns will be merged by well.</p>
           <label class="upload-zone" id="resultZone">
             <input type="file" id="resultFile" accept=".csv,.tsv,.txt" multiple />
             <div class="icon">📊</div>
             <p><strong>Click to upload</strong> or drag &amp; drop</p>
-            <p style="margin-top:4px;font-size:.78rem;">Hold Ctrl/⌘ to select multiple files</p>
           </label>
-          <div class="file-info" id="resultInfo" style="display:none"></div>
-          <div id="resultFileNames" style="display:none;margin-top:18px;margin-bottom:10px;"></div>
-          <h2 style="margin-top:14px;">Well Column Detection</h2>
-          <div id="resultWellSel"></div>
-        </div>
-        <div class="card" id="resultPreviewCard" style="display:none">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <h2 style="margin:0;">Result Preview</h2>
-            <div id="resultPreviewTabs" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
-          </div>
-          <div class="table-wrap" id="resultPreview"></div>
+          <div id="resultFileNames" style="display:none;margin-top:10px;margin-bottom:2px;flex-wrap:wrap;gap:6px;"></div>
+          <div id="resultInfo" style="display:none;font-size:.82rem;color:var(--muted);margin-top:4px;"></div>
+      </div>
+      <!-- Row 2: Merge Key (split, shown after upload) -->
+      <div class="mk-slot">
+        <div class="card" id="designMergeKeyCard" style="display:none;">
+          <h2>Merge Key</h2>
+          <div id="designMergeKeyRows"></div>
         </div>
       </div>
-    </div>
-
-    <div class="card" id="plateMismatchCard" style="display:none;border:1px solid #e5a000;background:#fffbf0;">
-      <h2 style="color:#a05a00;">&#x26A0; Plate Column Mismatch</h2>
-      <p style="font-size:.85rem;margin-bottom:12px;">One file has a plate ID column, the other doesn&#x2019;t. Choose how to match wells:</p>
-      <div style="display:flex;gap:20px;font-size:.85rem;">
-        <label><input type="radio" name="plateMatchMode" value="well" onchange="setPlateMatchMode(this.value)" checked> Match by <b>well only</b> (ignore plate)</label>
-        <label><input type="radio" name="plateMatchMode" value="plate+well" onchange="setPlateMatchMode(this.value)"> Match by <b>plate + well</b></label>
+      <div class="mk-slot">
+        <div class="card" id="resultMergeKeyCard" style="display:none;">
+          <h2>Merge Key</h2>
+          <div id="resultMergeKeyRows"></div>
+        </div>
+      </div>
+      <!-- Row 3: preview cards (direct grid children for height alignment) -->
+      <div class="card" id="designPreviewCard" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;min-height:32px;">
+            <h2 style="margin:0;">Metadata Preview</h2>
+          </div>
+          <div class="table-wrap" id="designPreview" style="max-height:280px;"></div>
+      </div>
+      <div class="card" id="resultPreviewCard" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <h2 style="margin:0;">Result Preview</h2>
+            <select id="resultPreviewSel" style="display:none;height:32px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.83rem;background:#fff;color:var(--ink);max-width:260px;" onchange="renderResultPreviewTabs(+this.value)"></select>
+          </div>
+          <div class="table-wrap" id="resultPreview" style="max-height:280px;"></div>
       </div>
     </div>
 
     <div class="flex-end" style="gap:10px;align-items:center;">
+      <div id="wellWarnStep0" style="flex:1;font-size:.82rem;line-height:1.6;"></div>
       <span id="parseErrMsg" style="display:none;color:var(--err);font-size:.8rem;font-weight:600;"></span>
       <button class="btn btn-secondary" style="padding:10px 20px;" onclick="loadTemplate()">Load Template Data</button>
       <button class="btn btn-primary" style="padding:10px 22px;" onclick="goStep(1)">Configure Columns →</button>
@@ -310,21 +314,23 @@ body{padding-bottom:28px;}
   <!-- STEP 1: Column Config -->
   <div class="panel" id="panel1">
     <div class="card">
-      <h2>Design Columns <span style="font-weight:400;font-size:.82rem;color:var(--muted);">(optional — default: all)</span></h2>
-
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <h2 style="margin:0;">Metadata Columns <span style="font-weight:400;font-size:.82rem;color:var(--muted);">(optional)</span></h2>
+        <div style="display:flex;gap:6px;">
+          <button type="button" class="btn btn-sm btn-secondary" onclick="dcSelectAll()">Select All</button>
+          <button type="button" class="btn btn-sm btn-secondary" onclick="dcClear()">Clear</button>
+        </div>
+      </div>
       <div id="designColSelWrap"></div>
     </div>
     <div class="card">
-      <h2>Select Columns to Merge from Result</h2>
-
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <h2 style="margin:0;">Columns to Merge</h2>
+      </div>
       <div id="fileColSelectors"></div>
       <p id="fileColErr" style="display:none;color:var(--err);font-size:.84rem;margin-top:8px;">&#x26A0; Please select at least one result column for each file.</p>
     </div>
     <div class="card">
-      <h2>Merge Key</h2>
-      <div id="mergeKeyInfo" style="font-size:.88rem;"></div>
-    </div>
-      <div class="card">
       <h2>Filter Rows / Wells <span style="font-weight:400;font-size:.82rem;color:var(--muted);">(optional)</span></h2>
       <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
         <div>
@@ -396,7 +402,14 @@ body{padding-bottom:28px;}
     </div>
 
     <div class="card">
-      <h2>Plate Heatmap</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <h2 style="margin:0;">Plate Heatmap</h2>
+        <div style="display:flex;gap:4px;">
+          <button id="hmSizeSmall" onclick="setHeatmapSize(false)" style="padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel-2);font-size:.78rem;cursor:pointer;color:var(--ink);">Small</button>
+          <button id="hmSizeLarge" onclick="setHeatmapSize(true)"  style="padding:8px 10px;border-radius:6px;border:1px solid var(--brand);background:var(--brand);font-size:.78rem;cursor:pointer;color:#fff;">Large</button>
+          <button onclick="exportHeatmapFig()" style="padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel-2);font-size:.78rem;cursor:pointer;color:var(--ink);">Export Figure</button>
+        </div>
+      </div>
       <div id="heatmapPlateTabs" style="display:none;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px;"></div>
       <div id="heatmapLegend" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:.78rem;"></div>
       <div id="heatmapWrap"></div>
@@ -404,7 +417,10 @@ body{padding-bottom:28px;}
 
     <div class="charts-row" style="grid-template-columns:1fr;">
       <div class="chart-card">
-        <h2>Bar Chart</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <h2 style="margin:0;">Bar Chart</h2>
+          <button onclick="exportBarChartFig()" style="padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel-2);font-size:.78rem;cursor:pointer;color:var(--ink);">Export Figure</button>
+        </div>
         <div id="barPlateTabs" style="display:none;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px;"></div>
         <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
           <div><span class="label">Group by:</span>
@@ -418,14 +434,17 @@ body{padding-bottom:28px;}
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
         <h2 style="margin-bottom:0;">Statistics Table</h2>
-        <button id="btnExportStat" class="btn btn-sm btn-secondary" onclick="exportStatCSV()">Export Stats CSV</button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button id="btnExportStat" class="btn btn-sm btn-secondary" onclick="exportStatCSV()">Export Stats CSV</button>
+          <span id="btnExportStatMsg" style="font-size:.8rem;color:var(--err);"></span>
+        </div>
       </div>
       <div class="group-select-row" style="margin-bottom:12px;flex-wrap:wrap;">
       </div>
       <div class="stat-tabs">
         <button class="stat-tab active" id="stab-assay" onclick="switchStatTab('assay')">Assay Window</button>
         <button class="stat-tab" id="stab-disease" onclick="switchStatTab('disease')">Disease Window</button>
-        <button class="stat-tab" id="stab-anova" onclick="switchStatTab('anova')">ANOVA</button>
+        <button class="stat-tab" id="stab-anova" onclick="switchStatTab('anova')">Dose Group</button>
       </div>
       <div class="stat-tab-pane active" id="stpane-assay">
         <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
@@ -473,22 +492,41 @@ body{padding-bottom:28px;}
           <div><span class="label">Group by:</span>
             <div id="anovaGroupColWrap" class="grp-cb-wrap"></div>
           </div>
-          <div class="group-select-row" style="flex-wrap:wrap;">
+          <div><span class="label">Analysis method:</span>
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+              <label style="font-size:.85rem;display:flex;align-items:center;gap:5px;"><input type="checkbox" id="anovaDoEC50" checked onchange="onAnovaCheckChange()"> EC50</label>
+              <label style="font-size:.85rem;display:flex;align-items:center;gap:5px;"><input type="checkbox" id="anovaDoAnova" checked onchange="onAnovaCheckChange()"> 2-way ANOVA</label>
+            </div>
+          </div>
+          <div id="anovaDoseRow" class="group-select-row" style="flex-wrap:wrap;">
             <div><span class="label">Dose column:</span>
               <select id="anovaDoseCol" class="analysis-col-select" onchange="onAnovaDoseColChange()"></select>
             </div>
-            <div><span class="label">Comparison:</span>
-              <select id="anovaPairMode" class="analysis-col-select" onchange="onAnovaModeChange()" style="min-width:130px;">
-                <option value="dunnett">vs Reference</option>
-                <option value="allpairs">All pairs</option>
+            <div id="anovaEC50ZeroDiv"><span class="label">0 in log as</span>
+              <select id="anovaEC50Zero" class="analysis-col-select" style="min-width:90px;">
+                <option value="exclude">exclude</option>
+                <option value="0.001">0.001</option>
+                <option value="0.01" selected>0.01</option>
+                <option value="0.1">0.1</option>
               </select>
             </div>
-            <div id="anovaRefGroupDiv"><span class="label">Reference group:</span>
-              <select id="anovaRefGroup" style="min-width:140px;"></select>
+            <div id="anovaAnovaParamsDiv" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+              <div><span class="label">Comparison:</span>
+                <select id="anovaPairMode" class="analysis-col-select" onchange="onAnovaModeChange()" style="min-width:130px;">
+                  <option value="dunnett">vs Reference</option>
+                  <option value="allpairs">All pairs</option>
+                </select>
+              </div>
+              <div id="anovaRefGroupDiv"><span class="label">Reference group:</span>
+                <select id="anovaRefGroup" class="analysis-col-select" style="min-width:140px;"></select>
+              </div>
             </div>
           </div>
         </div>
-        <button id="btnRunAnova" class="btn btn-secondary" onclick="runAnovaTable()">Run 2-way ANOVA</button>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <button id="btnRunAnova" class="btn btn-secondary" onclick="runAnovaTable()">Run group analysis</button>
+          <span id="btnRunAnovaMsg" style="font-size:.8rem;color:var(--err);"></span>
+        </div>
         <div id="anovaResult" style="margin-top:14px;"></div>
       </div>
     </div>
@@ -553,11 +591,18 @@ body{padding-bottom:28px;}
         </div>
         <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.84rem;margin-top:6px;">
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Filter col:</span><select id="pxy-fc" class="analysis-col-select" style="min-width:110px;"><option value="">(none)</option></select></div>
-          <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">≠ value:</span><input id="pxy-fv" type="text" value="1" style="width:64px;height:30px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.82rem;"></div>
-          <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Separator:</span><select id="pxy-sep" style="height:30px;border:1px solid var(--line);border-radius:8px;padding:0 6px;font-size:.82rem;background:#fff;"><option value=" | "> | </option><option value=" ">space</option><option value="_">_</option><option value=", ">, </option></select></div>
+          <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">≠ value:</span><input id="pxy-fv" type="text" value="1" style="width:64px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:.84rem;"></div>
+          <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Separator:</span><select id="pxy-sep" class="analysis-col-select" style="min-width:80px;"><option value=" | "> | </option><option value=" ">space</option><option value="_" selected>_</option><option value=", ">, </option></select></div>
           <label style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pxy-sortGrp"> Sort groups A→Z</label>
-          <label style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pxy-log" checked> Log₁₀ X axis</label>
-          <label style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pxy-4pl" checked> 4PL fit preview</label>
+          <label style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pxy-log" checked onchange="_updatePxyAnovaCtrlVisibility()"> Log₁₀ X axis</label>
+          <label style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pxy-4pl" checked onchange="onPxy4plChange()"> 4PL fit preview</label>
+          <label id="pxy-anova-lbl" style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pxy-anova" checked> 2-way ANOVA</label>
+          <label id="pxy-ec50-lbl" style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pxy-ec50" checked> EC50</label>
+        </div>
+        <div id="pxy-anova-ctrl-row" style="display:flex;gap:6px;align-items:center;font-size:.84rem;margin-top:6px;">
+          <div id="pxy-anova-ctrl-div" style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Control group:</span>
+          <select id="pxy-anova-ctrl" class="analysis-col-select" style="min-width:140px;"></select></div>
+          <div id="pxy-ec50-zero-div" style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">0 in log as</span><select id="pxy-ec50-zero" class="analysis-col-select" style="min-width:80px;"><option value="exclude">exclude</option><option value="0.001">0.001</option><option value="0.01" selected>0.01</option><option value="0.1">0.1</option></select></div>
         </div>
         <div style="display:flex;gap:12px;align-items:center;font-size:.84rem;margin-top:8px;">
           <span class="label" style="font-size:.82rem;">X sort:</span>
@@ -575,8 +620,8 @@ body{padding-bottom:28px;}
         </div>
         <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.84rem;margin-top:8px;">
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Filter col:</span><select id="pcol-fc" class="analysis-col-select" style="min-width:110px;"><option value="">(none)</option></select></div>
-          <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">≠ value:</span><input id="pcol-fv" type="text" value="1" style="width:64px;height:30px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.82rem;"></div>
-          <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Separator:</span><select id="pcol-sep" style="height:30px;border:1px solid var(--line);border-radius:8px;padding:0 6px;font-size:.82rem;background:#fff;"><option value=" | "> | </option><option value=" ">space</option><option value="_">_</option><option value=", ">, </option></select></div>
+          <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">≠ value:</span><input id="pcol-fv" type="text" value="1" style="width:64px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:.84rem;"></div>
+          <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Separator:</span><select id="pcol-sep" class="analysis-col-select" style="min-width:80px;"><option value=" | "> | </option><option value=" ">space</option><option value="_" selected>_</option><option value=", ">, </option></select></div>
           <label style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pcol-sortGrp"> Sort groups A→Z</label>
         </div>
       </div>
@@ -589,8 +634,8 @@ body{padding-bottom:28px;}
         </div>
         <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.84rem;margin-top:8px;">
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Filter col:</span><select id="pgrp-fc" class="analysis-col-select" style="min-width:110px;"><option value="">(none)</option></select></div>
-          <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">≠ value:</span><input id="pgrp-fv" type="text" value="1" style="width:64px;height:30px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.82rem;"></div>
-          <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Separator:</span><select id="pgrp-sep" style="height:30px;border:1px solid var(--line);border-radius:8px;padding:0 6px;font-size:.82rem;background:#fff;"><option value=" | "> | </option><option value=" ">space</option><option value="_">_</option><option value=", ">, </option></select></div>
+          <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">≠ value:</span><input id="pgrp-fv" type="text" value="1" style="width:64px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:.84rem;"></div>
+          <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Separator:</span><select id="pgrp-sep" class="analysis-col-select" style="min-width:80px;"><option value=" | "> | </option><option value=" ">space</option><option value="_" selected>_</option><option value=", ">, </option></select></div>
           <label style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pgrp-sortGrp"> Sort groups A→Z</label>
         </div>
         <div style="display:flex;gap:12px;align-items:center;font-size:.84rem;margin-top:8px;">
@@ -619,7 +664,7 @@ body{padding-bottom:28px;}
       <div id="prismTipBox" style="font-size:.82rem;color:var(--brand);background:var(--brand-soft);border:1px solid var(--line);border-radius:7px;padding:10px 14px;margin-bottom:14px;"></div>
       <div style="border-top:1px solid var(--line);padding-top:14px;">
         <div style="font-size:.73rem;font-weight:600;color:var(--muted);text-align:center;margin-bottom:8px;letter-spacing:.07em;text-transform:uppercase;">Preview Chart (Prism Style)</div>
-        <canvas id="prismChartCanvas" style="width:100%;max-width:680px;display:block;margin:0 auto;"></canvas>
+        <canvas id="prismChartCanvas" style="width:100%;max-width:884px;display:block;margin:0 auto;"></canvas>
       </div>
     </div>
 
@@ -631,6 +676,15 @@ body{padding-bottom:28px;}
 <div class="copyright-fixed">Copyright &copy; 2026 Lin. All rights reserved.</div>
 
 <script>
+// ── DEBUG: Show JS errors visually ──
+window.onerror = function(msg, src, line, col, err) {
+  // Filter out Chrome-internal select popup errors (false alarms)
+  if (msg && msg.includes('PagePopupController')) return true;
+  const d = document.createElement('div');
+  d.style.cssText = 'position:fixed;bottom:24px;left:0;right:0;background:#c0392b;color:#fff;padding:12px 16px;z-index:99999;font-family:monospace;font-size:13px;white-space:pre-wrap;';
+  d.textContent = 'JS ERROR: ' + msg + '\nLine: ' + line + ', Col: ' + col + (err ? '\n' + err.stack : '');
+  document.body.appendChild(d);
+};
 // ─────────────────────────────────────────────
 // TYPES & STATE
 // ─────────────────────────────────────────────
@@ -655,6 +709,7 @@ const state = {
   mergedData: null,
   mergedNumericCols: [],
   currentStep: 0,
+  _heatmapLarge: true,
 };
 
 const WELL_PATTERNS = /^(well[_ ]?id|well[_ ]?position|well[_ ]?pos|well)$/i;
@@ -711,7 +766,7 @@ function renderDesignColRows() {
   const avail = dcGetAvail();
   const rows = state.designColRows;
 
-  let html = '<div style="display:grid;grid-template-columns:minmax(160px,240px) minmax(160px,1fr) auto;gap:8px;align-items:center;margin-bottom:4px;font-size:.8rem;font-weight:600;color:var(--muted);">'
+  let html = '<div class="fc-row-line" style="font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:4px;pointer-events:none;">'
            + '<span>Column</span><span>Output name</span><span></span></div>';
 
   rows.forEach((row, ri) => {
@@ -768,6 +823,19 @@ function dcRemoveRow(ri) {
   renderDesignColRows();
 }
 
+function dcSelectAll() {
+  const avail = dcGetAvail();
+  state.designColRows = avail.map(col => ({ col, alias: col }));
+  dcSyncFromRows();
+  renderDesignColRows();
+}
+
+function dcClear() {
+  state.designColRows = [{ col: '', alias: '' }];
+  dcSyncFromRows();
+  renderDesignColRows();
+}
+
 function populateOmitColSel() {
   const sel = document.getElementById('omitColSel');
   if (!sel || !state.designData) return;
@@ -803,35 +871,85 @@ function parseFile(file, cb) {
 // WELL COLUMN SELECTION UI
 // ─────────────────────────────────────────────
 function buildWellSelUI(containerId, headers, onSelect) {
-  const candidates = headers.filter(h => WELL_PATTERNS.test(h.trim()));
+  const wellCandidate = headers.find(h => WELL_PATTERNS.test(h.trim())) || '';
   const plateCandidate = headers.find(h => PLATE_PATTERNS.test(h.trim())) || '';
+  const selW = wellCandidate;
   const container = document.getElementById(containerId);
-  if (candidates.length === 1) {
-    container.innerHTML = `<span class="ok">✔ Detected well column: <b>${escHtml(candidates[0])}</b></span>
-      ${plateCandidate ? `<br><span class="ok" style="margin-top:4px;display:block;">✔ Detected plate column: <b>${escHtml(plateCandidate)}</b></span>` : '<br><span class="warn">No plate_id column detected — will match by well only.</span>'}`;
-    onSelect(candidates[0], plateCandidate);
-  } else if (candidates.length > 1) {
-    container.innerHTML = `<span class="warn">Multiple well columns detected. Select one:</span><br>
-      ${candidates.map(c => `<label style="margin-right:12px;font-size:.85rem;"><input type="radio" name="${escHtml(containerId)}_well" value="${escHtml(c)}" ${c===candidates[0]?'checked':''} onchange='wellRadioChange(${JSON.stringify(containerId)}, this.value, ${JSON.stringify(plateCandidate)})'> ${escHtml(c)}</label>`).join('')}`;
-    onSelect(candidates[0], plateCandidate);
+
+  const badgeStyle = 'font-size:.78rem;';
+  const wellBadge = wellCandidate
+    ? `<span class="ok" style="${badgeStyle}">✔ auto-detected</span>`
+    : `<span class="warn" style="${badgeStyle}">⚠ not detected</span>`;
+  const plateBadge = plateCandidate
+    ? `<span class="ok" style="${badgeStyle}">✔ auto-detected</span>`
+    : `<span style="${badgeStyle}color:var(--muted);">not detected</span>`;
+
+  const selStyle = 'height:32px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.83rem;background:#fff;color:var(--ink);';
+  const labelStyle = 'min-width:90px;';
+  const rowStyle = 'display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;';
+
+  const makeOpts = (selected, includeNone) =>
+    (includeNone ? `<option value="">(none)</option>` : '') +
+    headers.map(h => `<option value="${escHtml(h)}"${h===selected?' selected':''}>${escHtml(h)}</option>`).join('');
+
+  container.innerHTML = `
+    <div style="${rowStyle}">
+      <span class="label" style="${labelStyle}">Plate column:</span>
+      <select id="${containerId}_plate" style="${selStyle}" onchange="wellSelChange(${JSON.stringify(containerId)},'plate',this.value)">
+        ${makeOpts(plateCandidate, true)}
+      </select>
+      ${plateBadge}
+    </div>
+    <div style="${rowStyle}">
+      <span class="label" style="${labelStyle}">Well column:</span>
+      <select id="${containerId}_well" style="${selStyle}" onchange="wellSelChange(${JSON.stringify(containerId)},'well',this.value)">
+        ${makeOpts(selW, true)}
+      </select>
+      ${wellBadge}
+    </div>`;
+
+  onSelect(selW, plateCandidate);
+}
+function wellSelChange(id, type, val) {
+  if (id === 'designWellSel') {
+    if (type === 'well') state.designWellCol = val;
+    else state.designPlateCol = val;
   } else {
-    container.innerHTML = `<span class="warn">⚠ No well column auto-detected. Select manually:</span><br>
-      <select id="${escHtml(containerId)}_manual" onchange='manualWellChange(${JSON.stringify(containerId)}, this.value, ${JSON.stringify(plateCandidate)})'>
-        ${headers.map(h=>`<option value="${escHtml(h)}">${escHtml(h)}</option>`).join('')}
-      </select>`;
-    onSelect(headers[0], plateCandidate);
+    // Step 0 全局选择器改变 → 同步到所有 result 文件
+    if (type === 'well') {
+      state.resultWellCol = val;
+      state.resultFiles.forEach(f => { f.wellCol = val; });
+    } else {
+      state.resultPlateCol = val;
+      state.resultFiles.forEach(f => { f.plateCol = val; });
+    }
+  }
+  syncWellColSelects();
+  checkPlateMismatch();
+  updateMergeKeyInfo();
+}
+
+// 双向同步：Upload Files 下拉框 ↔ Merge Key 下拉框
+function syncWellColSelects() {
+  // Merge Key Design
+  const mkDP = document.getElementById('mergeKeyDesignPlate');
+  const mkDW = document.getElementById('mergeKeyDesignWell');
+  if (mkDP) mkDP.value = state.designPlateCol;
+  if (mkDW) mkDW.value = state.designWellCol;
+  // Step 1 — Merge Key per-file Result
+  if (state.resultFiles.length) {
+    state.resultFiles.forEach((f, fi) => {
+      const mkRP = document.getElementById(`mergeKeyResult_plate_${fi}`);
+      const mkRW = document.getElementById(`mergeKeyResult_well_${fi}`);
+      if (mkRP) mkRP.value = (f.plateCol !== undefined ? f.plateCol : state.resultPlateCol);
+      if (mkRW) mkRW.value = (f.wellCol  !== undefined ? f.wellCol  : state.resultWellCol);
+    });
   }
 }
-function wellRadioChange(id, val, plate) {
-  if (id === 'designWellSel') { state.designWellCol = val; state.designPlateCol = plate; }
-  else { state.resultWellCol = val; state.resultPlateCol = plate; }
-  checkPlateMismatch();
-}
-function manualWellChange(id, val, plate) {
-  if (id === 'designWellSel') { state.designWellCol = val; state.designPlateCol = plate; }
-  else { state.resultWellCol = val; state.resultPlateCol = plate; }
-  checkPlateMismatch();
-}
+// legacy aliases
+function wellRadioChange(id, val, plate) { wellSelChange(id,'well',val); }
+function manualWellChange(id, val, plate) { wellSelChange(id,'well',val); }
+
 
 // ─────────────────────────────────────────────
 // TABLE RENDER
@@ -862,22 +980,47 @@ function renderTable(containerId, data, maxRows = 100) {
 })();
 
 function handleDesign(file) {
-  const info = document.getElementById('designInfo');
-  info.style.display = 'block';
-  info.innerHTML = `✔ Loaded: <b>${escHtml(file.name)}</b> (${(file.size/1024).toFixed(1)} KB)`;
+  state._designFileName = file.name;
+  const namesDiv = document.getElementById('designFileNames');
+  if (namesDiv) {
+    namesDiv.style.display = 'flex';
+    namesDiv.innerHTML = `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--panel-2);border:1px solid var(--line);border-radius:20px;padding:3px 10px 3px 12px;font-size:.78rem;color:var(--ink);white-space:nowrap;max-width:300px;" title="${escHtml(file.name)}"><span style="overflow:hidden;text-overflow:ellipsis;max-width:220px;">${escHtml(file.name)}</span><button onclick="removeDesignFile()" style="background:none;border:none;cursor:pointer;padding:0;line-height:1;font-size:1rem;color:var(--muted);" title="Remove file">&times;</button></span>`;
+  }
   parseFile(file, data => {
     state.designData = data;
+    const info = document.getElementById('designInfo');
+    if (info) { info.style.display = 'block'; info.textContent = `${data.rows.length} rows, ${data.headers.length} cols`; }
     const dRow = document.getElementById('designRowCount');
     if (dRow) dRow.textContent = data.rows.length + ' rows';
     const dWellCard = document.getElementById('designWellCard');
     if (dWellCard) dWellCard.style.display = 'block';
-    buildWellSelUI('designWellSel', data.headers, (wCol, pCol) => {
-      state.designWellCol = wCol; state.designPlateCol = pCol;
-      checkPlateMismatch();
-    });
+    state.designWellCol  = data.headers.find(h => WELL_PATTERNS.test(h.trim()))  || '';
+    state.designPlateCol = data.headers.find(h => PLATE_PATTERNS.test(h.trim())) || '';
+    populateMergeKeySelects();
+    checkPlateMismatch();
+    updateMergeKeyInfo();
     document.getElementById('designPreviewCard').style.display = 'block';
     renderTable('designPreview', data, 100);
   });
+}
+
+function removeDesignFile() {
+  state.designData = null;
+  state.designWellCol = '';
+  state.designPlateCol = '';
+  const namesDiv = document.getElementById('designFileNames');
+  if (namesDiv) { namesDiv.style.display = 'none'; namesDiv.innerHTML = ''; }
+  const info = document.getElementById('designInfo');
+  if (info) { info.style.display = 'none'; info.textContent = ''; }
+  const dWellCard = document.getElementById('designWellCard');
+  if (dWellCard) dWellCard.style.display = 'none';
+  document.getElementById('designPreviewCard').style.display = 'none';
+  document.getElementById('designPreview').innerHTML = '';
+  const input = document.getElementById('designFile');
+  if (input) input.value = '';
+  populateMergeKeySelects();
+  checkPlateMismatch();
+  updateMergeKeyInfo();
 }
 
 // ── Result upload (multiple files) ──
@@ -902,7 +1045,9 @@ function handleResultFiles(fileList) {
   }
   files.forEach((file, idx) => {
     parseFile(file, data => {
-      state.resultFiles.push({ name: file.name, data });
+      state.resultFiles.push({ name: file.name, shortName: file.name.replace(/\.[^.]+$/, ''), data,
+        wellCol:  data.headers.find(h => WELL_PATTERNS.test(h.trim()))  || '',
+        plateCol: data.headers.find(h => PLATE_PATTERNS.test(h.trim())) || '' });
       const rowEl = document.getElementById(`rfile_${idx}`);
       if (rowEl) {
         rowEl.innerHTML = `<span class="ok">✔ ${escHtml(file.name)}</span> <span class="tag tag-blue">${data.rows.length} rows, ${data.headers.length} cols</span>`;
@@ -925,14 +1070,12 @@ function onAllResultsLoaded() {
 
   const info = document.getElementById('resultInfo');
   info.style.display = 'block';
-  info.innerHTML = `✔ ${state.resultFiles.length} file(s) loaded — <b>${allRows.length}</b> total rows, <b>${allHeaders.length}</b> columns`;
+  info.textContent = `${state.resultFiles.length} file(s) loaded — ${allRows.length} rows, ${allHeaders.length} cols`;
 
   // File name chips above Well Column Detection
   const namesDiv = document.getElementById('resultFileNames');
   if (namesDiv) {
     namesDiv.style.display = 'flex';
-    namesDiv.style.flexWrap = 'wrap';
-    namesDiv.style.gap = '6px';
     namesDiv.innerHTML = state.resultFiles.map((f, i) =>
       `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--panel-2);border:1px solid var(--line);border-radius:20px;padding:3px 10px 3px 12px;font-size:.78rem;color:var(--ink);white-space:nowrap;max-width:300px;" title="${escHtml(f.name)}"><span style="overflow:hidden;text-overflow:ellipsis;max-width:220px;">${escHtml(f.name)}</span><button onclick="removeResultFile(${i})" style="background:none;border:none;cursor:pointer;padding:0;line-height:1;font-size:1rem;color:var(--muted);" title="Remove this file">&times;</button></span>`
     ).join('');
@@ -940,9 +1083,12 @@ function onAllResultsLoaded() {
 
   const rWellCard = document.getElementById('resultWellCard');
   if (rWellCard) rWellCard.style.display = 'block';
-  buildWellSelUI('resultWellSel', allHeaders, (wCol, pCol) => {
-    state.resultWellCol = wCol; state.resultPlateCol = pCol;
-  });
+  if (state.resultFiles.length) {
+    state.resultWellCol  = state.resultFiles[0].wellCol  || '';
+    state.resultPlateCol = state.resultFiles[0].plateCol || '';
+  }
+  populateMergeKeySelects();
+  updateMergeKeyInfo();
   const rRow = document.getElementById('resultRowCount');
   if (rRow) rRow.textContent = allRows.length + ' rows';
   document.getElementById('resultPreviewCard').style.display = 'block';
@@ -973,61 +1119,24 @@ function removeResultFile(fi) {
     if (rWellCard) rWellCard.style.display = 'none';
     document.getElementById('resultPreviewCard').style.display = 'none';
     state.resultData = null;
-    return;
-  }
-  onAllResultsLoaded();
-}
-
-function removeResultFile(fi) {
-  state.resultFiles.splice(fi, 1);
-  // Re-index Maps whose keys are 0-based file indices
-  const reindex = map => {
-    if (!map) return map;
-    const m2 = new Map();
-    map.forEach((val, key) => {
-      if (key < fi) m2.set(key, val);
-      else if (key > fi) m2.set(key - 1, val);
-    });
-    return m2;
-  };
-  state.fileSelectedCols = reindex(state.fileSelectedCols);
-  state.fileColRows      = reindex(state.fileColRows);
-  state.fileColAliases   = reindex(state.fileColAliases);
-  if (!state.resultFiles.length) {
-    document.getElementById('resultInfo').style.display = 'none';
-    const nd = document.getElementById('resultFileNames');
-    if (nd) { nd.style.display = 'none'; nd.innerHTML = ''; }
-    const rWellCard = document.getElementById('resultWellCard');
-    if (rWellCard) rWellCard.style.display = 'none';
-    document.getElementById('resultPreviewCard').style.display = 'none';
-    state.resultData = null;
+    const rCard = document.getElementById('resultMergeKeyCard');
+    if (rCard) rCard.style.display = 'none';
     return;
   }
   onAllResultsLoaded();
 }
 
 function renderResultPreviewTabs(activeIdx) {
-  const tabsEl = document.getElementById('resultPreviewTabs');
+  const selEl = document.getElementById('resultPreviewSel');
   const previewEl = document.getElementById('resultPreview');
-  if (!tabsEl || !previewEl || !state.resultFiles.length) return;
+  if (!previewEl || !state.resultFiles.length) return;
 
-  // Build tabs — only shown when >1 file
-  if (state.resultFiles.length === 1) {
-    tabsEl.innerHTML = '';
-    renderTable('resultPreview', state.resultFiles[0].data, Infinity);
-    return;
+  if (selEl) {
+    selEl.style.display = state.resultFiles.length <= 1 ? 'none' : '';
+    selEl.innerHTML = state.resultFiles.map((f, i) =>
+      `<option value="${i}"${i === activeIdx ? ' selected' : ''}>${escHtml(f.name)}</option>`
+    ).join('');
   }
-
-  tabsEl.innerHTML = state.resultFiles.map((f, i) => {
-    const label = f.name.replace(/\.[^.]+$/, '').slice(0, 28);
-    const active = i === activeIdx;
-    return `<button onclick="renderResultPreviewTabs(${i})" style="` +
-      `padding:4px 12px;border-radius:20px;border:1px solid ${active ? 'var(--brand)' : 'var(--line)'};` +
-      `background:${active ? 'var(--brand)' : 'var(--panel-2)'};` +
-      `color:${active ? '#fff' : 'var(--ink)'};` +
-      `font-size:.78rem;cursor:pointer;white-space:nowrap;` +
-      `" title="${escHtml(f.name)}">${escHtml(label)}</button>`;
-  }).join('');
 
   renderTable('resultPreview', state.resultFiles[activeIdx].data, Infinity);
 }
@@ -1049,9 +1158,10 @@ function renderFileColSelectors() {
   const wrap = document.getElementById('fileColSelectors');
   if (!wrap) return;
   wrap.innerHTML = '';
-  const excluded = new Set([state.resultWellCol, state.resultPlateCol].filter(Boolean));
   state.resultFiles.forEach((f, fi) => {
-    const avail = f.data.headers.filter(h => !excluded.has(h));
+    const fWellCol  = (f.wellCol  !== undefined ? f.wellCol  : state.resultWellCol);
+    const fPlateCol = (f.plateCol !== undefined ? f.plateCol : state.resultPlateCol);
+    const excluded = new Set([fWellCol, fPlateCol].filter(Boolean));
     if (!state.fileSelectedCols.has(fi)) state.fileSelectedCols.set(fi, new Set());
     // No auto-select: start with empty selection
     const block = document.createElement('div');
@@ -1065,8 +1175,11 @@ function renderFileColSelectors() {
 }
 
 function fcGetAvail(fi) {
-  const excluded = new Set([state.resultWellCol, state.resultPlateCol].filter(Boolean));
-  return state.resultFiles[fi].data.headers.filter(h => !excluded.has(h));
+  const f = state.resultFiles[fi];
+  const fWellCol  = (f.wellCol  !== undefined ? f.wellCol  : state.resultWellCol);
+  const fPlateCol = (f.plateCol !== undefined ? f.plateCol : state.resultPlateCol);
+  const excluded = new Set([fWellCol, fPlateCol].filter(Boolean));
+  return f.data.headers.filter(h => !excluded.has(h));
 }
 
 function fcEnsureRows(fi) {
@@ -1111,20 +1224,27 @@ function renderFcRow(fi) {
   fcEnsureRows(fi);
   const rows = state.fileColRows.get(fi);
 
-  let html = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">'
-          + '<div style="font-size:.95rem;color:var(--brand-dk);font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escHtml(f.name) + '">' + escHtml(f.name) + '</div>'
-          + '<button onclick="selAllFile(' + fi + ')" style="font-size:.75rem;padding:2px 9px;border:1px solid var(--line);border-radius:6px;background:var(--panel-2);color:var(--brand-dk);cursor:pointer;white-space:nowrap;">+ All cols</button>'
-          + '<button onclick="selNoneFile(' + fi + ')" style="font-size:.75rem;padding:2px 9px;border:1px solid var(--line);border-radius:6px;background:var(--panel-2);color:var(--muted);cursor:pointer;">Clear</button>'
-          + '</div>';
-  html += '<div style="display:grid;grid-template-columns:minmax(160px,240px) minmax(160px,1fr) auto;gap:8px;align-items:center;margin-bottom:4px;font-size:.8rem;font-weight:600;color:var(--muted);">'
+  let html = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">';
+  // Full filename (read-only)
+  html += '<div style="font-size:.88rem;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escHtml(f.name) + '">' + escHtml(f.name) + '</div>';
+  // Short name input
+  const sn = escHtml(f.shortName || f.name.replace(/\.[^.]+$/, ''));
+  html += '<span style="font-size:.8rem;color:var(--muted);white-space:nowrap;">Short name:</span>';
+  html += '<input type="text" value="' + sn + '" placeholder="short name" '
+        + 'style="width:90px;height:28px;border:1px solid var(--line);border-radius:7px;padding:0 7px;font-size:.82rem;background:#fff;color:var(--ink);" '
+        + 'oninput="fcSetShortName(' + fi + ',this.value)" title="Used as default Output name suffix: ColName_shortname">';
+  html += '<button type="button" class="btn btn-sm btn-secondary" onclick="selAllFile(' + fi + ')">Select All</button>';
+  html += '<button type="button" class="btn btn-sm btn-secondary" onclick="selNoneFile(' + fi + ')">Clear</button>';
+  html += '</div>';
+  html += '<div class="fc-row-line" style="font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:4px;pointer-events:none;">'
         + '<span>Column</span><span>Output name</span><span></span></div>';
 
   rows.forEach((row, ri) => {
-    const optHtml = '<option value="">— select column —</option>' +
+    const optHtml = '<option value="">— none —</option>' +
       avail.map(c => '<option value="' + escHtml(c) + '"' + (c === row.col ? ' selected' : '') + '>' + escHtml(c) + '</option>').join('');
     html += '<div class="fc-row-line" id="fcrowline_' + fi + '_' + ri + '">'
           + '<select onchange="fcChangeRow(' + fi + ',' + ri + ',this.value)">' + optHtml + '</select>'
-          + '<input type="text" placeholder="Output name…" value="' + escHtml(row.alias) + '" oninput="fcSetAliasByRow(' + fi + ',' + ri + ',this.value)">'
+          + '<input type="text" placeholder="Output name… (blank = same)" value="' + escHtml(row.alias) + '" oninput="fcSetAliasByRow(' + fi + ',' + ri + ',this.value)">'
           + '<div class="fc-row-ops">'
           + '<button class="fc-op minus" title="Remove row" onclick="fcRemoveRow(' + fi + ',' + ri + ')">&#x2212;</button>'
           + '<button class="fc-op plus" title="Add row" onclick="fcAddRow(' + fi + ')">&#x2B;</button>'
@@ -1155,9 +1275,10 @@ function fcChangeRow(fi, ri, col) {
   fcEnsureRows(fi);
   const rows = state.fileColRows.get(fi);
   rows[ri].col = col;
-  if (!rows[ri].alias) {
-    const fname = (state.resultFiles[fi]?.name || '').replace(/\.[^.]+$/, '').replace(/[^a-z0-9]/gi, '_');
-    rows[ri].alias = col && fname ? col + '_' + fname : col;
+  if (!rows[ri]._aliasManual) {
+    const sn = (state.resultFiles[fi]?.shortName || state.resultFiles[fi]?.name || '').replace(/\.[^.]+$/, '').replace(/[^a-z0-9]/gi, '_');
+    rows[ri].alias = col && sn ? col + '_' + sn : col;
+    rows[ri]._autoAlias = true;
   }
   fcSyncFromRows(fi);
   // hide error once user picks a column
@@ -1173,17 +1294,37 @@ function fcChangeRow(fi, ri, col) {
 
 function fcSetAliasByRow(fi, ri, val) {
   fcEnsureRows(fi);
-  state.fileColRows.get(fi)[ri].alias = val;
+  const rows = state.fileColRows.get(fi);
+  rows[ri].alias = val;
+  rows[ri]._aliasManual = val !== '';  // 用户手动改过则标记，不再被 shortName 覆盖
   fcSyncFromRows(fi);
 }
 
 function selAllFile(fi) {
   const avail = fcGetAvail(fi);
-  const fname = (state.resultFiles[fi]?.name || '').replace(/\.[^.]+$/, '').replace(/[^a-z0-9]/gi, '_');
+  const sn = (state.resultFiles[fi]?.shortName || state.resultFiles[fi]?.name || '').replace(/\.[^.]+$/, '').replace(/[^a-z0-9]/gi, '_');
   if (!state.fileColRows) state.fileColRows = new Map();
-  state.fileColRows.set(fi, avail.map(c => ({ col: c, alias: fname ? c + '_' + fname : c })));
+  state.fileColRows.set(fi, avail.map(c => ({ col: c, alias: sn ? c + '_' + sn : c, _autoAlias: true })));
   fcSyncFromRows(fi);
   renderFcRow(fi);
+}
+
+function fcSetShortName(fi, val) {
+  if (!state.resultFiles[fi]) return;
+  state.resultFiles[fi].shortName = val;
+  // 只更新尚未手动修改过的 alias
+  fcEnsureRows(fi);
+  const rows = state.fileColRows.get(fi);
+  if (rows) {
+    const sn = val.replace(/[^a-z0-9]/gi, '_');
+    rows.forEach(r => {
+      if (!r._aliasManual && r.col) {
+        r.alias = sn ? r.col + '_' + sn : r.col;
+      }
+    });
+    fcSyncFromRows(fi);
+    renderFcRow(fi);
+  }
 }
 function selNoneFile(fi) {
   if (!state.fileColRows) state.fileColRows = new Map();
@@ -1193,24 +1334,120 @@ function selNoneFile(fi) {
 }
 // STEP 2: MERGE KEY INFO
 // ─────────────────────────────────────────────
-function updateMergeKeyInfo() {
-  const div = document.getElementById('mergeKeyInfo');
-  const wantPlate = (state.plateMatchMode || 'well') === 'plate+well';
-  const usePlate = wantPlate && state.designPlateCol && state.resultPlateCol;
-  if (usePlate) {
-    div.innerHTML = `<span class="ok">✔ Join key: <b>${escHtml(state.designPlateCol)}</b> + <b>${escHtml(state.designWellCol)}</b> ↔ <b>${escHtml(state.resultPlateCol)}</b> + <b>${escHtml(state.resultWellCol)}</b> (well normalized to A01 format)</span>`;
-  } else {
-    div.innerHTML = `<span class="ok">✔ Join key: <b>${escHtml(state.designWellCol)}</b> ↔ <b>${escHtml(state.resultWellCol)}</b> (well normalized to A01 format)</span>
-    ${wantPlate && (!state.designPlateCol || !state.resultPlateCol)
-      ? '<br><span class="warn">⚠ plate+well selected, but plate column missing on one side — falling back to well-only.</span>' : ''}`;
+function populateMergeKeySelects() {
+  const selStyle = 'height:32px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.83rem;background:#fff;color:var(--ink);min-width:130px;';
+  const lblStyle = 'display:block;font-size:.8rem;color:var(--muted);margin-bottom:3px;';
+  const rowStyle = 'display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;';
+  const fhStyle  = 'font-size:.78rem;font-weight:600;color:var(--muted);padding-bottom:3px;border-bottom:1px solid var(--line);margin-bottom:6px;';
+  const makeOpts = (headers, selected) =>
+    `<option value="">(none)</option>` +
+    headers.map(h => `<option value="${escHtml(h)}"${h===selected?' selected':''}>${escHtml(h)}</option>`).join('');
+
+  // --- Metadata (design) card ---
+  const dContainer = document.getElementById('designMergeKeyRows');
+  const dCard = document.getElementById('designMergeKeyCard');
+  if (dContainer) {
+    if (state.designData) {
+      const dHeaders = state.designData.headers || [];
+      dContainer.innerHTML = `<div style="${rowStyle}">
+        <div><span class="label" style="${lblStyle}">Plate column</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <select id="mergeKeyDesignPlate" style="${selStyle}" onchange="state.designPlateCol=this.value;syncWellColSelects();checkPlateMismatch();updateMergeKeyInfo()">${makeOpts(dHeaders, state.designPlateCol)}</select>
+          </div>
+        </div>
+        <div><span class="label" style="${lblStyle}">Well column</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <select id="mergeKeyDesignWell" style="${selStyle}" onchange="state.designWellCol=this.value;syncWellColSelects();checkPlateMismatch();updateMergeKeyInfo()">${makeOpts(dHeaders, state.designWellCol)}</select>
+            <span id="mkBadge_designWell" style="font-size:.75rem;"></span>
+          </div>
+        </div>
+      </div>`;
+      if (dCard) dCard.style.display = '';
+    } else {
+      dContainer.innerHTML = '';
+      if (dCard) dCard.style.display = 'none';
+    }
   }
+
+  // --- Result files card ---
+  const rContainer = document.getElementById('resultMergeKeyRows');
+  const rCard = document.getElementById('resultMergeKeyCard');
+  if (rContainer) {
+    if (state.resultFiles.length) {
+      let html = '';
+      state.resultFiles.forEach((f, fi) => {
+        const rHeaders = f.data.headers || [];
+        const fWellCol  = (f.wellCol  !== undefined ? f.wellCol  : state.resultWellCol);
+        const fPlateCol = (f.plateCol !== undefined ? f.plateCol : state.resultPlateCol);
+        html += `<div style="${fi < state.resultFiles.length-1 ? 'margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--line);' : ''}">
+          <div style="${fhStyle}">${escHtml(f.name)}</div>
+          <div style="${rowStyle}">
+            <div><span class="label" style="${lblStyle}">Plate column</span>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <select id="mergeKeyResult_plate_${fi}" style="${selStyle}" onchange="state.resultFiles[${fi}].plateCol=this.value;if(${fi}===0)state.resultPlateCol=this.value;syncWellColSelects();checkPlateMismatch();updateMergeKeyInfo()">${makeOpts(rHeaders, fPlateCol)}</select>
+              </div>
+            </div>
+            <div><span class="label" style="${lblStyle}">Well column</span>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <select id="mergeKeyResult_well_${fi}" style="${selStyle}" onchange="state.resultFiles[${fi}].wellCol=this.value;if(${fi}===0)state.resultWellCol=this.value;syncWellColSelects();checkPlateMismatch();updateMergeKeyInfo()">${makeOpts(rHeaders, fWellCol)}</select>
+                <span id="mkBadge_result_well_${fi}" style="font-size:.75rem;"></span>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      });
+      rContainer.innerHTML = html;
+      if (rCard) rCard.style.display = '';
+    } else {
+      rContainer.innerHTML = '';
+      if (rCard) rCard.style.display = 'none';
+    }
+  }
+}
+
+function checkWellColQuality(data, col) {
+  if (!data || !col) return null;
+  const WELL_RE = /^[A-Za-z]{1,2}\d{1,3}$/;
+  const vals = data.rows.map(r => String(r[col] ?? '').trim()).filter(Boolean);
+  if (!vals.length) return null;
+  const good = vals.filter(v => WELL_RE.test(v)).length;
+  return { good, total: vals.length, pct: Math.round(good / vals.length * 100) };
+}
+
+function updateMergeKeyInfo() {
+  const wantPlate = (state.plateMatchMode || 'well') === 'plate+well';
+  const warnLines = [];
+
+  // 内联 badge 辅助
+  function setBadge(id, data, col) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const q = checkWellColQuality(data, col);
+    if (!q || !col) { el.innerHTML = ''; return; }
+    const cls = q.pct >= 90 ? 'ok' : q.pct >= 50 ? 'warn' : 'err';
+    const icon = q.pct >= 90 ? '✔' : '⚠';
+    el.innerHTML = `<span class="${cls}">${icon} ${q.good}/${q.total} (${q.pct}%)</span>`;
+    if (q.pct < 90) warnLines.push(`<span class="${cls}" style="font-size:.82rem;">⚠ Well col "${escHtml(col)}": only ${q.pct}% look like Well IDs — wrong column?</span>`);
+  }
+
+  // Design
+  setBadge('mkBadge_designWell', state.designData, state.designWellCol);
+
+  // Result files
+  state.resultFiles.forEach((f, fi) => {
+    const fWellCol = (f.wellCol !== undefined ? f.wellCol : state.resultWellCol);
+    setBadge(`mkBadge_result_well_${fi}`, f.data, fWellCol);
+  });
+
+  const w0 = document.getElementById('wellWarnStep0');
+  if (w0) w0.innerHTML = warnLines.length ? warnLines.join('<br>') : '';
 }
 
 // Override goStep to update merge key info on step 1
 const _goStep = goStep;
 goStep = function(n) {
   _goStep(n);
-  if (n === 1) { buildAllFileColSelectors(); populateOmitColSel(); populateDesignColSel(); checkPlateMismatch(); updateMergeKeyInfo(); updateCalcSelects(); }
+  if (n === 1) { buildAllFileColSelectors(); populateOmitColSel(); populateDesignColSel(); populateMergeKeySelects(); checkPlateMismatch(); updateMergeKeyInfo(); updateCalcSelects(); }
   if (n === 3) { populatePrismSelectors(); }
 };
 
@@ -1398,28 +1635,80 @@ function evalCalcRule(rule, fileRows) {
 // ─────────────────────────────────────────────
 function doMerge() {
   const _btn = document.getElementById('btnMerge');
-  if (!state.designData || !state.resultFiles.length) { _btnWarn(_btn, '⚠ Upload both files first.'); return; }
+  if (!state.designData && !state.resultFiles.length) { _btnWarn(_btn, '⚠ Load at least one file first.'); return; }
   _btnOk(_btn);
+
+  // Well column quality pre-check
+  const WELL_RE = /^[A-Za-z]{1,2}\d{1,3}$/;
+  const wellWarnings = [];
+  if (state.designData && state.designWellCol) {
+    const vals = state.designData.rows.map(r => String(r[state.designWellCol] ?? '').trim()).filter(Boolean);
+    if (vals.length) {
+      const pct = Math.round(vals.filter(v => WELL_RE.test(v)).length / vals.length * 100);
+      if (pct < 90) wellWarnings.push(`Metadata well col "${state.designWellCol}": only ${pct}% look like Well IDs.`);
+    }
+  }
+  if (state.resultFiles.length && state.resultWellCol) {
+    const allVals = state.resultFiles.flatMap(f => f.data.rows).map(r => String(r[state.resultWellCol] ?? '').trim()).filter(Boolean);
+    if (allVals.length) {
+      const pct = Math.round(allVals.filter(v => WELL_RE.test(v)).length / allVals.length * 100);
+      if (pct < 90) wellWarnings.push(`Result well col "${state.resultWellCol}": only ${pct}% look like Well IDs.`);
+    }
+  }
+  // Well warnings are shown inline (wellWarnStep0 + mergeKeyInfo)
+
+  // ── Result-only mode (no design file) ──
+  if (!state.designData && state.resultFiles.length) {
+    state.resultFiles.forEach((_, fi) => fcSyncFromRows(fi));
+    const allHeaders = [];
+    const seen = new Set();
+    for (const { data } of state.resultFiles)
+      for (const h of data.headers) { if (!seen.has(h)) { allHeaders.push(h); seen.add(h); } }
+    const mergedRows = state.resultFiles.flatMap(({ data }) => data.rows.map(r => { const o = {}; for (const h of allHeaders) o[h] = r[h] ?? ''; return o; }));
+    state.mergedData = { headers: allHeaders, rows: mergedRows };
+    state.mergedNumericCols = allHeaders.filter(h => mergedRows.some(r => !isNaN(parseFloat(r[h]))));
+    document.getElementById('mergeSummary').innerHTML = `<div class="stat-card"><div class="val">${mergedRows.length}</div><div class="lbl">Result rows</div></div><div class="stat-card"><div class="val">${allHeaders.length}</div><div class="lbl">Total columns</div></div>`;
+    document.getElementById('mergeWarnings').innerHTML = '';
+    populateAnalysisSelects(); renderMergedTable(); renderHeatmapSetup(); renderStatTable(); renderBarChart();
+    goStep(2); return;
+  }
+
+  // ── Design-only mode (no result files) ──
+  if (state.designData && !state.resultFiles.length) {
+    const _dAllHeaders = state.designData.headers || [];
+    const _dSelected = dcGetSelectedCols();
+    const dHeaders = _dSelected === null ? _dAllHeaders : _dAllHeaders.filter(h => _dSelected.includes(h));
+    const mergedRows = state.designData.rows.map(r => { const o = {}; for (const h of dHeaders) o[h] = r[h] ?? ''; return o; });
+    state.mergedData = { headers: dHeaders, rows: mergedRows };
+    state.mergedNumericCols = dHeaders.filter(h => mergedRows.some(r => !isNaN(parseFloat(r[h]))));
+    document.getElementById('mergeSummary').innerHTML = `<div class="stat-card"><div class="val">${mergedRows.length}</div><div class="lbl">Design rows</div></div><div class="stat-card"><div class="val">${dHeaders.length}</div><div class="lbl">Total columns</div></div>`;
+    document.getElementById('mergeWarnings').innerHTML = '';
+    populateAnalysisSelects(); renderMergedTable(); renderHeatmapSetup(); renderStatTable(); renderBarChart();
+    goStep(2); return;
+  }
+
+  // ── Full merge (both files) ──
   // sync any unsaved row state before merging
   state.resultFiles.forEach((_, fi) => fcSyncFromRows(fi));
   const errEl = document.getElementById('fileColErr');
   if (errEl) errEl.style.display = 'none';
 
   const hasDesignPlate = !!(state.designPlateCol);
-  const hasResultPlate = !!(state.resultPlateCol);
   // Honor user's plateMatchMode choice; fall back to well-only if either side lacks a plate col
   const wantPlate = (state.plateMatchMode || 'well') === 'plate+well';
-  const usePlate = wantPlate && hasDesignPlate && hasResultPlate;
 
-  // Per-file lookup maps
-  const fileMaps = state.resultFiles.map(({ data }) => {
+  // Per-file lookup maps — each file uses its own wellCol / plateCol
+  const fileMaps = state.resultFiles.map((f, fi) => {
+    const fWellCol  = (f.wellCol  !== undefined ? f.wellCol  : state.resultWellCol);
+    const fPlateCol = (f.plateCol !== undefined ? f.plateCol : state.resultPlateCol);
+    const fUsePlate = wantPlate && hasDesignPlate && !!fPlateCol;
     const map = new Map(); const dups = new Set();
-    for (const row of data.rows) {
-      const well = normalizeWell(row[state.resultWellCol]);
-      const key = usePlate ? `${(row[state.resultPlateCol]||'').trim()}|||${well}` : well;
+    for (const row of f.data.rows) {
+      const well = normalizeWell(row[fWellCol]);
+      const key = fUsePlate ? `${(row[fPlateCol]||'').trim()}|||${well}` : well;
       if (map.has(key)) dups.add(key); else map.set(key, row);
     }
-    return { map, dups };
+    return { map, dups, fUsePlate };
   });
   const duplicateKeys = new Set(fileMaps.flatMap(f => [...f.dups]));
 
@@ -1464,12 +1753,13 @@ function doMerge() {
 let matchCount = 0, noMatchCount = 0;
   const mergedRows = state.designData.rows.map(dRow => {
     const well = normalizeWell(dRow[state.designWellCol]);
-    const key = usePlate ? `${(dRow[state.designPlateCol]||'').trim()}|||${well}` : well;
     const merged = {};
     dHeaders.forEach(h => { merged[dAliasMap.get(h) || h] = dRow[h]; });
     let anyMatch = false;
     state.resultFiles.forEach((_, fi) => {
-      const rRow = fileMaps[fi].map.get(key);
+      const fUsePlate = fileMaps[fi].fUsePlate;
+      const fileKey = fUsePlate ? `${(dRow[state.designPlateCol]||'').trim()}|||${well}` : well;
+      const rRow = fileMaps[fi].map.get(fileKey);
       if (rRow) anyMatch = true;
       for (const { originalName, outputName } of fileColMappings[fi]) {
         merged[outputName] = rRow ? (rRow[originalName] ?? '') : '';
@@ -1477,7 +1767,11 @@ let matchCount = 0, noMatchCount = 0;
     });
     if (anyMatch) matchCount++; else noMatchCount++;
         // Calc rules: pass per-file rows so slot.fileIdx works
-    const fileRows = state.resultFiles.map((_, fi) => fileMaps[fi].map.get(key) || null);
+    const fileRows = state.resultFiles.map((_, fi) => {
+      const fUsePlate = fileMaps[fi].fUsePlate;
+      const fileKey = fUsePlate ? `${(dRow[state.designPlateCol]||'').trim()}|||${well}` : well;
+      return fileMaps[fi].map.get(fileKey) || null;
+    });
     for (const rule of state.calcRules) {
       merged[rule.name || 'unnamed'] = evalCalcRule(rule, fileRows);
     }
@@ -1670,6 +1964,15 @@ function _selectPlateFor(tabsElId, stateKey, p, btn) {
   if (stateKey === '_barPlate') renderBarChart();
 }
 
+function setHeatmapSize(large) {
+  state._heatmapLarge = large;
+  const btnS = document.getElementById('hmSizeSmall');
+  const btnL = document.getElementById('hmSizeLarge');
+  if (btnS) { btnS.style.background = large ? 'var(--panel-2)' : 'var(--brand)'; btnS.style.color = large ? 'var(--ink)' : '#fff'; btnS.style.borderColor = large ? 'var(--line)' : 'var(--brand)'; }
+  if (btnL) { btnL.style.background = large ? 'var(--brand)' : 'var(--panel-2)'; btnL.style.color = large ? '#fff' : 'var(--ink)'; btnL.style.borderColor = large ? 'var(--brand)' : 'var(--line)'; }
+  renderHeatmap();
+}
+
 function renderHeatmapSetup() {
   const plateCol = getGlobalPlateCol();
   const platesSet = new Set();
@@ -1734,16 +2037,35 @@ function renderHeatmap() {
 
   function colorScale(v) {
     if (isNaN(v)) return '#eeeeee';
-    const t = maxV === minV ? 0.5 : (v - minV) / (maxV - minV);
-    const r = Math.round(lerp(0x1a, 0xff, t));
-    const g = Math.round(lerp(0x5e, 0xf7, t) * (1 - t * 0.3));
-    const b = Math.round(lerp(0x8e, 0x00, t));
+    const t = maxV === minV ? 0.5 : Math.max(0, Math.min(1, (v - minV) / (maxV - minV)));
+    // Red-White-Blue: 9 stops (low=blue, mid=white, high=red)
+    const stops = [
+      [0x08,0x30,0x6b], // deep blue
+      [0x21,0x66,0xac], // blue
+      [0x43,0x93,0xc3], // medium blue
+      [0x92,0xc5,0xde], // light blue
+      [0xf7,0xf7,0xf7], // white (midpoint)
+      [0xfd,0xae,0x61], // light orange
+      [0xf4,0x6d,0x43], // orange-red
+      [0xd7,0x31,0x27], // red
+      [0x67,0x00,0x1f], // deep red
+    ];
+    const n = stops.length - 1;
+    const lo = Math.min(Math.floor(t * n), n - 1);
+    const hi = lo + 1;
+    const u = t * n - lo;
+    const r = Math.round(stops[lo][0] + (stops[hi][0] - stops[lo][0]) * u);
+    const g = Math.round(stops[lo][1] + (stops[hi][1] - stops[lo][1]) * u);
+    const b = Math.round(stops[lo][2] + (stops[hi][2] - stops[lo][2]) * u);
     return `rgb(${r},${g},${b})`;
   }
   function lerp(a, b, t) { return a + (b - a) * t; }
 
-  // Cell size: smaller for larger plates
-  const cellPx = nCols > 24 ? 16 : nCols > 12 ? 20 : 28;
+  // Cell size: smaller for larger plates; respect user size toggle
+  const large = !!state._heatmapLarge;
+  const cellPx = large
+    ? (nCols > 24 ? 24 : nCols > 12 ? 30 : 40)
+    : (nCols > 24 ? 16 : nCols > 12 ? 20 : 28);
 
   let html = `<div class="heatmap-grid" style="grid-template-columns: ${cellPx}px repeat(${nCols}, ${cellPx}px);">`;
   // Header row
@@ -2599,9 +2921,170 @@ function computeDiseaseStatsPerPlate(rows, plateCol, groupCols, diseaseCol, ctrl
 }
 
 
+function getDateStr() {
+  const d = new Date();
+  return d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+}
+
+function exportBarChartFig() {
+  const canvas = document.getElementById('barChart');
+  if (!canvas || !_barChartInst) { alert('No bar chart to export.'); return; }
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = getDateStr() + '_BarChart.png';
+  a.click();
+}
+
+function exportHeatmapFig() {
+  const col = getGlobalValCol();
+  if (!col || !state.mergedData) { alert('No heatmap data to export.'); return; }
+  let rows = state.mergedData.rows;
+  const plateCol = getGlobalPlateCol();
+  if (state._heatmapPlate && plateCol) rows = rows.filter(r => r[plateCol] === state._heatmapPlate);
+
+  const wellData = {};
+  let maxRow = 0, maxCol = 0;
+  const ROW_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  for (const row of rows) {
+    const w = normalizeWell(row[state.designWellCol]);
+    const m = w.match(/^([A-Z]+)(\d+)$/);
+    if (!m) continue;
+    const rIdx = ROW_LETTERS.indexOf(m[1]);
+    const cIdx = parseInt(m[2], 10) - 1;
+    if (rIdx > maxRow) maxRow = rIdx;
+    if (cIdx > maxCol) maxCol = cIdx;
+    wellData[w] = row;
+  }
+  const PLATE_FORMATS = [[2,3],[3,4],[4,6],[6,8],[8,12],[16,24],[32,48]];
+  let nRows = maxRow + 1, nCols = maxCol + 1;
+  for (const [pr,pc] of PLATE_FORMATS) { if (nRows<=pr && nCols<=pc) { nRows=pr; nCols=pc; break; } }
+  const vals = Object.values(wellData).map(r=>parseFloat(r[col])).filter(v=>!isNaN(v));
+  const minV = vals.length ? Math.min(...vals) : 0;
+  const maxV = vals.length ? Math.max(...vals) : 1;
+  const STOPS9 = [[0x08,0x30,0x6b],[0x21,0x66,0xac],[0x43,0x93,0xc3],[0x92,0xc5,0xde],[0xf7,0xf7,0xf7],[0xfd,0xae,0x61],[0xf4,0x6d,0x43],[0xd7,0x31,0x27],[0x67,0x00,0x1f]];
+  function colorRgb(v) {
+    if (isNaN(v)) return [0xee,0xee,0xee];
+    const t = maxV===minV ? 0.5 : Math.max(0, Math.min(1,(v-minV)/(maxV-minV)));
+    const n = STOPS9.length-1, lo = Math.min(Math.floor(t*n),n-1), hi = lo+1, u = t*n-lo;
+    return [Math.round(STOPS9[lo][0]+(STOPS9[hi][0]-STOPS9[lo][0])*u),
+            Math.round(STOPS9[lo][1]+(STOPS9[hi][1]-STOPS9[lo][1])*u),
+            Math.round(STOPS9[lo][2]+(STOPS9[hi][2]-STOPS9[lo][2])*u)];
+  }
+  const large = !!state._heatmapLarge;
+  const cellPx = large ? (nCols>24?24:nCols>12?30:40) : (nCols>24?16:nCols>12?20:28);
+  const lbl = cellPx;
+  const legendH = 32;
+  const canvas = document.createElement('canvas');
+  canvas.width = lbl + nCols*cellPx + 4;
+  canvas.height = lbl + nRows*cellPx + legendH + 4;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  const fs = Math.max(8, Math.floor(cellPx*0.55));
+  ctx.font = `${fs}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillStyle='#777';
+  for (let c=0;c<nCols;c++) ctx.fillText(c+1, lbl+c*cellPx+cellPx/2, lbl/2);
+  for (let r=0;r<nRows;r++) {
+    ctx.fillStyle='#777'; ctx.fillText(ROW_LETTERS[r], lbl/2, lbl+r*cellPx+cellPx/2);
+    for (let c=0;c<nCols;c++) {
+      const wKey=`${ROW_LETTERS[r]}${String(c+1).padStart(2,'0')}`;
+      const rd=wellData[wKey];
+      const val=rd?parseFloat(rd[col]):NaN;
+      const masked=rd?String(rd['is_masked']||'').toLowerCase()==='true':false;
+      const rgb=masked?[0xdd,0xdd,0xdd]:colorRgb(val);
+      ctx.fillStyle=`rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+      ctx.fillRect(lbl+c*cellPx+0.5, lbl+r*cellPx+0.5, cellPx-1, cellPx-1);
+    }
+  }
+  // legend
+  const gx=lbl, gy=lbl+nRows*cellPx+6, gw=Math.min(200,canvas.width-lbl-4), gh=10;
+  const grd=ctx.createLinearGradient(gx,0,gx+gw,0);
+  STOPS9.forEach((s,i)=>grd.addColorStop(i/8,`rgb(${s[0]},${s[1]},${s[2]})`));
+  ctx.fillStyle=grd; ctx.fillRect(gx,gy,gw,gh);
+  ctx.fillStyle='#555'; ctx.font='9px sans-serif';
+  ctx.textAlign='left';  ctx.fillText(minV.toPrecision(3), gx, gy+gh+9);
+  ctx.textAlign='right'; ctx.fillText(maxV.toPrecision(3), gx+gw, gy+gh+9);
+  ctx.textAlign='center';ctx.fillText(col, gx+gw/2, gy+gh+9);
+  const a=document.createElement('a');
+  a.href=canvas.toDataURL('image/png');
+  a.download=getDateStr()+'_HeatMap.png';
+  a.click();
+}
+
 function exportStatCSV() {
   const _btn = document.getElementById('btnExportStat');
-  if (_curStatTab === 'anova') { _btnWarn(_btn, '⚠ Use Run 2-way ANOVA for ANOVA results.'); return; }
+
+  // ── Dose Group tab export ─────────────────────────────────────
+  if (_curStatTab === 'anova') {
+    if (!state.mergedData) { _btnWarn(_btn, '⚠ No merged data.'); return; }
+    const groupCols   = getCheckedCols('anovaGroupColWrap');
+    const doseCol     = document.getElementById('anovaDoseCol')?.value;
+    const valCol      = getGlobalValCol();
+    const refGroup    = document.getElementById('anovaRefGroup')?.value;
+    const pairMode    = document.getElementById('anovaPairMode')?.value || 'dunnett';
+    const doEC50      = !!(document.getElementById('anovaDoEC50')?.checked);
+    const doAnova     = !!(document.getElementById('anovaDoAnova')?.checked);
+    const zeroHandling = document.getElementById('anovaEC50Zero')?.value || '0.01';
+    if (!doEC50 && !doAnova) { _btnWarn(_btn, '⚠ 请先勾选 EC50 或 2-way ANOVA。'); return; }
+    if (!groupCols.length || !doseCol || !valCol) { _btnWarn(_btn, '⚠ 请先完成 Dose Group 参数设置。'); return; }
+    const fr   = state.mergedData.rows.filter(r => String(r['is_masked']||'').toLowerCase() !== 'true');
+    const fr2  = fr.map(r => ({...r, _grpKey: makeGrpKey(r, groupCols)}));
+    const fmtGrp = g => g.split('|||').join('_');
+    const esc  = v => { const s = String(v ?? ''); return (s.includes(',')||s.includes('"')||s.includes('\n')) ? `"${s.replace(/"/g,'""')}"` : s; };
+    const csvSections = [];
+
+    // EC50 section
+    if (doEC50) {
+      const grpKeys = [...new Set(fr2.map(r => r._grpKey))].sort((a,b) => a.localeCompare(b,undefined,{sensitivity:'base'}));
+      const hdr = [...groupCols, 'EC50', 'Hill', 'Bottom', 'Top', 'R2'];
+      const rows = [hdr.map(esc)];
+      for (const gKey of grpKeys) {
+        const fit = computeEC50group(fr2.filter(r => r._grpKey === gKey), valCol, doseCol, zeroHandling);
+        const parts = gKey.split('|||').map(fmtGrp);
+        if (!fit) {
+          rows.push([...parts, 'insufficient data','','','',''].map(esc));
+        } else {
+          rows.push([...parts, fit.ec50, fit.hill, fit.bottom, fit.top, fit.r2].map(v => esc(typeof v === 'number' ? v.toPrecision(5) : v)));
+        }
+      }
+      csvSections.push('EC50 (4-Parameter Logistic)\r\n' + rows.map(r => r.join(',')).join('\r\n'));
+    }
+
+    // ANOVA section
+    if (doAnova) {
+      if (pairMode === 'dunnett' && !refGroup) { _btnWarn(_btn, '⚠ 请先设置 Reference group。'); return; }
+      const result = computeTwoWayAnova(fr2, valCol, '_grpKey', doseCol, refGroup, pairMode);
+      const groupDisplayName = groupCols.length === 1 ? groupCols[0] : groupCols.join(' / ');
+      const fmtTerm = t => t.replace('_grpKey', groupDisplayName);
+      if (result && !result._tooBig) {
+        // ANOVA table
+        const anovaHdr = ['Term','Df','SS','MS','F','p_value','Sig','partial_eta2'];
+        const anovaRows = [anovaHdr.map(esc), ...result.table.map(row =>
+          [fmtTerm(row.term), row.df, row.SS, row.MS, row.F, row.p, pStarFromP(row.p), row.eta2].map(v => esc(v == null || (typeof v === 'number' && isNaN(v)) ? '' : typeof v === 'number' ? v.toPrecision(5) : v))
+        )];
+        csvSections.push('2-way ANOVA Table\r\n' + anovaRows.map(r => r.join(',')).join('\r\n'));
+        // Post-hoc
+        if (result.posthoc && result.posthoc.length) {
+          const phHdr = ['Group1','Dose1','Group2','Dose2','p_raw','p_BH_adj','Sig'];
+          const phRows = [phHdr.map(esc), ...result.posthoc.map(r =>
+            [fmtGrp(r.g1), r.d1, fmtGrp(r.g2), r.d2, r.p, r.p_adj, r.pStarAdj].map(v => esc(v == null || (typeof v === 'number' && isNaN(v)) ? '' : typeof v === 'number' ? v.toPrecision(5) : v))
+          )];
+          csvSections.push('Post-hoc (Welch t-test, BH-FDR)\r\n' + phRows.map(r => r.join(',')).join('\r\n'));
+        }
+      }
+    }
+
+    if (!csvSections.length) { _btnWarn(_btn, '⚠ 没有可导出的结果，请先 Run group analysis。'); return; }
+    const blob = new Blob([csvSections.join('\r\n\r\n')], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = getDateStr() + '_' + [doEC50?'EC50':null,doAnova?'ANOVA':null].filter(Boolean).join('_') + '.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    _btnOk(_btn);
+    return;
+  }
+
+  // ── Assay / Disease tab export ────────────────────────────────
   const plateCol  = getGlobalPlateCol();
   const valCol    = getGlobalValCol();
   if (!valCol || !state.mergedData) { _btnWarn(_btn, '⚠ No data or value column not set.'); return; }
@@ -2631,12 +3114,12 @@ function exportStatCSV() {
     'fc_mean','fc_median','z_score_mean','z_score_median',
     'ssmd_mean','ssmd_median','zprime_mean','zprime_median',
     'spooled_mean','spooled_median','dratio_mean','dratio_median','p','pStar'];
-  const esc = v => { const s = String(v ?? ''); return (s.includes(',')||s.includes('"')||s.includes('\n')) ? `"${s.replace(/"/g,'""')}"` : s; };
+  const esc = v => { const s = String(v ?? '').replace(/\|\|\|/g,'_'); return (s.includes(',')||s.includes('"')||s.includes('\n')) ? `"${s.replace(/"/g,'""')}"` : s; };
   const rows = [hdrs, ...allStats.map(s => hdrs.map(h => esc(s[h] ?? '')))];
   const blob = new Blob([rows.map(r => r.join(',')).join('\r\n')], { type: 'text/csv' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'stats_' + _curStatTab + '_' + Date.now() + '.csv';
+  a.download = getDateStr() + (_curStatTab === 'assay' ? '_Assay_Win' : '_Disease_Win') + '.csv';
   a.click();
   _btnOk(document.getElementById('btnExportStat'));
 }
@@ -2806,8 +3289,10 @@ function showParseErr(msg){
 }
 function _btnWarn(btn, msg) {
   if (!btn) return;
+  // Try dedicated sibling msg span (id = btn.id + 'Msg') to avoid flex layout shift
+  const fixedSpan = btn.id ? document.getElementById(btn.id + 'Msg') : null;
+  if (fixedSpan) { fixedSpan.textContent = msg || ''; return; }
   let span = btn._warnEl;
-  // If cached span has been detached from DOM (e.g., parent re-rendered), drop it
   if (span && !span.isConnected) span = null;
   if (!span) {
     span = document.createElement('span');
@@ -2886,14 +3371,18 @@ function fit4PL(xs,ys){
 }
 function chartXY(ctx,allRows,ml,mt,pw,ph,W){
   const hdr=allRows[0],dataRows=allRows.slice(1);if(!dataRows.length)return;
-  const logX=!!(document.getElementById('pxy-log')&&document.getElementById('pxy-log').checked),LOG0=0.01;
+  const logX=!!(document.getElementById('pxy-log')&&document.getElementById('pxy-log').checked);
+  const _ec50ZeroVal=document.getElementById('pxy-ec50-zero')?.value||'0.01';
+  const LOG0=_ec50ZeroVal==='exclude'?null:parseFloat(_ec50ZeroVal);// null=exclude x=0
   const groups=[];
   for(let c=1;c<hdr.length;c++){const name=String(hdr[c]??'');if(!groups.length||name!==groups[groups.length-1].name)groups.push({name,cols:[]});groups[groups.length-1].cols.push(c);}
   const xRaw=dataRows.map(r=>r[0]),xNums=xRaw.map(v=>numVal(v)),xIsNum=xRaw.every(v=>isNumStr(v));
   const allY=[];
   const gData=groups.map(g=>dataRows.map((row,ri)=>{const vals=g.cols.map(c=>numVal(row[c])).filter(v=>!isNaN(v));allY.push(...vals);
     const n=vals.length,mean=n?vals.reduce((a,b)=>a+b)/n:NaN,sd=n>1?Math.sqrt(vals.reduce((s,v)=>s+(v-mean)**2,0)/(n-1)):0;
-    return{x:xRaw[ri],xi:ri,mean,sem:n?sd/Math.sqrt(n):0,n};}));
+    return{x:xRaw[ri],xi:ri,mean,sem:n?sd/Math.sqrt(n):0,n,vals};}));
+  // populate control group select
+  {const sel=document.getElementById('pxy-anova-ctrl');if(sel&&sel.getAttribute('data-groups')!==groups.map(g=>g.name).join('|')){const prev=sel.value;sel.innerHTML=groups.map(g=>`<option value="${escHtml(g.name)}">${escHtml(g.name)}</option>`).join('');if(prev&&groups.some(g=>g.name===prev))sel.value=prev;sel.setAttribute('data-groups',groups.map(g=>g.name).join('|'));}}
   const _xySem=gData.flat().filter(p=>p.sem>0);
   const yMn=Math.min(0,...allY.filter(isFinite),..._xySem.map(p=>p.mean-p.sem));
   const yMx=Math.max(...allY.filter(isFinite),..._xySem.map(p=>p.mean+p.sem));
@@ -2901,11 +3390,11 @@ function chartXY(ctx,allRows,ml,mt,pw,ph,W){
   const toFY=v=>1-(v-yLo)/(yHi-yLo);
   let toFX,xAxisTF;
   if(logX&&xIsNum){
-    const toL=v=>Math.log10(Math.max(v,LOG0));
-    const xlv=xNums.filter(v=>isFinite(v)&&v>=0).map(v=>toL(v));
+    const toL=v=>Math.log10(LOG0!==null?Math.max(v,LOG0):Math.max(v,1e-300));
+    const xlv=xNums.filter(v=>isFinite(v)&&(LOG0!==null?v>=0:v>0)).map(v=>toL(v));
     if(!xlv.length)xlv.push(-2,2);
     const xLo=Math.floor(Math.min(...xlv)-0.0001),xHi=Math.ceil(Math.max(...xlv)+0.0001);
-    toFX=(raw)=>{const v=numVal(raw);return(toL(isFinite(v)?v:LOG0)-xLo)/(xHi-xLo||1);};
+    toFX=(raw)=>{const v=numVal(raw);if(LOG0===null&&v<=0)return-9999;return(toL(isFinite(v)?v:1e-300)-xLo)/(xHi-xLo||1);};
     xAxisTF=[];for(let e=xLo;e<=xHi;e++)xAxisTF.push([(e-xLo)/(xHi-xLo||1),fmtTick(Math.pow(10,e))]);
   }else{
     const xMn=xIsNum?xNums[0]:0,xMx=xIsNum?xNums[xNums.length-1]:1,xT=xIsNum?niceAxisTicks(xMn,xMx,5):null;
@@ -2917,8 +3406,8 @@ function chartXY(ctx,allRows,ml,mt,pw,ph,W){
   const do4PL=!!(document.getElementById('pxy-4pl')&&document.getElementById('pxy-4pl').checked&&xIsNum);
   if(do4PL){
     gData.forEach((pts,gi)=>{const col=MORANDI[gi%MORANDI.length];
-      const fp=pts.filter(p=>!isNaN(p.mean)&&isFinite(numVal(p.x)));if(fp.length<3)return;
-      const fxs=fp.map(p=>logX?Math.max(numVal(p.x),LOG0):numVal(p.x)),fys=fp.map(p=>p.mean);
+      const fp=pts.filter(p=>!isNaN(p.mean)&&isFinite(numVal(p.x))&&(LOG0!==null||numVal(p.x)>0));if(fp.length<3)return;
+      const fxs=fp.map(p=>logX?(LOG0!==null?Math.max(numVal(p.x),LOG0):numVal(p.x)):numVal(p.x)),fys=fp.map(p=>p.mean);
       const par=fit4PL(fxs,fys);if(!par||par[2]<=0)return;
       const[A,B,C,D]=par;
       const xL0=logX?Math.log10(Math.min(...fxs)):Math.min(...fxs);
@@ -2936,6 +3425,65 @@ function chartXY(ctx,allRows,ml,mt,pw,ph,W){
       ctx.save();ctx.strokeStyle=col;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(x,y1);ctx.lineTo(x,y2);ctx.moveTo(x-3,y1);ctx.lineTo(x+3,y1);ctx.moveTo(x-3,y2);ctx.lineTo(x+3,y2);ctx.stroke();ctx.restore();});
     pts.forEach(p=>{if(isNaN(p.mean))return;const x=ml+toFX(p.x,p.xi)*pw,y=mt+toFY(p.mean)*ph;
       ctx.save();ctx.fillStyle=col;ctx.strokeStyle=darkenHex(col);ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore();});});
+  // EC50 labels
+  const doEC50label=do4PL&&!!(document.getElementById('pxy-ec50')?.checked);
+  if(doEC50label){
+    const pxyEC50Zero=document.getElementById('pxy-ec50-zero')?.value||'0.01';
+    const pxyZeroSubst=pxyEC50Zero!=='exclude'?parseFloat(pxyEC50Zero):null;
+    gData.forEach((pts,gi)=>{const col=MORANDI[gi%MORANDI.length];
+      // handle dose=0 per 0= setting, exclude x<=0 after substitution
+      const posePts=pts.filter(p=>{
+        if(isNaN(p.mean))return false;
+        const xv=numVal(p.x);
+        if(xv===0)return pxyZeroSubst!==null;
+        return xv>0;
+      });
+      if(posePts.length<3)return;
+      const doseAvg=new Map();posePts.forEach(p=>{const rawXv=numVal(p.x);const xv=rawXv===0&&pxyZeroSubst!==null?pxyZeroSubst:rawXv;if(!doseAvg.has(xv))doseAvg.set(xv,[]);doseAvg.get(xv).push(p.mean);});
+      if(doseAvg.size<3)return;
+      const avgSorted=[...doseAvg.entries()].sort((a,b)=>a[0]-b[0]);
+      const fxs=avgSorted.map(([x])=>x),fys=avgSorted.map(([,ys])=>ys.reduce((a,b)=>a+b,0)/ys.length);
+      const par=fit4PL(fxs,fys);if(!par||par[2]<=0)return;
+      const ec50=par[2];
+      const ec50Str=ec50<0.001?ec50.toExponential(2):ec50.toFixed(2);
+      const lastPt=posePts[posePts.length-1];
+      const lx=ml+toFX(lastPt.x,lastPt.xi)*pw+10,ly=mt+toFY(lastPt.mean)*ph;
+      ctx.save();ctx.font='bold 9px Arial,sans-serif';ctx.fillStyle=col;ctx.textAlign='left';ctx.textBaseline='middle';
+      ctx.fillText('EC50='+ec50Str,lx,ly);ctx.restore();});
+  }
+  // 2-way ANOVA stars
+  const doAnovaStars=do4PL&&!!(document.getElementById('pxy-anova')?.checked);
+  const ctrlGrpName=document.getElementById('pxy-anova-ctrl')?.value||'';
+  if(doAnovaStars&&ctrlGrpName){
+    const ctrlGi=groups.findIndex(g=>g.name===ctrlGrpName);
+    if(ctrlGi>=0){
+      const ctrlData=gData[ctrlGi];
+      // BH-FDR: collect all p-values first
+      const tests=[];
+      gData.forEach((pts,gi)=>{if(gi===ctrlGi)return;
+        pts.forEach((p,ri)=>{if(isNaN(p.mean)||!p.vals.length)return;
+          const cp=ctrlData[ri];if(!cp||isNaN(cp.mean)||!cp.vals.length)return;
+          const{p:pv}=welchTTest(p.vals,cp.vals);if(isNaN(pv))return;
+          tests.push({gi,ri,pv});});});
+      // BH correction
+      tests.sort((a,b)=>a.pv-b.pv);
+      const m=tests.length;
+      const adjP=tests.map((t,i)=>Math.min(1,t.pv*m/(i+1)));
+      for(let i=m-2;i>=0;i--)adjP[i]=Math.min(adjP[i],adjP[i+1]);
+      const sigMap=new Map();
+      tests.forEach((t,i)=>{sigMap.set(t.gi+'|'+t.ri,{pv:t.pv,adj:adjP[i],star:pToStars(adjP[i])});});
+
+      // Star at each group's own mean+sem, 3px above
+      gData.forEach((pts,gi)=>{if(gi===ctrlGi)return;
+        pts.forEach((p,ri)=>{if(isNaN(p.mean))return;
+          const info=sigMap.get(gi+'|'+ri);if(!info||info.star==='ns'||info.star==='N/A')return;
+          const x=ml+toFX(p.x,ri)*pw;
+          const y=mt+toFY(p.mean+(p.sem||0))*ph-3;
+          ctx.save();ctx.font='bold 10px Arial,sans-serif';ctx.fillStyle=MORANDI[gi%MORANDI.length];
+          ctx.textAlign='center';ctx.textBaseline='bottom';
+          ctx.fillText(info.star,x,y);ctx.restore();});});
+    }
+  }
   ctx.restore();
   prismLegend(ctx,groups.slice(0,7).map((g,i)=>[g.name,MORANDI[i%MORANDI.length]]),ml+pw+12,mt+6);
 }
@@ -3061,7 +3609,9 @@ function buildHitRegionsPrism(type,allRows,ml,mt,pw,ph,W){
     const hdr=allRows[0],dataRows=allRows.slice(1),groups=[];
     for(let c=1;c<hdr.length;c++){const name=String(hdr[c]??'');if(!groups.length||name!==groups[groups.length-1].name)groups.push({name,cols:[]});groups[groups.length-1].cols.push(c);}
     const xRaw=dataRows.map(r=>r[0]),xNums=xRaw.map(v=>numVal(v)),xIsNum=xRaw.every(v=>isNumStr(v));
-    const logX=!!(document.getElementById('pxy-log')&&document.getElementById('pxy-log').checked),LOG0=0.01;
+    const logX=!!(document.getElementById('pxy-log')&&document.getElementById('pxy-log').checked);
+    const _ec50ZeroVal2=document.getElementById('pxy-ec50-zero')?.value||'0.01';
+    const LOG0=_ec50ZeroVal2==='exclude'?null:parseFloat(_ec50ZeroVal2);
     const allY=[];
     const gData=groups.map(g=>dataRows.map((row,ri)=>{const vals=g.cols.map(c=>numVal(row[c])).filter(v=>!isNaN(v));allY.push(...vals);
       const n=vals.length,mean=n?vals.reduce((a,b)=>a+b)/n:NaN,sd=n>1?Math.sqrt(vals.reduce((s,v)=>s+(v-mean)**2,0)/(n-1)):0;
@@ -3417,41 +3967,38 @@ function loadTemplate() {
   state.designData     = designData;
   state.designWellCol  = 'Well';
   state.designPlateCol = '';
+  state._designFileName = 'template_design.csv';
   state.resultFiles    = [
-    { name: 'template_result_P1.csv', data: p1FileData },
-    { name: 'template_result_P2.csv', data: p2FileData }
+    { name: 'template_result_P1.csv', shortName: 'P1', data: p1FileData, wellCol: 'Well', plateCol: '' },
+    { name: 'template_result_P2.csv', shortName: 'P2', data: p2FileData, wellCol: 'Well', plateCol: '' }
   ];
   state.resultData     = p1FileData;
   state.resultWellCol  = 'Well';
   state.resultPlateCol = '';
   if (!state.fileSelectedCols) state.fileSelectedCols = new Map();
-  state.fileSelectedCols.set(0, new Set(['Ratio']));
-  state.fileSelectedCols.set(1, new Set(['Ratio']));
+  state.fileSelectedCols = new Map();
   if (!state.fileColRows) state.fileColRows = new Map();
-  state.fileColRows.set(0, [{ col: 'Ratio', alias: 'P1_ratio' }]);
-  state.fileColRows.set(1, [{ col: 'Ratio', alias: 'P2_ratio' }]);
+  state.fileColRows = new Map();
   // Populate fileColAliases so Computed Columns see the correct output names
   if (!state.fileColAliases) state.fileColAliases = new Map();
-  state.fileColAliases.set(0, new Map([['Ratio', 'P1_ratio']]));
-  state.fileColAliases.set(1, new Map([['Ratio', 'P2_ratio']]));
+  state.fileColAliases = new Map();
 
-  // Pre-configure the omit column
-  state.omitCol   = 'Omit';
-  state.omitValue = '1';
+  // Reset omit column (same as fresh file upload)
+  state.omitCol   = '';
+  state.omitValue = '';
 
   const designInfo = document.getElementById('designInfo');
-  if (designInfo) { designInfo.style.display='block'; designInfo.innerHTML=`&#x2714; Template design — <b>${designRows.length}</b> rows, <b>${designHeaders.length}</b> cols (384-well middle 240 wells, incl. <b>omit</b> column — 5 outlier wells marked 1)`; }
-  const dWC = document.getElementById('designWellCard'); if(dWC) dWC.style.display='block';
-  const dWS = document.getElementById('designWellSel'); if(dWS) dWS.innerHTML='<span class="ok">&#x2714; Well: <b>Well</b></span>';
-  const dRC = document.getElementById('designRowCount'); if(dRC) dRC.textContent=designRows.length+' rows';
+  if (designInfo) { designInfo.style.display='block'; designInfo.textContent=`${designRows.length} rows, ${designHeaders.length} cols`; }
+  const designNamesDiv = document.getElementById('designFileNames');
+  if (designNamesDiv) {
+    designNamesDiv.style.display = 'flex';
+    designNamesDiv.innerHTML = `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--panel-2);border:1px solid var(--line);border-radius:20px;padding:3px 10px 3px 12px;font-size:.78rem;color:var(--ink);white-space:nowrap;"><span>template_design.csv</span><button onclick="removeDesignFile()" style="background:none;border:none;cursor:pointer;padding:0;line-height:1;font-size:1rem;color:var(--muted);" title="Remove">&times;</button></span>`;
+  }
   const dPC = document.getElementById('designPreviewCard'); if(dPC) dPC.style.display='block';
   renderTable('designPreview', designData, Infinity);
 
   const resultInfo = document.getElementById('resultInfo');
-  if (resultInfo) { resultInfo.style.display='block'; resultInfo.innerHTML=`&#x2714; Template result — 2 files (P1 &amp; P2), <b>${p1Rows.length}</b> rows each`; }
-  const rWC = document.getElementById('resultWellCard'); if(rWC) rWC.style.display='block';
-  const rWS = document.getElementById('resultWellSel'); if(rWS) rWS.innerHTML='<span class="ok">&#x2714; Well: <b>Well</b> | P1_ratio / P2_ratio</span>';
-  const rRC = document.getElementById('resultRowCount'); if(rRC) rRC.textContent=(p1Rows.length+p2Rows.length)+' rows total';
+  if (resultInfo) { resultInfo.style.display='block'; resultInfo.textContent=`2 file(s) loaded — ${p1Rows.length * 2} rows, ${resultHeaders.length} cols`; }
   const rPC = document.getElementById('resultPreviewCard'); if(rPC) rPC.style.display='block';
   renderResultPreviewTabs(0);
 
@@ -3459,8 +4006,6 @@ function loadTemplate() {
   const namesDiv = document.getElementById('resultFileNames');
   if (namesDiv) {
     namesDiv.style.display = 'flex';
-    namesDiv.style.flexWrap = 'wrap';
-    namesDiv.style.gap = '6px';
     namesDiv.innerHTML = state.resultFiles.map((f, i) =>
       `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--panel-2);border:1px solid var(--line);border-radius:20px;padding:3px 10px 3px 12px;font-size:.78rem;color:var(--ink);white-space:nowrap;max-width:300px;" title="${escHtml(f.name)}"><span style="overflow:hidden;text-overflow:ellipsis;max-width:220px;">${escHtml(f.name)}</span><button onclick="removeResultFile(${i})" style="background:none;border:none;cursor:pointer;padding:0;line-height:1;font-size:1rem;color:var(--muted);" title="Remove this file">&times;</button></span>`
     ).join('');
@@ -3469,6 +4014,9 @@ function loadTemplate() {
   buildAllFileColSelectors();
   checkPlateMismatch();
   populateOmitColSel();
+  populateMergeKeySelects();
+  syncWellColSelects();
+  updateMergeKeyInfo();
 }
 
 // ─────────────────────────────────────────────
@@ -3583,10 +4131,51 @@ function _anovaDesignX(valid,groupCol,doseCol,groups,doses,incA,incB,incAB){
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ─── 4-PL EC50 fitting (Levenberg-Marquardt style via gradient descent) ──────
+// Model: y = Bottom + (Top - Bottom) / (1 + (EC50/x)^HillSlope)
+// Returns {ec50, hill, bottom, top, r2, converged} or null if insufficient data
+function computeEC50group(rows, valCol, doseCol, zeroHandling = 'exclude') {
+  const zeroSubst = zeroHandling !== 'exclude' ? parseFloat(zeroHandling) : null;
+  const pts = rows.map(r => {
+    let x = parseFloat(r[doseCol]);
+    const y = parseFloat(r[valCol]);
+    if (isNaN(y)) return null;
+    if (!isNaN(x) && x === 0) { if (zeroSubst === null) return null; x = zeroSubst; }
+    return (!isNaN(x) && x > 0) ? {x, y} : null;
+  }).filter(Boolean);
+  if (pts.length < 4) return null;
+
+  // Average replicates per unique dose for stable fitting
+  const doseMap = new Map();
+  for (const p of pts) { if (!doseMap.has(p.x)) doseMap.set(p.x, []); doseMap.get(p.x).push(p.y); }
+  if (doseMap.size < 3) return null;
+  const avgPts = [...doseMap.entries()].sort((a,b)=>a[0]-b[0])
+    .map(([x, ys]) => ({x, y: ys.reduce((a,b)=>a+b,0)/ys.length}));
+
+  // Reuse the robust Nelder-Mead 4PL optimizer (same as Prism XY preview)
+  // Model: y = D + (A-D)/(1+(x/EC50)^Hill);  A = asymptote at x→0, D = asymptote at x→∞
+  const par = fit4PL(avgPts.map(p=>p.x), avgPts.map(p=>p.y));
+  if (!par || par[2] <= 0) return null;
+  const [A, B, C, D] = par; // C = EC50
+
+  // R² computed against all replicate points
+  const allYs = pts.map(p => p.y);
+  const yMean = allYs.reduce((a,b)=>a+b,0) / allYs.length;
+  const ssTot = allYs.reduce((s,y)=>s+(y-yMean)**2, 0);
+  const ssRes = pts.reduce((s,p) => {
+    const yh = D + (A-D)/(1+Math.pow(Math.abs(p.x/C), B));
+    return s + (p.y-yh)**2;
+  }, 0);
+  const r2 = ssTot > 0 ? Math.max(0, 1-ssRes/ssTot) : NaN;
+
+  return { ec50: C, hill: Math.abs(B), bottom: Math.min(A,D), top: Math.max(A,D), r2 };
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 function computeTwoWayAnova(rows, valCol, groupCol, doseCol, refGroup, pairMode = 'dunnett') {
   const valid = rows.filter(r => {
     const v = parseFloat(r[valCol]);
-    return !isNaN(v) && r[groupCol] && r[doseCol];
+    return !isNaN(v) && r[groupCol] && r[doseCol] != null && r[doseCol] !== '';
   });
   if (valid.length < 6) return null;
   const groups = [...new Set(valid.map(r => r[groupCol]))];
@@ -3689,6 +4278,38 @@ function populateAnovaRefGroup() {
   el.innerHTML = uniq.map(g => `<option value="${escHtml(g)}"${g === pref ? ' selected' : ''}>${escHtml(g.split('|||').join('_'))}</option>`).join('');
 }
 
+function onPxy4plChange(){
+  const on=!!(document.getElementById('pxy-4pl')?.checked);
+  ['pxy-anova-lbl','pxy-ec50-lbl','pxy-anova-ctrl-row'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.display=on?'':'none';
+  });
+  if(!on){['pxy-anova','pxy-ec50'].forEach(id=>{const cb=document.getElementById(id);if(cb)cb.checked=false;});}
+  else {['pxy-anova','pxy-ec50'].forEach(id=>{const cb=document.getElementById(id);if(cb)cb.checked=true;});}
+  _updatePxyAnovaCtrlVisibility();
+  _updatePxyEC50ZeroVisibility();
+}
+function _updatePxyAnovaCtrlVisibility(){
+  const pl=!!(document.getElementById('pxy-4pl')?.checked);
+  const lg=!!(document.getElementById('pxy-log')?.checked);
+  const av=!!(document.getElementById('pxy-anova')?.checked);
+  const ev=!!(document.getElementById('pxy-ec50')?.checked);
+  const showZero=lg||pl; // 0= needed whenever log axis or 4PL is active
+  const showCtrl=pl&&av;
+  const row=document.getElementById('pxy-anova-ctrl-row');if(row)row.style.display=(showCtrl||showZero)?'flex':'none';
+  const cd=document.getElementById('pxy-anova-ctrl-div');if(cd)cd.style.display=showCtrl?'flex':'none';
+  const zd=document.getElementById('pxy-ec50-zero-div');if(zd)zd.style.display=showZero?'flex':'none';
+}
+function _updatePxyEC50ZeroVisibility(){
+  _updatePxyAnovaCtrlVisibility();
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('pxy-anova')?.addEventListener('change',_updatePxyAnovaCtrlVisibility);
+  document.getElementById('pxy-ec50')?.addEventListener('change',_updatePxyEC50ZeroVisibility);
+  _updatePxyAnovaCtrlVisibility();
+  _updatePxyEC50ZeroVisibility();
+  onAnovaCheckChange();
+});
+
 function onAnovaDoseColChange() {
   const doseVal = document.getElementById('anovaDoseCol')?.value || '';
   const wrap = document.getElementById('anovaGroupColWrap');
@@ -3704,6 +4325,16 @@ function onAnovaDoseColChange() {
   populateAnovaRefGroup();
 }
 
+function onAnovaCheckChange() {
+  const doEC50  = !!(document.getElementById('anovaDoEC50')?.checked);
+  const doAnova = !!(document.getElementById('anovaDoAnova')?.checked);
+  const doseRow = document.getElementById('anovaDoseRow');
+  if (doseRow) doseRow.style.display = (doEC50 || doAnova) ? '' : 'none';
+  const ec50ZeroDiv = document.getElementById('anovaEC50ZeroDiv');
+  if (ec50ZeroDiv) ec50ZeroDiv.style.display = doEC50 ? '' : 'none';
+  const anovaParamsDiv = document.getElementById('anovaAnovaParamsDiv');
+  if (anovaParamsDiv) anovaParamsDiv.style.display = doAnova ? 'flex' : 'none';
+}
 function onAnovaModeChange() {
   const mode = document.getElementById('anovaPairMode')?.value;
   const refDiv = document.getElementById('anovaRefGroupDiv');
@@ -3718,14 +4349,18 @@ function runAnovaTable() {
   const valCol    = getGlobalValCol();
   const refGroup  = document.getElementById('anovaRefGroup')?.value;
   const pairMode  = document.getElementById('anovaPairMode')?.value || 'dunnett';
+  const doEC50    = document.getElementById('anovaDoEC50')?.checked;
+  const doAnova   = document.getElementById('anovaDoAnova')?.checked;
+  const zeroHandling = document.getElementById('anovaEC50Zero')?.value || 'exclude';
   const el = document.getElementById('anovaResult');
   if (!el) return;
-  if (!groupCols.length||!doseCol||!valCol||(pairMode==='dunnett'&&!refGroup)) {
+  if (!doEC50 && !doAnova) { _btnWarn(_btn, '⚠ Check at least one analysis (EC50 or 2-way ANOVA).'); el.innerHTML=''; return; }
+  if (!groupCols.length||!doseCol||!valCol||(doAnova&&pairMode==='dunnett'&&!refGroup)) {
     const missing = [];
     if (!groupCols.length) missing.push('Group by');
     if (!doseCol) missing.push('Dose column');
     if (!valCol) missing.push('Value column (set above in Statistics Table)');
-    if (pairMode==='dunnett'&&!refGroup) missing.push('Reference group');
+    if (doAnova&&pairMode==='dunnett'&&!refGroup) missing.push('Reference group');
     _btnWarn(_btn, '⚠ Missing: ' + missing.join(', ') + '.');
     el.innerHTML = '';
     return;
@@ -3734,60 +4369,87 @@ function runAnovaTable() {
 
   const fr = state.mergedData.rows.filter(r=>String(r['is_masked']||'').toLowerCase()!=='true');
   const fr2 = fr.map(r => ({...r, _grpKey: makeGrpKey(r, groupCols)}));
-  const result = computeTwoWayAnova(fr2, valCol, '_grpKey', doseCol, refGroup, pairMode);
-  if (!result) { _btnWarn(_btn, '⚠ Not enough data (≥6 rows, ≥2 levels per factor).'); el.innerHTML=''; return; }
-  if (result._tooBig) { _btnWarn(_btn, `⚠ Design too large (${result.G}×${result.D} cells, max 200).`); el.innerHTML=''; return; }
-
   const groupDisplayName = groupCols.length === 1 ? groupCols[0] : groupCols.join(' / ');
-  const fmtTerm = t => t.replace('_grpKey', groupDisplayName);
   const fmtGrp = g => g.split('|||').join('_');
-
   const sigSt={'****':'color:var(--err);font-weight:700','***':'color:var(--err);font-weight:600','**':'color:var(--warn);font-weight:600','*':'color:var(--warn)','ns':'color:var(--muted)'};
   const fmtN = v => v==null||isNaN(v)?'\u2014':v.toFixed(4);
   const fmtP = v => v==null||isNaN(v)?'\u2014':v<0.001?v.toExponential(2):v.toFixed(4);
   const fmtEta = v => v==null||isNaN(v)?'\u2014':v.toFixed(3);
+  const fmtEC50 = v => v==null||isNaN(v)?'\u2014':v<0.001?v.toExponential(3):parseFloat(v.toPrecision(4)).toString();
 
   let html = '';
-  if (!result.isBalanced) {
-    html += '<p style="background:#fff8e1;border:1px solid #f0c040;border-radius:7px;padding:7px 12px;font-size:.83rem;color:#7a5800;margin-bottom:12px;">'
-          + '⚠ <b>Unbalanced design detected</b> (unequal cell sizes after masking). Type III SS is used — main effects are valid. Interaction F/p may still be approximate if many cells are empty.</p>';
-  }
-  html += '<p style="font-size:.78rem;color:var(--muted);margin-bottom:8px;">Method: Type III SS (OLS). Post-hoc: Welch t-test, BH-FDR corrected.</p>';
-  html += '<h3 style="margin-top:0;">2-way ANOVA Table</h3>';
-  html += '<div class="table-wrap" style="margin-bottom:16px;"><table><thead><tr><th>Term</th><th>Df</th><th>SS</th><th>MS</th><th>F</th><th>p-value</th><th>Sig</th><th>partial \u03b7\xb2</th></tr></thead><tbody>';
-  for(const row of result.table){
-    const star=pStarFromP(row.p);
-    html+=`<tr${star&&star!=='ns'?' class="anova-sig-row"':''}><td><b>${escHtml(fmtTerm(row.term))}</b></td><td>${row.df}</td><td>${fmtN(row.SS)}</td><td>${fmtN(row.MS)}</td><td>${fmtN(row.F)}</td><td>${fmtP(row.p)}</td><td style="${sigSt[star]||''}">${star||'\u2014'}</td><td>${fmtEta(row.eta2)}</td></tr>`;
-  }
-  html+='</tbody></table></div>';
 
-  if(result.posthoc && result.posthoc.length>0){
-    const phTid = 'anova_ph_' + Math.random().toString(36).slice(2,7);
-    html+='<h3 style="margin-top:28px;">Post-hoc: Pairwise Cell Comparisons (Welch t-test, BH-FDR corrected)</h3>';
-    html+=`<div id="${phTid}_wrap">`;
-    html+=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
-      <input type="text" placeholder="Filter Group 1…" data-filtercol="g1" oninput="statTblFilter('${phTid}')" style="height:30px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.8rem;min-width:120px;max-width:180px;outline:none;">
-      <input type="text" placeholder="Filter Dose 1…"  data-filtercol="d1" oninput="statTblFilter('${phTid}')" style="height:30px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.8rem;min-width:100px;max-width:140px;outline:none;">
-      <input type="text" placeholder="Filter Group 2…" data-filtercol="g2" oninput="statTblFilter('${phTid}')" style="height:30px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.8rem;min-width:120px;max-width:180px;outline:none;">
-      <input type="text" placeholder="Filter Dose 2…"  data-filtercol="d2" oninput="statTblFilter('${phTid}')" style="height:30px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.8rem;min-width:100px;max-width:140px;outline:none;">
-    </div>`;
-    html+=`<div class="table-wrap"><table id="${phTid}"><thead><tr><th>Group 1</th><th>Dose 1</th><th>Group 2</th><th>Dose 2</th><th>p (raw)</th><th>p (BH-adj)</th><th>Sig (adj)</th></tr></thead><tbody id="${phTid}_body">`;
-    for(const r of result.posthoc){
-      const sameG = r.g1===r.g2, sameD = r.d1===r.d2;
-      const g1d=escHtml(fmtGrp(r.g1)),d1d=escHtml(String(r.d1)),g2d=escHtml(fmtGrp(r.g2)),d2d=escHtml(String(r.d2));
-      html+=`<tr>
-        <td data-col="g1" data-v="${g1d}"${sameG?' style="font-weight:600;"':''}>${g1d}</td>
-        <td data-col="d1" data-v="${d1d}"${sameD?' style="font-weight:600;"':''}>${d1d}</td>
-        <td data-col="g2" data-v="${g2d}"${sameG?' style="font-weight:600;"':''}>${g2d}</td>
-        <td data-col="d2" data-v="${d2d}"${sameD?' style="font-weight:600;"':''}>${d2d}</td>
-        <td>${fmtP(r.p)}</td><td>${fmtP(r.p_adj)}</td>
-        <td style="${sigSt[r.pStarAdj]||''}">${r.pStarAdj||'\u2014'}</td></tr>`;
+  // ── EC50 section ──────────────────────────────────────────────
+  if (doEC50) {
+    html += '<h3 style="margin-top:0;margin-bottom:10px;">EC50 (4-Parameter Logistic)</h3>';
+    html += '<p style="font-size:.78rem;color:var(--muted);margin-bottom:8px;">Fit: y = D + (A−D) / (1 + (x/EC50)^Hill) &nbsp;—&nbsp; A = top (x→0), D = bottom (x→∞). Dose = 0 treated as: ' + (zeroHandling === 'exclude' ? 'excluded' : zeroHandling) + '.</p>';
+    const groups = [...new Set(fr2.map(r=>r._grpKey))].sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'}));
+    html += '<div class="table-wrap" style="margin-bottom:20px;"><table><thead><tr>';
+    for (const gc of groupCols) html += `<th>${escHtml(gc)}</th>`;
+    html += `<th>EC50</th><th>Hill</th><th>Bottom</th><th>Top</th><th>R²</th></tr></thead><tbody>`;
+    for (const gKey of groups) {
+      const gRows = fr2.filter(r => r._grpKey === gKey);
+      const fit = computeEC50group(gRows, valCol, doseCol, zeroHandling);
+      const parts = gKey.split('|||');
+      const cellsHtml = parts.map(p => `<td>${escHtml(p)}</td>`).join('');
+      if (!fit) {
+        html += `<tr>${cellsHtml}<td colspan="5" style="color:var(--muted);font-size:.78rem;">insufficient data (need ≥4 pts with dose &gt; 0)</td></tr>`;
+      } else {
+        html += `<tr>${cellsHtml}<td><b>${fmtEC50(fit.ec50)}</b></td><td>${fmtN(fit.hill)}</td><td>${fmtN(fit.bottom)}</td><td>${fmtN(fit.top)}</td><td>${fmtN(fit.r2)}</td></tr>`;
+      }
     }
-    html+=`</tbody></table></div></div>`;
+    html += '</tbody></table></div>';
   }
-  el.innerHTML=html;
+
+  // ── 2-way ANOVA section ────────────────────────────────────────
+  if (doAnova) {
+    const result = computeTwoWayAnova(fr2, valCol, '_grpKey', doseCol, refGroup, pairMode);
+    if (!result) { html += '<p style="color:var(--err);">⚠ Not enough data for ANOVA (≥6 rows, ≥2 levels per factor).</p>'; }
+    else if (result._tooBig) { html += `<p style="color:var(--err);">⚠ Design too large (${result.G}×${result.D} cells, max 200).</p>`; }
+    else {
+      const fmtTerm = t => t.replace('_grpKey', groupDisplayName);
+      if (!result.isBalanced) {
+        html += '<p style="background:#fff8e1;border:1px solid #f0c040;border-radius:7px;padding:7px 12px;font-size:.83rem;color:#7a5800;margin-bottom:12px;">'
+              + '⚠ <b>Unbalanced design detected</b>. Type III SS used — main effects valid, interaction may be approximate.</p>';
+      }
+      html += '<h3 style="margin-top:0;">2-way ANOVA Table</h3>';
+      html += '<p style="font-size:.78rem;color:var(--muted);margin-bottom:8px;">Method: Type III SS (OLS). Post-hoc: Welch t-test, BH-FDR corrected.</p>';
+      html += '<div class="table-wrap" style="margin-bottom:16px;"><table><thead><tr><th>Term</th><th>Df</th><th>SS</th><th>MS</th><th>F</th><th>p-value</th><th>Sig</th><th>partial \u03b7\xb2</th></tr></thead><tbody>';
+      for(const row of result.table){
+        const star=pStarFromP(row.p);
+        html+=`<tr${star&&star!=='ns'?' class="anova-sig-row"':''}><td><b>${escHtml(fmtTerm(row.term))}</b></td><td>${row.df}</td><td>${fmtN(row.SS)}</td><td>${fmtN(row.MS)}</td><td>${fmtN(row.F)}</td><td>${fmtP(row.p)}</td><td style="${sigSt[star]||''}">${star||'\u2014'}</td><td>${fmtEta(row.eta2)}</td></tr>`;
+      }
+      html+='</tbody></table></div>';
+      if(result.posthoc && result.posthoc.length>0){
+        const phTid = 'anova_ph_' + Math.random().toString(36).slice(2,7);
+        html+='<h3 style="margin-top:28px;">Post-hoc: Pairwise Cell Comparisons (Welch t-test, BH-FDR corrected)</h3>';
+        html+=`<div id="${phTid}_wrap">`;
+        html+=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+          <input type="text" placeholder="Filter Group 1…" data-filtercol="g1" oninput="statTblFilter('${phTid}')" style="height:30px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.8rem;min-width:120px;max-width:180px;outline:none;">
+          <input type="text" placeholder="Filter Dose 1…"  data-filtercol="d1" oninput="statTblFilter('${phTid}')" style="height:30px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.8rem;min-width:100px;max-width:140px;outline:none;">
+          <input type="text" placeholder="Filter Group 2…" data-filtercol="g2" oninput="statTblFilter('${phTid}')" style="height:30px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.8rem;min-width:120px;max-width:180px;outline:none;">
+          <input type="text" placeholder="Filter Dose 2…"  data-filtercol="d2" oninput="statTblFilter('${phTid}')" style="height:30px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.8rem;min-width:100px;max-width:140px;outline:none;">
+        </div>`;
+        html+=`<div class="table-wrap"><table id="${phTid}"><thead><tr><th>Group 1</th><th>Dose 1</th><th>Group 2</th><th>Dose 2</th><th>p (raw)</th><th>p (BH-adj)</th><th>Sig (adj)</th></tr></thead><tbody id="${phTid}_body">`;
+        for(const r of result.posthoc){
+          const sameG=r.g1===r.g2, sameD=r.d1===r.d2;
+          const g1d=escHtml(fmtGrp(r.g1)),d1d=escHtml(String(r.d1)),g2d=escHtml(fmtGrp(r.g2)),d2d=escHtml(String(r.d2));
+          html+=`<tr>
+            <td data-col="g1" data-v="${g1d}"${sameG?' style="font-weight:600;"':''}>${g1d}</td>
+            <td data-col="d1" data-v="${d1d}"${sameD?' style="font-weight:600;"':''}>${d1d}</td>
+            <td data-col="g2" data-v="${g2d}"${sameG?' style="font-weight:600;"':''}>${g2d}</td>
+            <td data-col="d2" data-v="${d2d}"${sameD?' style="font-weight:600;"':''}>${d2d}</td>
+            <td>${fmtP(r.p)}</td><td>${fmtP(r.p_adj)}</td>
+            <td style="${sigSt[r.pStarAdj]||''}">${r.pStarAdj||'\u2014'}</td></tr>`;
+        }
+        html+=`</tbody></table></div></div>`;
+      }
+    }
+  }
+
+  el.innerHTML = html;
   el.querySelectorAll('table').forEach(attachTableSort);
-  _btnOk(document.getElementById('btnRunAnova'));
+  _btnOk(_btn);
 }
 </script>
 </body>
