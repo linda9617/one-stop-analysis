@@ -189,6 +189,8 @@ button:active{transform:translateY(1px);box-shadow:none !important;}
 .charts-row{display:grid;gap:16px;margin-bottom:16px;}
 .group-select-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;}
 .analysis-col-select{min-width:140px;height:38px;padding:0 10px;border:1px solid var(--line);border-radius:10px;font-size:.84rem;background:#fff;color:var(--ink);}
+.stat-tab-pane select,.stat-tab-pane input[type=number]{height:auto;padding:10px;}
+.stat-tab-pane .btn:not(.btn-sm){padding:10px 20px;}
 
 /* Prism type selector */
 .type-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:8px;}
@@ -215,13 +217,9 @@ button:active{transform:translateY(1px);box-shadow:none !important;}
 .stat-tab-pane.active{display:block;}
 
 /* Upload two-column layout */
-.upload-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;align-items:stretch;}
-.upload-cols .mk-slot{min-height:0;}
-.upload-cols .mk-slot>.card{height:100%;box-sizing:border-box;}
-.upload-cols>#designPreviewCard,.upload-cols>#resultPreviewCard{height:100%;}
-.upload-col{display:flex;flex-direction:column;gap:16px;min-width:0;}
-.upload-col>.card{flex:1;}
-@media(max-width:700px){.upload-cols{grid-template-columns:1fr;}}
+.upload-cols{display:flex;gap:16px;margin-bottom:16px;align-items:flex-start;}
+.upload-col{flex:1;display:flex;flex-direction:column;gap:16px;min-width:0;}
+@media(max-width:700px){.upload-cols{flex-direction:column;}}
 
 /* Classic select style */
 select{appearance:auto;-webkit-appearance:auto;height:38px;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font-size:.84rem;cursor:pointer;}
@@ -235,7 +233,7 @@ body{padding-bottom:28px;}
 </head>
 <body>
 <header>
-  <h1>One-Stop Analysis v1.3</h1>
+  <h1>One-Stop Analysis v1.4</h1>
   <p>Merge assay design + result files, explore heatmaps/charts, and export Prism-ready tables.</p>
   <div class="author">By ILYH</div>
 </header>
@@ -251,8 +249,9 @@ body{padding-bottom:28px;}
   <!-- STEP 0: Upload -->
   <div class="panel active" id="panel0">
     <div class="upload-cols">
-      <!-- Row 1: upload cards -->
-      <div class="card">
+      <!-- Left column: Metadata -->
+      <div class="upload-col">
+        <div class="card">
           <h2>Metadata File</h2>
           <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px;">CSV/TSV with well mapping and metadata columns.</p>
           <label class="upload-zone" id="designZone">
@@ -262,8 +261,22 @@ body{padding-bottom:28px;}
           </label>
           <div id="designFileNames" style="display:none;margin-top:10px;margin-bottom:2px;flex-wrap:wrap;gap:6px;"></div>
           <div id="designInfo" style="display:none;font-size:.82rem;color:var(--muted);margin-top:4px;"></div>
+        </div>
+        <div class="card" id="designMergeKeyCard" style="display:none;">
+          <h2>Merge Key</h2>
+          <div id="designMergeKeyRows"></div>
+          <div id="plateWarnDesignCard" style="margin-top:8px;"></div>
+        </div>
+        <div class="card" id="designPreviewCard" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;min-height:32px;">
+            <h2 style="margin:0;">Metadata Preview</h2>
+          </div>
+          <div class="table-wrap" id="designPreview" style="max-height:280px;"></div>
+        </div>
       </div>
-      <div class="card">
+      <!-- Right column: Result -->
+      <div class="upload-col">
+        <div class="card">
           <h2>Result File(s)</h2>
           <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px;">Multiple CSV/TSV files allowed — columns will be merged by well.</p>
           <label class="upload-zone" id="resultZone">
@@ -273,33 +286,18 @@ body{padding-bottom:28px;}
           </label>
           <div id="resultFileNames" style="display:none;margin-top:10px;margin-bottom:2px;flex-wrap:wrap;gap:6px;"></div>
           <div id="resultInfo" style="display:none;font-size:.82rem;color:var(--muted);margin-top:4px;"></div>
-      </div>
-      <!-- Row 2: Merge Key (split, shown after upload) -->
-      <div class="mk-slot">
-        <div class="card" id="designMergeKeyCard" style="display:none;">
-          <h2>Merge Key</h2>
-          <div id="designMergeKeyRows"></div>
         </div>
-      </div>
-      <div class="mk-slot">
         <div class="card" id="resultMergeKeyCard" style="display:none;">
           <h2>Merge Key</h2>
           <div id="resultMergeKeyRows"></div>
         </div>
-      </div>
-      <!-- Row 3: preview cards (direct grid children for height alignment) -->
-      <div class="card" id="designPreviewCard" style="display:none">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;min-height:32px;">
-            <h2 style="margin:0;">Metadata Preview</h2>
-          </div>
-          <div class="table-wrap" id="designPreview" style="max-height:280px;"></div>
-      </div>
-      <div class="card" id="resultPreviewCard" style="display:none">
+        <div class="card" id="resultPreviewCard" style="display:none">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
             <h2 style="margin:0;">Result Preview</h2>
             <select id="resultPreviewSel" style="display:none;height:32px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.83rem;background:#fff;color:var(--ink);max-width:260px;" onchange="renderResultPreviewTabs(+this.value)"></select>
           </div>
           <div class="table-wrap" id="resultPreview" style="max-height:280px;"></div>
+        </div>
       </div>
     </div>
 
@@ -335,19 +333,19 @@ body{padding-bottom:28px;}
       <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
         <div>
           <span class="label">Omit column:</span>
-          <select id="omitColSel" style="min-width:180px;margin-top:4px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;background:#fff;font-size:.84rem;color:var(--ink);" onchange="state.omitCol=this.value">
+          <select id="omitColSel" style="min-width:180px;margin-top:4px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;background:#fff;font-size:.84rem;color:var(--ink);" onchange="state.omitCol=this.value; reapplyMasking()">
             <option value="">None</option>
           </select>
 
         </div>
         <div>
           <span class="label">Omit value:</span>
-          <input id="omitValueInput" type="text" value="1" placeholder="1" style="width:100px;margin-top:4px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:.84rem;background:#fff;color:var(--ink);outline:none;" oninput="state.omitValue=this.value" />
+          <input id="omitValueInput" type="text" value="1" placeholder="1" style="width:100px;margin-top:4px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:.84rem;background:#fff;color:var(--ink);outline:none;" oninput="state.omitValue=this.value; reapplyMasking()" />
 
         </div>
         <div>
           <span class="label">Omit wells:</span>
-          <input id="omitWellsInput" type="text" placeholder="e.g. A1, A01, B03" style="width:260px;margin-top:4px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:.84rem;background:#fff;color:var(--ink);outline:none;" oninput="state.omitWells=this.value" />
+          <input id="omitWellsInput" type="text" placeholder="e.g. A1, A01, B03" style="width:260px;margin-top:4px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:.84rem;background:#fff;color:var(--ink);outline:none;" oninput="state.omitWells=this.value; reapplyMasking()" />
 
         </div>
         <div style="padding-top:22px;">
@@ -452,7 +450,7 @@ body{padding-bottom:28px;}
         <button class="stat-tab" id="stab-anova" onclick="switchStatTab('anova')">Dose Group</button>
       </div>
       <div class="stat-tab-pane active" id="stpane-assay">
-        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:12px;">
           <div><span class="label">Group by:</span>
             <div id="statGroupColAssayWrap" class="grp-cb-wrap"></div>
           </div>
@@ -464,12 +462,28 @@ body{padding-bottom:28px;}
               <div id="statCtrlSelAssay" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;"></div>
             </div>
           </div>
+          <div class="group-select-row" style="flex-wrap:wrap;">
+            <div><span class="label">Outlier removal:</span>
+              <select id="statOutlierMethodAssay" class="analysis-col-select" style="min-width:120px;" onchange="onOutlierMethodChange('assay')">
+                <option value="none">(none)</option>
+                <option value="grubbs">Grubbs</option>
+                <option value="iqr">IQR</option>
+                <option value="rout">ROUT</option>
+              </select>
+            </div>
+            <div id="statOutlierThreshAssayDiv" style="display:none;"><span class="label" id="statOutlierThreshAssayLabel">α:</span>
+              <input type="number" id="statOutlierThreshAssay" value="0.05" min="0.001" step="0.01"
+                style="width:70px;border:1px solid var(--line);border-radius:10px;font-size:.84rem;"
+                onchange="renderStatTables()">
+            </div>
+          </div>
         </div>
+        <hr style="border:none;border-top:1px solid var(--line);margin:4px 0 12px;">
         <div id="statTableAssay"></div>
         <p style="font-size:.78rem;color:var(--muted);margin-top:8px;">Compare each group vs control within each plate. FC=Fold Change; SSMD; Z&#x27;=Z-factor; S&#x2099;=pooled SD; D-ratio; p=Welch t-test.</p>
       </div>
       <div class="stat-tab-pane" id="stpane-disease">
-        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:12px;">
           <div><span class="label">Group by:</span>
             <div id="statGroupColDiseaseWrap" class="grp-cb-wrap"></div>
           </div>
@@ -490,10 +504,11 @@ body{padding-bottom:28px;}
             </div>
           </div>
         </div>
+        <hr style="border:none;border-top:1px solid var(--line);margin:4px 0 12px;">
         <div id="statTableDisease"></div>
       </div>
       <div class="stat-tab-pane" id="stpane-anova">
-        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:12px;">
           <div><span class="label">Group by:</span>
             <div id="anovaGroupColWrap" class="grp-cb-wrap"></div>
           </div>
@@ -528,7 +543,8 @@ body{padding-bottom:28px;}
             </div>
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <hr style="border:none;border-top:1px solid var(--line);margin:4px 0 0;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;margin-bottom:6px;">
           <button id="btnRunAnova" class="btn btn-secondary" onclick="runAnovaTable()">Run group analysis</button>
           <span id="btnRunAnovaMsg" style="font-size:.8rem;color:var(--err);"></span>
         </div>
@@ -545,6 +561,7 @@ body{padding-bottom:28px;}
             Hide masked wells
           </label>
           <button id="btnExportCSV" class="btn btn-success btn-sm" onclick="exportCSV()">Export CSV</button>
+          <span id="btnExportCSVMsg" style="font-size:.8rem;color:var(--err);"></span>
         </div>
       </div>
       <div class="table-wrap" id="mergedTable"></div>
@@ -580,74 +597,138 @@ body{padding-bottom:28px;}
     </div>
 
     <div class="card" id="prismConfigCard" style="display:none">
-      <h2>Configure Columns</h2>
+      <h2>Configure Figures</h2>
       <!-- Split by -->
-      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line);">
-        <span class="label">Split output by:</span>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--line);">
+        <span class="label">Figure output by:</span>
         <select id="pSplitCol" class="analysis-col-select" style="min-width:150px;"><option value="">(no split)</option></select>
-        <span style="font-size:.79rem;color:var(--muted);">Each unique value generates a separate tab in the output.</span>
       </div>
       <!-- XY config -->
       <div id="prism-cfg-xy" style="display:none">
         <div class="group-select-row" style="margin-bottom:10px;flex-wrap:wrap;">
-          <div><span class="label">X axis:</span><select id="pxy-x" class="analysis-col-select" onchange="_syncGroupByExclusions('pxy-grp-wrap',this.value,document.getElementById('pxy-y')?.value)"></select></div>
-          <div><span class="label">Y value:</span><select id="pxy-y" class="analysis-col-select" onchange="_syncGroupByExclusions('pxy-grp-wrap',document.getElementById('pxy-x')?.value,this.value)"></select></div>
-          <div style="display:flex;flex-direction:column;gap:4px;"><span class="label">Group by:</span><div id="pxy-grp-wrap" style="display:flex;flex-wrap:wrap;gap:4px 12px;border:1px solid var(--line);border-radius:6px;padding:6px;min-width:160px;"></div></div>
+          <div style="display:flex;flex-direction:column;gap:4px;"><span class="label">X axis:</span><select id="pxy-x" class="analysis-col-select" onchange="_syncGroupByExclusions('pxy-grp-wrap',this.value,document.getElementById('pxy-y')?.value);_syncPrismAxisToDose(this.value)"></select></div>
+          <div style="display:flex;flex-direction:column;gap:4px;"><span class="label">Y value:</span><select id="pxy-y" class="analysis-col-select" onchange="_syncGroupByExclusions('pxy-grp-wrap',document.getElementById('pxy-x')?.value,this.value)"></select></div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <span class="label">Outlier:</span>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select id="prismOutlierMethod" class="analysis-col-select" style="min-width:110px;" onchange="onPrismOutlierChange('prism')">
+                <option value="none">(none)</option>
+                <option value="grubbs">Grubbs</option>
+                <option value="iqr">IQR</option>
+                <option value="rout">ROUT</option>
+              </select>
+              <div id="prismOutlierMethodDiv" style="display:none;gap:8px;align-items:center;">
+                <span id="prismOutlierThreshLabel" style="font-size:.84rem;">&alpha;:</span>
+                <input type="number" id="prismOutlierThresh" value="0.05" min="0.001" step="0.01"
+                  style="width:70px;height:auto;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:.84rem;">
+              </div>
+            </div>
+          </div>
         </div>
-        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.84rem;margin-top:6px;">
+        <div style="margin-bottom:18px;">
+          <span class="label">Group by:</span>
+          <div id="pxy-grp-wrap" style="display:inline-flex;flex-wrap:wrap;gap:4px 12px;border:1px solid var(--line);border-radius:6px;padding:6px;min-width:160px;"></div>
+        </div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.84rem;padding-bottom:8px;border-bottom:1px solid var(--line);">
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Filter col:</span><select id="pxy-fc" class="analysis-col-select" style="min-width:110px;"><option value="">(none)</option></select></div>
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">≠ value:</span><input id="pxy-fv" type="text" value="1" style="width:64px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:.84rem;"></div>
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Separator:</span><select id="pxy-sep" class="analysis-col-select" style="min-width:80px;"><option value=" | "> | </option><option value=" ">space</option><option value="_" selected>_</option><option value=", ">, </option></select></div>
+          <span style="width:1px;height:20px;background:var(--line);flex-shrink:0;"></span>
+          <span class="label" style="font-size:.82rem;margin:0;">X sort:</span>
+          <label style="display:flex;gap:4px;align-items:center;"><input type="radio" name="pxy-xs" value="numeric" checked> Numeric</label>
+          <label style="display:flex;gap:4px;align-items:center;"><input type="radio" name="pxy-xs" value="alpha"> Alpha</label>
+          <label style="display:flex;gap:4px;align-items:center;"><input type="radio" name="pxy-xs" value="none"> As-is</label>
+          <span style="width:1px;height:20px;background:var(--line);flex-shrink:0;"></span>
           <label style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pxy-sortGrp"> Sort groups A→Z</label>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:.84rem;padding:15px 0 6px;">
           <label style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pxy-log" checked onchange="_updatePxyAnovaCtrlVisibility()"> Log₁₀ X axis</label>
           <label style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pxy-4pl" checked onchange="onPxy4plChange()"> 4PL fit preview</label>
           <label id="pxy-anova-lbl" style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pxy-anova" checked> 2-way ANOVA</label>
           <label id="pxy-ec50-lbl" style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pxy-ec50" checked> EC50</label>
         </div>
-        <div id="pxy-anova-ctrl-row" style="display:flex;gap:6px;align-items:center;font-size:.84rem;margin-top:6px;">
+        <div id="pxy-anova-ctrl-row" style="display:flex;gap:6px;align-items:center;font-size:.84rem;margin-top:10px;">
           <div id="pxy-anova-ctrl-div" style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Control group:</span>
           <select id="pxy-anova-ctrl" class="analysis-col-select" style="min-width:140px;"></select></div>
           <div id="pxy-ec50-zero-div" style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">0 in log as</span><select id="pxy-ec50-zero" class="analysis-col-select" style="min-width:80px;"><option value="exclude">exclude</option><option value="0.001">0.001</option><option value="0.01" selected>0.01</option><option value="0.1">0.1</option></select></div>
         </div>
-        <div style="display:flex;gap:12px;align-items:center;font-size:.84rem;margin-top:8px;">
-          <span class="label" style="font-size:.82rem;">X sort:</span>
-          <label style="display:flex;gap:4px;align-items:center;"><input type="radio" name="pxy-xs" value="numeric" checked> Numeric</label>
-          <label style="display:flex;gap:4px;align-items:center;"><input type="radio" name="pxy-xs" value="alpha"> Alpha</label>
-          <label style="display:flex;gap:4px;align-items:center;"><input type="radio" name="pxy-xs" value="none"> As-is</label>
-        </div>
       </div>
       <!-- Column config -->
       <div id="prism-cfg-column" style="display:none">
-        <div class="group-select-row" style="flex-wrap:wrap;">
-          <div><span class="label">Y value:</span><select id="pcol-y" class="analysis-col-select" onchange="_syncGroupByExclusions('pcol-grp-wrap',this.value,document.getElementById('pcol-rl')?.value)"></select></div>
-          <div><span class="label">Row labels:</span><select id="pcol-rl" class="analysis-col-select" onchange="_syncGroupByExclusions('pcol-grp-wrap',document.getElementById('pcol-y')?.value,this.value)"><option value="">(none)</option></select></div>
-          <div style="display:flex;flex-direction:column;gap:4px;"><span class="label">Group by:</span><div id="pcol-grp-wrap" style="display:flex;flex-wrap:wrap;gap:4px 12px;border:1px solid var(--line);border-radius:6px;padding:6px;min-width:160px;"></div></div>
+        <div class="group-select-row" style="flex-wrap:wrap;margin-bottom:10px;">
+          <div style="display:flex;flex-direction:column;gap:4px;"><span class="label">Row factor:</span><select id="pcol-rl" class="analysis-col-select" onchange="_syncGroupByExclusions('pcol-grp-wrap',document.getElementById('pcol-y')?.value,this.value)"><option value="">(none)</option></select></div>
+          <div style="display:flex;flex-direction:column;gap:4px;"><span class="label">Y value:</span><select id="pcol-y" class="analysis-col-select" onchange="_syncGroupByExclusions('pcol-grp-wrap',this.value,document.getElementById('pcol-rl')?.value)"></select></div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <span class="label">Outlier:</span>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select id="pcolOutlierMethod" class="analysis-col-select" style="min-width:110px;" onchange="onPrismOutlierChange('pcol')">
+                <option value="none">(none)</option>
+                <option value="grubbs">Grubbs</option>
+                <option value="iqr">IQR</option>
+                <option value="rout">ROUT</option>
+              </select>
+              <div id="pcolOutlierMethodDiv" style="display:none;gap:8px;align-items:center;">
+                <span id="pcolOutlierThreshLabel" style="font-size:.84rem;">&alpha;:</span>
+                <input type="number" id="pcolOutlierThresh" value="0.05" min="0.001" step="0.01"
+                  style="width:70px;height:auto;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:.84rem;">
+              </div>
+            </div>
+          </div>
         </div>
-        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.84rem;margin-top:8px;">
+        <div style="margin-bottom:18px;">
+          <span class="label">Group by:</span>
+          <div id="pcol-grp-wrap" style="display:inline-flex;flex-wrap:wrap;gap:4px 12px;border:1px solid var(--line);border-radius:6px;padding:6px;min-width:160px;"></div>
+        </div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.84rem;padding-bottom:8px;border-bottom:1px solid var(--line);">
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Filter col:</span><select id="pcol-fc" class="analysis-col-select" style="min-width:110px;"><option value="">(none)</option></select></div>
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">≠ value:</span><input id="pcol-fv" type="text" value="1" style="width:64px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:.84rem;"></div>
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Separator:</span><select id="pcol-sep" class="analysis-col-select" style="min-width:80px;"><option value=" | "> | </option><option value=" ">space</option><option value="_" selected>_</option><option value=", ">, </option></select></div>
+          <span style="width:1px;height:20px;background:var(--line);flex-shrink:0;"></span>
+          <span class="label" style="font-size:.82rem;margin:0;">Row sort:</span>
+          <label style="display:flex;gap:4px;align-items:center;"><input type="radio" name="pcol-rs" value="numeric" checked> Numeric</label>
+          <label style="display:flex;gap:4px;align-items:center;"><input type="radio" name="pcol-rs" value="alpha"> Alpha</label>
+          <label style="display:flex;gap:4px;align-items:center;"><input type="radio" name="pcol-rs" value="none"> As-is</label>
+          <span style="width:1px;height:20px;background:var(--line);flex-shrink:0;"></span>
           <label style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pcol-sortGrp"> Sort groups A→Z</label>
         </div>
       </div>
       <!-- Grouped config -->
       <div id="prism-cfg-grouped" style="display:none">
-        <div class="group-select-row" style="flex-wrap:wrap;">
-          <div><span class="label">Y value:</span><select id="pgrp-y" class="analysis-col-select" onchange="_syncGroupByExclusions('pgrp-col-wrap',this.value,document.getElementById('pgrp-row')?.value)"></select></div>
-          <div><span class="label">Row factor:</span><select id="pgrp-row" class="analysis-col-select" onchange="_syncGroupByExclusions('pgrp-col-wrap',document.getElementById('pgrp-y')?.value,this.value)"></select></div>
-          <div style="display:flex;flex-direction:column;gap:4px;"><span class="label">Column group by:</span><div id="pgrp-col-wrap" style="display:flex;flex-wrap:wrap;gap:4px 12px;border:1px solid var(--line);border-radius:6px;padding:6px;min-width:160px;"></div></div>
+        <div class="group-select-row" style="flex-wrap:wrap;margin-bottom:10px;">
+          <div style="display:flex;flex-direction:column;gap:4px;"><span class="label">Row factor:</span><select id="pgrp-row" class="analysis-col-select" onchange="_syncGroupByExclusions('pgrp-col-wrap',document.getElementById('pgrp-y')?.value,this.value)"></select></div>
+          <div style="display:flex;flex-direction:column;gap:4px;"><span class="label">Y value:</span><select id="pgrp-y" class="analysis-col-select" onchange="_syncGroupByExclusions('pgrp-col-wrap',this.value,document.getElementById('pgrp-row')?.value)"></select></div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <span class="label">Outlier:</span>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select id="pgrpOutlierMethod" class="analysis-col-select" style="min-width:110px;" onchange="onPrismOutlierChange('pgrp')">
+                <option value="none">(none)</option>
+                <option value="grubbs">Grubbs</option>
+                <option value="iqr">IQR</option>
+                <option value="rout">ROUT</option>
+              </select>
+              <div id="pgrpOutlierMethodDiv" style="display:none;gap:8px;align-items:center;">
+                <span id="pgrpOutlierThreshLabel" style="font-size:.84rem;">&alpha;:</span>
+                <input type="number" id="pgrpOutlierThresh" value="0.05" min="0.001" step="0.01"
+                  style="width:70px;height:auto;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:.84rem;">
+              </div>
+            </div>
+          </div>
         </div>
-        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.84rem;margin-top:8px;">
+        <div style="margin-bottom:18px;">
+          <span class="label">Group by:</span>
+          <div id="pgrp-col-wrap" style="display:inline-flex;flex-wrap:wrap;gap:4px 12px;border:1px solid var(--line);border-radius:6px;padding:6px;min-width:160px;"></div>
+        </div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.84rem;padding-bottom:8px;border-bottom:1px solid var(--line);">
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Filter col:</span><select id="pgrp-fc" class="analysis-col-select" style="min-width:110px;"><option value="">(none)</option></select></div>
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">≠ value:</span><input id="pgrp-fv" type="text" value="1" style="width:64px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:.84rem;"></div>
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Separator:</span><select id="pgrp-sep" class="analysis-col-select" style="min-width:80px;"><option value=" | "> | </option><option value=" ">space</option><option value="_" selected>_</option><option value=", ">, </option></select></div>
-          <label style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pgrp-sortGrp"> Sort groups A→Z</label>
-        </div>
-        <div style="display:flex;gap:12px;align-items:center;font-size:.84rem;margin-top:8px;">
-          <span class="label" style="font-size:.82rem;">Row sort:</span>
+          <span style="width:1px;height:20px;background:var(--line);flex-shrink:0;"></span>
+          <span class="label" style="font-size:.82rem;margin:0;">Row sort:</span>
           <label style="display:flex;gap:4px;align-items:center;"><input type="radio" name="pgrp-rs" value="numeric" checked> Numeric</label>
           <label style="display:flex;gap:4px;align-items:center;"><input type="radio" name="pgrp-rs" value="alpha"> Alpha</label>
           <label style="display:flex;gap:4px;align-items:center;"><input type="radio" name="pgrp-rs" value="none"> As-is</label>
+          <span style="width:1px;height:20px;background:var(--line);flex-shrink:0;"></span>
+          <label style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pgrp-sortGrp"> Sort groups A→Z</label>
         </div>
       </div>
       <div style="margin-top:16px;">
@@ -658,9 +739,11 @@ body{padding-bottom:28px;}
     <div class="card" id="prismOutputCard" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
         <h2 style="margin-bottom:0;">Prism Output Preview</h2>
-        <div style="display:flex;gap:8px;">
+        <div style="display:flex;gap:8px;align-items:center;">
           <button id="btnCopyPrism" class="btn btn-sm btn-secondary" onclick="copyPrismTSV()">📋 Copy to Prism</button>
+          <span id="btnCopyPrismMsg" style="font-size:.8rem;color:var(--err);"></span>
           <button id="btnDownloadPrism" class="btn btn-sm btn-secondary" onclick="downloadPrismCSV()">Download .csv</button>
+          <span id="btnDownloadPrismMsg" style="font-size:.8rem;color:var(--err);"></span>
         </div>
       </div>
       <div id="prismTabBar" style="display:none;flex-wrap:wrap;gap:6px;margin-bottom:12px;"></div>
@@ -698,7 +781,6 @@ const state = {
   designData: null,   // {headers, rows}
   designWellCol: '',
   designPlateCol: '',
-  resultData: null,   // merged from multiple files
   resultWellCol: '',
   resultPlateCol: '',
   resultFiles: [],    // [{name, data}]
@@ -875,46 +957,6 @@ function parseFile(file, cb) {
 // ─────────────────────────────────────────────
 // WELL COLUMN SELECTION UI
 // ─────────────────────────────────────────────
-function buildWellSelUI(containerId, headers, onSelect) {
-  const wellCandidate = headers.find(h => WELL_PATTERNS.test(h.trim())) || '';
-  const plateCandidate = headers.find(h => PLATE_PATTERNS.test(h.trim())) || '';
-  const selW = wellCandidate;
-  const container = document.getElementById(containerId);
-
-  const badgeStyle = 'font-size:.78rem;';
-  const wellBadge = wellCandidate
-    ? `<span class="ok" style="${badgeStyle}">✔ auto-detected</span>`
-    : `<span class="warn" style="${badgeStyle}">⚠ not detected</span>`;
-  const plateBadge = plateCandidate
-    ? `<span class="ok" style="${badgeStyle}">✔ auto-detected</span>`
-    : `<span style="${badgeStyle}color:var(--muted);">not detected</span>`;
-
-  const selStyle = 'height:32px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.83rem;background:#fff;color:var(--ink);';
-  const labelStyle = 'min-width:90px;';
-  const rowStyle = 'display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;';
-
-  const makeOpts = (selected, includeNone) =>
-    (includeNone ? `<option value="">(none)</option>` : '') +
-    headers.map(h => `<option value="${escHtml(h)}"${h===selected?' selected':''}>${escHtml(h)}</option>`).join('');
-
-  container.innerHTML = `
-    <div style="${rowStyle}">
-      <span class="label" style="${labelStyle}">Plate column:</span>
-      <select id="${containerId}_plate" style="${selStyle}" onchange="wellSelChange(${JSON.stringify(containerId)},'plate',this.value)">
-        ${makeOpts(plateCandidate, true)}
-      </select>
-      ${plateBadge}
-    </div>
-    <div style="${rowStyle}">
-      <span class="label" style="${labelStyle}">Well column:</span>
-      <select id="${containerId}_well" style="${selStyle}" onchange="wellSelChange(${JSON.stringify(containerId)},'well',this.value)">
-        ${makeOpts(selW, true)}
-      </select>
-      ${wellBadge}
-    </div>`;
-
-  onSelect(selW, plateCandidate);
-}
 function wellSelChange(id, type, val) {
   if (id === 'designWellSel') {
     if (type === 'well') state.designWellCol = val;
@@ -951,11 +993,6 @@ function syncWellColSelects() {
     });
   }
 }
-// legacy aliases
-function wellRadioChange(id, val, plate) { wellSelChange(id,'well',val); }
-function manualWellChange(id, val, plate) { wellSelChange(id,'well',val); }
-
-
 // ─────────────────────────────────────────────
 // TABLE RENDER
 // ─────────────────────────────────────────────
@@ -986,6 +1023,7 @@ function renderTable(containerId, data, maxRows = 100) {
 
 function handleDesign(file) {
   state._designFileName = file.name;
+  state.designColRows = null; // reset column selection for new file
   const namesDiv = document.getElementById('designFileNames');
   if (namesDiv) {
     namesDiv.style.display = 'flex';
@@ -1006,6 +1044,7 @@ function handleDesign(file) {
     updateMergeKeyInfo();
     document.getElementById('designPreviewCard').style.display = 'block';
     renderTable('designPreview', data, 100);
+    syncUploadColHeightsAsync();
   });
 }
 
@@ -1026,6 +1065,7 @@ function removeDesignFile() {
   populateMergeKeySelects();
   checkPlateMismatch();
   updateMergeKeyInfo();
+  syncUploadColHeightsAsync();
 }
 
 // ── Result upload (multiple files) ──
@@ -1040,23 +1080,15 @@ function removeDesignFile() {
 
 function handleResultFiles(fileList) {
   const files = Array.from(fileList);
-  state.resultFiles = [];
+  state.resultFiles = new Array(files.length); // pre-allocate to preserve selection order
   state.fileSelectedCols = new Map();
   state.fileColRows = new Map();
   let loaded = 0;
-  const listEl = document.getElementById('resultFileList');
-  if (listEl) {
-    listEl.innerHTML = files.map((f,i) => `<div id="rfile_${i}" style="font-size:.82rem;color:var(--muted);padding:2px 0;">⏳ ${escHtml(f.name)}</div>`).join('');
-  }
   files.forEach((file, idx) => {
     parseFile(file, data => {
-      state.resultFiles.push({ name: file.name, shortName: file.name.replace(/\.[^.]+$/, ''), data,
+      state.resultFiles[idx] = { name: file.name, shortName: file.name.replace(/\.[^.]+$/, ''), data,
         wellCol:  data.headers.find(h => WELL_PATTERNS.test(h.trim()))  || '',
-        plateCol: data.headers.find(h => PLATE_PATTERNS.test(h.trim())) || '' });
-      const rowEl = document.getElementById(`rfile_${idx}`);
-      if (rowEl) {
-        rowEl.innerHTML = `<span class="ok">✔ ${escHtml(file.name)}</span> <span class="tag tag-blue">${data.rows.length} rows, ${data.headers.length} cols</span>`;
-      }
+        plateCol: data.headers.find(h => PLATE_PATTERNS.test(h.trim())) || '' };
       loaded++;
       if (loaded === files.length) onAllResultsLoaded();
     });
@@ -1064,14 +1096,12 @@ function handleResultFiles(fileList) {
 }
 
 function onAllResultsLoaded() {
-  // Merge all result files: union of columns, rows stacked
   const allHeaders = [];
   const seen = new Set();
   for (const { data } of state.resultFiles) {
     for (const h of data.headers) { if (!seen.has(h)) { allHeaders.push(h); seen.add(h); } }
   }
   const allRows = state.resultFiles.flatMap(({ data }) => data.rows);
-  state.resultData = { headers: allHeaders, rows: allRows };
 
   const info = document.getElementById('resultInfo');
   info.style.display = 'block';
@@ -1100,6 +1130,7 @@ function onAllResultsLoaded() {
   renderResultPreviewTabs(0);
   buildAllFileColSelectors();
   checkPlateMismatch();
+  syncUploadColHeightsAsync();
 }
 
 function removeResultFile(fi) {
@@ -1123,9 +1154,9 @@ function removeResultFile(fi) {
     const rWellCard = document.getElementById('resultWellCard');
     if (rWellCard) rWellCard.style.display = 'none';
     document.getElementById('resultPreviewCard').style.display = 'none';
-    state.resultData = null;
     const rCard = document.getElementById('resultMergeKeyCard');
     if (rCard) rCard.style.display = 'none';
+    syncUploadColHeights();
     return;
   }
   onAllResultsLoaded();
@@ -1149,8 +1180,6 @@ function renderResultPreviewTabs(activeIdx) {
 // ─────────────────────────────────────────────
 // STEP 2: COL SELECTORS (per-file dropdown)
 // u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}u{2500}
-const RESULT_KEY_RE = /result|\bct\b|htrf|lumi|ratio|signal|rfu|rlu|od|absorbance|fluoresc|channel/i;
-
 function buildAllFileColSelectors() {
   if (!state.resultFiles || !state.resultFiles.length) return;
   state.resultFiles.forEach((_, i) => {
@@ -1322,13 +1351,18 @@ function fcSetShortName(fi, val) {
   const rows = state.fileColRows.get(fi);
   if (rows) {
     const sn = val.replace(/[^a-z0-9]/gi, '_');
-    rows.forEach(r => {
+    rows.forEach((r, ri) => {
       if (!r._aliasManual && r.col) {
         r.alias = sn ? r.col + '_' + sn : r.col;
+        // 直接更新 DOM，避免整行重建导致焦点丢失
+        const lineEl = document.getElementById('fcrowline_' + fi + '_' + ri);
+        if (lineEl) {
+          const inp = lineEl.querySelector('input[type="text"]');
+          if (inp) inp.value = r.alias;
+        }
       }
     });
     fcSyncFromRows(fi);
-    renderFcRow(fi);
   }
 }
 function selNoneFile(fi) {
@@ -1357,7 +1391,7 @@ function populateMergeKeySelects() {
       dContainer.innerHTML = `<div style="${rowStyle}">
         <div><span class="label" style="${lblStyle}">Plate column</span>
           <div style="display:flex;align-items:center;gap:6px;">
-            <select id="mergeKeyDesignPlate" style="${selStyle}" onchange="state.designPlateCol=this.value;syncWellColSelects();checkPlateMismatch();updateMergeKeyInfo()">${makeOpts(dHeaders, state.designPlateCol)}</select>
+            <select id="mergeKeyDesignPlate" style="${selStyle}" onchange="state.designPlateCol=this.value;if(!this.value){state.resultFiles.forEach(f=>f.plateCol='');state.resultPlateCol='';}populateMergeKeySelects();syncWellColSelects();checkPlateMismatch();updateMergeKeyInfo()">${makeOpts(dHeaders, state.designPlateCol)}</select>
           </div>
         </div>
         <div><span class="label" style="${lblStyle}">Well column</span>
@@ -1387,7 +1421,7 @@ function populateMergeKeySelects() {
         html += `<div style="${fi < state.resultFiles.length-1 ? 'margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--line);' : ''}">
           <div style="${fhStyle}">${escHtml(f.name)}</div>
           <div style="${rowStyle}">
-            <div><span class="label" style="${lblStyle}">Plate column</span>
+            <div style="${state.designPlateCol ? '' : 'display:none;'}"><span class="label" style="${lblStyle}">Plate column</span>
               <div style="display:flex;align-items:center;gap:6px;">
                 <select id="mergeKeyResult_plate_${fi}" style="${selStyle}" onchange="state.resultFiles[${fi}].plateCol=this.value;if(${fi}===0)state.resultPlateCol=this.value;syncWellColSelects();checkPlateMismatch();updateMergeKeyInfo()">${makeOpts(rHeaders, fPlateCol)}</select>
               </div>
@@ -1408,6 +1442,31 @@ function populateMergeKeySelects() {
       if (rCard) rCard.style.display = 'none';
     }
   }
+  syncUploadColHeights();
+}
+
+function syncUploadColHeights() {
+  const pairs = [
+    ['designMergeKeyCard', 'resultMergeKeyCard'],
+    ['designPreviewCard',  'resultPreviewCard']
+  ];
+  for (const [lId, rId] of pairs) {
+    const l = document.getElementById(lId);
+    const r = document.getElementById(rId);
+    if (!l || !r) continue;
+    l.style.minHeight = '';
+    r.style.minHeight = '';
+    const lVis = l.style.display !== 'none';
+    const rVis = r.style.display !== 'none';
+    if (lVis && rVis) {
+      const h = Math.max(l.offsetHeight, r.offsetHeight) + 'px';
+      l.style.minHeight = h;
+      r.style.minHeight = h;
+    }
+  }
+}
+function syncUploadColHeightsAsync() {
+  requestAnimationFrame(() => requestAnimationFrame(syncUploadColHeights));
 }
 
 function checkWellColQuality(data, col) {
@@ -1420,7 +1479,6 @@ function checkWellColQuality(data, col) {
 }
 
 function updateMergeKeyInfo() {
-  const wantPlate = (state.plateMatchMode || 'well') === 'plate+well';
   const warnLines = [];
 
   // 内联 badge 辅助
@@ -1439,10 +1497,16 @@ function updateMergeKeyInfo() {
   setBadge('mkBadge_designWell', state.designData, state.designWellCol);
 
   // Result files
+  const plateWarnLines = [];
   state.resultFiles.forEach((f, fi) => {
     const fWellCol = (f.wellCol !== undefined ? f.wellCol : state.resultWellCol);
     setBadge(`mkBadge_result_well_${fi}`, f.data, fWellCol);
+    if (state.designPlateCol && !(f.plateCol !== undefined ? f.plateCol : state.resultPlateCol)) {
+      plateWarnLines.push(`<span class="warn" style="font-size:.82rem;">⚠ Result “${escHtml(f.name)}” has no Plate column — will match by Well only.</span>`);
+    }
   });
+  const pw = document.getElementById('plateWarnDesignCard');
+  if (pw) pw.innerHTML = plateWarnLines.join('<br>');
 
   const w0 = document.getElementById('wellWarnStep0');
   if (w0) w0.innerHTML = warnLines.length ? warnLines.join('<br>') : '';
@@ -1452,6 +1516,7 @@ function updateMergeKeyInfo() {
 const _goStep = goStep;
 goStep = function(n) {
   _goStep(n);
+  if (n === 0) { syncUploadColHeightsAsync(); }
   if (n === 1) { buildAllFileColSelectors(); populateOmitColSel(); populateDesignColSel(); populateMergeKeySelects(); checkPlateMismatch(); updateMergeKeyInfo(); updateCalcSelects(); }
   if (n === 3) { populatePrismSelectors(); }
 };
@@ -1462,8 +1527,20 @@ goStep = function(n) {
 const VAR_NAMES = ['a','b','c','d','e'];
 
 function addCalcRule() {
-  const slots = ['a','b'].map(v => ({ varName: v, fileIdx: 0, col: '' }));
-  state.calcRules.push({ name: '', _nameManual: false, slots, formula: 'a/b' });
+  const nFiles = state.resultFiles.length;
+  const n = Math.max(1, Math.min(nFiles, VAR_NAMES.length));
+  const excluded = new Set([state.resultWellCol, state.resultPlateCol].filter(Boolean));
+  const slots = VAR_NAMES.slice(0, n).map((v, i) => {
+    const fi = i;
+    const fileCols = (state.resultFiles[fi]?.data?.headers || []).filter(h => !excluded.has(h));
+    const selSet = state.fileSelectedCols?.get(fi) || new Set();
+    const col = fileCols.find(c => selSet.has(c)) || fileCols[0] || '';
+    return { varName: v, fileIdx: fi, col };
+  });
+  const formula = VAR_NAMES.slice(0, n).join('/');
+  state.calcRules.push({ name: '', _nameManual: false, slots, formula });
+  const ri = state.calcRules.length - 1;
+  state.calcRules[ri].name = calcAutoName(ri);
   renderCalcRules();
 }
 
@@ -1487,10 +1564,8 @@ function resolveSelectedColMappings(seedHeaders = []) {
   const excluded = new Set([state.resultWellCol, state.resultPlateCol].filter(Boolean));
   const fileColMappings = state.resultFiles.map(({ name }, fi) => {
     const selSet = state.fileSelectedCols.get(fi) || new Set();
-    // empty selection = include all available columns (excluding well/plate)
-    const cols = selSet.size > 0
-      ? [...selSet]
-      : (state.resultFiles[fi].data.headers || []).filter(h => !excluded.has(h));
+    // empty selection = include nothing
+    const cols = selSet.size > 0 ? [...selSet] : [];
     const short = name.replace(/\.[^.]+$/, '').slice(0, 10).replace(/[^a-z0-9]/gi, '_');
     const aliasMap = state.fileColAliases.get(fi) || new Map();
     return cols.map(col => {
@@ -1638,29 +1713,29 @@ function evalCalcRule(rule, fileRows) {
 // ─────────────────────────────────────────────
 // MERGE LOGIC
 // ─────────────────────────────────────────────
+function reapplyMasking() {
+  if (!state.mergedData || !state.designData) return;
+  const omitCol = state.omitCol || '';
+  const omitValue = String(state.omitValue || '1').trim();
+  const omitWellsSet = new Set(
+    (state.omitWells || '').split(/[\s,;]+/).filter(Boolean).map(normalizeWell)
+  );
+  state.mergedData.rows.forEach((merged, i) => {
+    const dRow = state.designData.rows[i];
+    if (!dRow) { delete merged['is_masked']; return; }
+    delete merged['is_masked'];
+    if (omitCol && String(dRow[omitCol]).trim() === omitValue) merged['is_masked'] = 'true';
+    if (omitWellsSet.size > 0 && omitWellsSet.has(normalizeWell(dRow[state.designWellCol]))) merged['is_masked'] = 'true';
+  });
+  renderMergedTable();
+  renderHeatmap();
+  renderStatTables();
+  renderBarChart();
+}
 function doMerge() {
   const _btn = document.getElementById('btnMerge');
   if (!state.designData && !state.resultFiles.length) { _btnWarn(_btn, '⚠ Load at least one file first.'); return; }
   _btnOk(_btn);
-
-  // Well column quality pre-check
-  const WELL_RE = /^[A-Za-z]{1,2}\d{1,3}$/;
-  const wellWarnings = [];
-  if (state.designData && state.designWellCol) {
-    const vals = state.designData.rows.map(r => String(r[state.designWellCol] ?? '').trim()).filter(Boolean);
-    if (vals.length) {
-      const pct = Math.round(vals.filter(v => WELL_RE.test(v)).length / vals.length * 100);
-      if (pct < 90) wellWarnings.push(`Metadata well col "${state.designWellCol}": only ${pct}% look like Well IDs.`);
-    }
-  }
-  if (state.resultFiles.length && state.resultWellCol) {
-    const allVals = state.resultFiles.flatMap(f => f.data.rows).map(r => String(r[state.resultWellCol] ?? '').trim()).filter(Boolean);
-    if (allVals.length) {
-      const pct = Math.round(allVals.filter(v => WELL_RE.test(v)).length / allVals.length * 100);
-      if (pct < 90) wellWarnings.push(`Result well col "${state.resultWellCol}": only ${pct}% look like Well IDs.`);
-    }
-  }
-  // Well warnings are shown inline (wellWarnStep0 + mergeKeyInfo)
 
   // ── Result-only mode (no design file) ──
   if (!state.designData && state.resultFiles.length) {
@@ -1675,7 +1750,7 @@ function doMerge() {
     state.mergedNumericCols = state.mergedData.headers.filter(h => state.mergedData.rows.some(r => !isNaN(parseFloat(r[h]))));
     document.getElementById('mergeSummary').innerHTML = `<div class="stat-card"><div class="val">${mergedRows.length}</div><div class="lbl">Result rows</div></div><div class="stat-card"><div class="val">${state.mergedData.headers.length}</div><div class="lbl">Total columns</div></div>`;
     document.getElementById('mergeWarnings').innerHTML = '';
-    populateAnalysisSelects(); renderMergedTable(); renderHeatmapSetup(); renderStatTable(); renderBarChart();
+    populateAnalysisSelects(); renderMergedTable(); renderHeatmapSetup(); renderStatTables(); renderBarChart();
     goStep(2); return;
   }
 
@@ -1690,25 +1765,25 @@ function doMerge() {
     state.mergedNumericCols = state.mergedData.headers.filter(h => state.mergedData.rows.some(r => !isNaN(parseFloat(r[h]))));
     document.getElementById('mergeSummary').innerHTML = `<div class="stat-card"><div class="val">${mergedRows.length}</div><div class="lbl">Design rows</div></div><div class="stat-card"><div class="val">${state.mergedData.headers.length}</div><div class="lbl">Total columns</div></div>`;
     document.getElementById('mergeWarnings').innerHTML = '';
-    populateAnalysisSelects(); renderMergedTable(); renderHeatmapSetup(); renderStatTable(); renderBarChart();
+    populateAnalysisSelects(); renderMergedTable(); renderHeatmapSetup(); renderStatTables(); renderBarChart();
     goStep(2); return;
   }
 
   // ── Full merge (both files) ──
   // sync any unsaved row state before merging
   state.resultFiles.forEach((_, fi) => fcSyncFromRows(fi));
+  // hide error banner if present
   const errEl = document.getElementById('fileColErr');
   if (errEl) errEl.style.display = 'none';
 
   const hasDesignPlate = !!(state.designPlateCol);
-  // Honor user's plateMatchMode choice; fall back to well-only if either side lacks a plate col
-  const wantPlate = (state.plateMatchMode || 'well') === 'plate+well';
+  // Auto-determine plate matching per file: Plate+Well if both sides have a plate col, Well-only otherwise
 
   // Per-file lookup maps — each file uses its own wellCol / plateCol
   const fileMaps = state.resultFiles.map((f, fi) => {
     const fWellCol  = (f.wellCol  !== undefined ? f.wellCol  : state.resultWellCol);
     const fPlateCol = (f.plateCol !== undefined ? f.plateCol : state.resultPlateCol);
-    const fUsePlate = wantPlate && hasDesignPlate && !!fPlateCol;
+    const fUsePlate = hasDesignPlate && !!fPlateCol;
     const map = new Map(); const dups = new Set();
     for (const row of f.data.rows) {
       const well = normalizeWell(row[fWellCol]);
@@ -1783,7 +1858,7 @@ let matchCount = 0, noMatchCount = 0;
       merged[rule.name || 'unnamed'] = evalCalcRule(rule, fileRows);
     }
     // Apply omit col masking (design col = '1' means exclude)
-    if (omitCol && String(dRow[omitCol]).trim() === String(state.omitValue ?? '1').trim()) {
+    if (omitCol && String(dRow[omitCol]).trim() === String(state.omitValue || '1').trim()) {
       merged['is_masked'] = 'true';
     }
     // Apply omit well masking
@@ -1836,13 +1911,15 @@ let matchCount = 0, noMatchCount = 0;
   let warnings = '';
   if (duplicateKeys.size > 0) warnings += `<p class="warn">⚠ ${duplicateKeys.size} duplicate well key(s) in result file — first occurrence used.</p>`;
   if (noMatchCount > 0) warnings += `<p class="warn">⚠ ${noMatchCount} design wells had no matching result row.</p>`;
+  const filesWithoutPlate = state.resultFiles.filter((_, fi) => hasDesignPlate && !fileMaps[fi].fUsePlate);
+  if (filesWithoutPlate.length) warnings += `<p class="warn">⚠ Metadata has a Plate column selected, but ${filesWithoutPlate.map(f => `“${escHtml(f.name)}”`).join(', ')} ${filesWithoutPlate.length === 1 ? 'has' : 'have'} no Plate column — matched by Well only.</p>`;
   document.getElementById('mergeWarnings').innerHTML = warnings;
 
   // Populate selects for analysis
   populateAnalysisSelects();
   renderMergedTable();
   renderHeatmapSetup();
-  renderStatTable();
+  renderStatTables();
   renderBarChart();
   _btnOk(document.getElementById('btnMerge'));
   goStep(2);
@@ -1934,11 +2011,10 @@ function onGlobalValColChange() {
   renderStatTables();
 }
 
-// Push current global Group-by selection to Bar Chart and Assay stat Group-by checkboxes.
-// Disease Window has its own independent Group-by (must exclude disease col), so it is NOT synced here.
+// Push current global Group-by selection to Bar Chart, Assay, Disease, Dose stat Group-by checkboxes.
 function applyGlobalGroupCols() {
   const selected = new Set(getCheckedCols('globalGroupColWrap'));
-  const targets = ['barGroupColWrap', 'statGroupColAssayWrap', 'anovaGroupColWrap'];
+  const targets = ['barGroupColWrap', 'statGroupColAssayWrap', 'statGroupColDiseaseWrap', 'anovaGroupColWrap'];
   targets.forEach(id => {
     const wrap = document.getElementById(id);
     if (!wrap) return;
@@ -2011,11 +2087,6 @@ function renderHeatmapSetup() {
   _buildPlateTabs('barPlateTabs',     plates, '_barPlate',     renderBarChart);
   renderHeatmap();
   renderBarChart();
-}
-
-function selectPlate(p, btn) {
-  // legacy shim — no longer used but kept for safety
-  _selectPlateFor('heatmapPlateTabs', '_heatmapPlate', p, btn);
 }
 
 function renderHeatmap() {
@@ -2243,8 +2314,8 @@ function populateAnalysisSelects() {
     if (ai !== -1 && bi !== -1) return ai - bi;
     if (ai !== -1) return -1; if (bi !== -1) return 1; return 0;
   });
-  populateGrpCbWrap('statGroupColAssayWrap',   sortBySim(allCols, sirnaPref), "onStatGroupColChange('assay')",   _grpDefaultSet(allCols), emptyCols);
-  populateGrpCbWrap('statGroupColDiseaseWrap', sortBySim(allCols, condPref),  "onStatGroupColChange('disease')", _grpDefaultSet(allCols), emptyCols);
+  populateGrpCbWrap('statGroupColAssayWrap',   sortByPref(allCols, preferred), "onStatGroupColChange('assay')",   _grpDefaultSet(allCols), emptyCols);
+  populateGrpCbWrap('statGroupColDiseaseWrap', sortByPref(allCols, preferred),  "onStatGroupColChange('disease')", _grpDefaultSet(allCols), emptyCols);
 
   // Stat local plate column selectors — default to global plate col
   const globalPlateVal = document.getElementById('globalPlateCol')?.value || '';
@@ -2401,7 +2472,7 @@ function arrMedian(a){
 }
 function arrMAD(a){
   const med=arrMedian(a);
-  return arrMedian(a.map(v=>Math.abs(v-med)));
+  return arrMedian(a.map(v=>Math.abs(v-med)))*1.4826;
 }
 
 // Log-gamma (Lanczos approximation)
@@ -2415,7 +2486,7 @@ function _lgamma(x){
 }
 // Continued-fraction for regularised incomplete beta (Lentz)
 function _betaCF(x,a,b){
-  const MAXIT=200,EPS=3e-7,FPMIN=1e-30;
+  const MAXIT=300,EPS=3e-15,FPMIN=1e-30;
   const qab=a+b,qap=a+1,qam=a-1;
   let c=1,d=1-qab*x/qap;
   if(Math.abs(d)<FPMIN)d=FPMIN; d=1/d; let h=d;
@@ -2517,27 +2588,38 @@ function populateCtrlGroupSel(groupCols, tab) {
     const uniq = [...new Set(rawVals.map(v => v || 'NA'))]
       .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
     const preferred = uniq.find(v => CTRL_RE.test(v)) || '';
-    const opts = `<option value="">\u2014 (none) \u2014</option>` +
+    const indivOpt = resolvedTab === 'assay'
+      ? `<option value="__individual__">Individual</option>`
+      : '';
+    const opts = `<option value="">\u2014 (none) \u2014</option>${indivOpt}` +
       uniq.map(v =>
         `<option value="${escHtml(v)}"${v === preferred ? ' selected' : ''}>${escHtml(v)}</option>`
       ).join('');
     return `<div style="display:flex;align-items:center;gap:4px;font-size:.82rem;">` +
            `<span style="color:var(--muted);">${escHtml(col)}:</span>` +
-           `<select data-ctrl-col="${escHtml(col)}" style="height:32px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.82rem;background:#fff;" onchange="renderStatTables()">${opts}</select>` +
+           `<select data-ctrl-col="${escHtml(col)}" style="padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:.84rem;background:#fff;color:var(--ink);" onchange="renderStatTables()">${opts}</select>` +
            `</div>`;
   }).join('');
 }
 
-// Read the Assay-tab combined ctrl key (multiple group cols joined with '|||').
-// Returns '' if any col has no selection (meaning no ctrl).
+// Read the Assay-tab ctrl spec.
+// Returns null (no ctrl), a '|||'-joined string (no Individual cols), or
+// an array [{col, value, isIndividual}] (when any col is set to Individual).
 function getCtrlGroupAssay() {
   const container = document.getElementById('statCtrlSelAssay');
-  if (!container) return '';
+  if (!container) return null;
   const sels = [...container.querySelectorAll('select[data-ctrl-col]')];
-  if (!sels.length) return '';
-  const parts = sels.map(s => s.value);
-  if (parts.some(p => !p)) return '';
-  return parts.join('|||');
+  if (!sels.length) return null;
+  const specs = sels.map(s => ({
+    col: s.getAttribute('data-ctrl-col'),
+    value: s.value,
+    isIndividual: s.value === '__individual__'
+  }));
+  // No ctrl if any fixed col is unset
+  if (specs.some(s => !s.isIndividual && !s.value)) return null;
+  // No Individual cols → return simple joined string (backward compat)
+  if (!specs.some(s => s.isIndividual)) return specs.map(s => s.value).join('|||');
+  return specs;
 }
 
 // Read the Disease-tab ctrl key.
@@ -2589,7 +2671,7 @@ function _computeStatsForCtrl(vals, ctrlVals) {
 
   // Median-based metrics
   const fc_median       = !isNaN(median_ctrl) && median_ctrl !== 0 ? median / median_ctrl : NaN;
-  const mcs             = MAD_ctrl * 1.4826;
+  const mcs             = MAD_ctrl;
   const z_score_median  = !isNaN(mcs) && mcs > 0 ? (median - median_ctrl) / mcs : NaN;
   const ssmd_median     = (mad > 0 || MAD_ctrl > 0) ? (median - median_ctrl) / Math.sqrt(mad*mad + MAD_ctrl*MAD_ctrl) : NaN;
   const zprime_median   = Math.abs(median - median_ctrl) > 0 ? 1 - 3*(mad + MAD_ctrl)/Math.abs(median - median_ctrl) : NaN;
@@ -2597,30 +2679,202 @@ function _computeStatsForCtrl(vals, ctrlVals) {
   const dratio_median   = !isNaN(spooled_median) && spooled_median > 0 && Math.abs(median - median_ctrl) > 0
     ? _D_CONST*spooled_median*Math.sqrt(1/n_ctrl + 1/n)/Math.abs(median - median_ctrl) : NaN;
 
+  const cv_ctrl_pct = (!isNaN(mean_ctrl) && mean_ctrl !== 0 && n_ctrl >= 2) ? sd_ctrl / Math.abs(mean_ctrl) * 100 : NaN;
+  const sem_ctrl    = (n_ctrl > 0 && !isNaN(sd_ctrl)) ? sd_ctrl / Math.sqrt(n_ctrl) : NaN;
   const { p, pStar } = welchTTest(vals, ctrlVals);
   return {
     n, mean, sd, cv_pct, median, mad, sem,
-    n_ctrl, mean_ctrl, sd_ctrl, median_ctrl, MAD_ctrl,
+    n_ctrl, mean_ctrl, sd_ctrl, cv_ctrl_pct, median_ctrl, MAD_ctrl, sem_ctrl,
     fc_mean, z_score_mean, ssmd_mean, zprime_mean, spooled_mean, dratio_mean,
     fc_median, z_score_median, ssmd_median, zprime_median, spooled_median, dratio_median,
     p, pStar
   };
 }
 
+function onOutlierMethodChange(tab) {
+  const Cap = tab.charAt(0).toUpperCase() + tab.slice(1);
+  const method = document.getElementById(`statOutlierMethod${Cap}`)?.value || 'none';
+  const threshDiv = document.getElementById(`statOutlierThresh${Cap}Div`);
+  const threshInp = document.getElementById(`statOutlierThresh${Cap}`);
+  const threshLbl = document.getElementById(`statOutlierThresh${Cap}Label`);
+  if (threshDiv) threshDiv.style.display = method === 'none' ? 'none' : '';
+  if (threshInp) {
+    if (method === 'grubbs') { threshInp.value = '0.05'; threshInp.step = '0.01'; threshInp.min = '0.001'; }
+    else if (method === 'iqr')   { threshInp.value = '1.5';  threshInp.step = '0.5';  threshInp.min = '0'; }
+    else if (method === 'rout')  { threshInp.value = '1';    threshInp.step = '0.1';  threshInp.min = '0.01'; }
+  }
+  if (threshLbl) threshLbl.textContent = method === 'grubbs' ? 'α:' : method === 'rout' ? 'Q%:' : 'k:';
+  renderStatTables();
+}
+function getOutlierSpecAssay() {
+  const method = document.getElementById('statOutlierMethodAssay')?.value || 'none';
+  if (method === 'none') return null;
+  const defaults = { grubbs: 0.05, iqr: 1.5, rout: 1 };
+  const threshold = parseFloat(document.getElementById('statOutlierThreshAssay')?.value) ?? (defaults[method] ?? 0.05);
+  return { method, threshold };
+}
+
+// ---- Statistical distribution helpers for outlier detection ----
+function _betacf(x, a, b) {
+  const MAX_IT = 300, EPS = 3e-15, FPMIN = 1e-30;
+  const qab = a+b, qap = a+1, qam = a-1;
+  let c = 1, d = 1 - qab*x/qap;
+  if (Math.abs(d) < FPMIN) d = FPMIN;
+  d = 1/d; let h = d;
+  for (let m = 1; m <= MAX_IT; m++) {
+    const m2 = 2*m;
+    let aa = m*(b-m)*x/((qam+m2)*(a+m2));
+    d = 1+aa*d; if (Math.abs(d)<FPMIN) d=FPMIN;
+    c = 1+aa/c; if (Math.abs(c)<FPMIN) c=FPMIN;
+    d = 1/d; h *= d*c;
+    aa = -(a+m)*(qab+m)*x/((a+m2)*(qap+m2));
+    d = 1+aa*d; if (Math.abs(d)<FPMIN) d=FPMIN;
+    c = 1+aa/c; if (Math.abs(c)<FPMIN) c=FPMIN;
+    d = 1/d; const del = d*c; h *= del;
+    if (Math.abs(del-1) < EPS) break;
+  }
+  return h;
+}
+function _betaInc(x, a, b) {
+  if (x <= 0) return 0; if (x >= 1) return 1;
+  const lb = _lgamma(a)+_lgamma(b)-_lgamma(a+b);
+  const bt = Math.exp(a*Math.log(x)+b*Math.log(1-x)-lb);
+  if (x < (a+1)/(a+b+2)) return bt*_betacf(x,a,b)/a;
+  return 1 - bt*_betacf(1-x,b,a)/b;
+}
+// Two-sided p-value P(|T|>=t) for t(df)
+function _tP2(t, df) { return _betaInc(df/(df+t*t), df/2, 0.5); }
+// One-tail inverse: find t such that P(T>t)=p
+function _tInv1(p, df) {
+  if (p >= 0.5 || df <= 0) return 0;
+  let lo = 0, hi = 1000;
+  for (let i = 0; i < 100; i++) {
+    const mid = (lo+hi)/2;
+    if (_tP2(mid, df)/2 > p) lo = mid; else hi = mid;
+  }
+  return (lo+hi)/2;
+}
+
+function detectOutliers(vals, rows, wellCol, method, threshold) {
+  if (!vals.length) return { kept: vals, keptRows: rows, outliers: [] };
+  const outliers = [];
+  const kept = [...vals], keptRows = [...rows];
+
+  if (method === 'grubbs') {
+    // Iterative Grubbs test; threshold = alpha (significance level, e.g. 0.05)
+    const alpha = threshold;
+    while (true) {
+      const n = kept.length;
+      if (n < 3) break;
+      const mean = kept.reduce((a,b)=>a+b,0)/n;
+      const sd = Math.sqrt(kept.reduce((s,v)=>s+(v-mean)**2,0)/(n-1));
+      if (sd === 0) break;
+      let maxG = 0, maxIdx = -1;
+      kept.forEach((v,i)=>{ const g=Math.abs(v-mean)/sd; if(g>maxG){maxG=g;maxIdx=i;} });
+      const tCrit = _tInv1(alpha/(2*n), n-2);
+      const gCrit = ((n-1)/Math.sqrt(n)) * Math.sqrt(tCrit**2/(n-2+tCrit**2));
+      if (maxG > gCrit) {
+        outliers.push({ well: keptRows[maxIdx]?.[wellCol]||'', value: kept[maxIdx], score: +maxG.toFixed(4) });
+        kept.splice(maxIdx, 1); keptRows.splice(maxIdx, 1);
+      } else break;
+    }
+  } else if (method === 'iqr') {
+    const sorted = [...vals].sort((a,b)=>a-b);
+    const n = sorted.length;
+    const q1 = sorted[Math.floor((n-1)*0.25)];
+    const q3 = sorted[Math.floor((n-1)*0.75)];
+    const iqr = q3-q1;
+    if (iqr === 0) return { kept: vals, keptRows: rows, outliers: [] };
+    const lo = q1-threshold*iqr, hi = q3+threshold*iqr;
+    // rebuild from original vals (not mutated kept)
+    kept.length = 0; keptRows.length = 0;
+    vals.forEach((v,i)=>{
+      if (v < lo || v > hi) outliers.push({ well: rows[i]?.[wellCol]||'', value: v, score: +(v<lo?(lo-v)/iqr:(v-hi)/iqr).toFixed(4) });
+      else { kept.push(v); keptRows.push(rows[i]); }
+    });
+  } else if (method === 'rout') {
+    // ROUT: robust mean/SD + BH-FDR; threshold = Q% (e.g. 1 means 1%)
+    const Q = threshold / 100;
+    const n = vals.length;
+    if (n < 3) return { kept: vals, keptRows: rows, outliers: [] };
+    const robMean = arrMedian(vals);
+    const robSD = arrMAD(vals); // already scaled × 1.4826
+    if (robSD === 0) return { kept: vals, keptRows: rows, outliers: [] };
+    const tStats = vals.map(v => Math.abs(v-robMean)/robSD);
+    const pVals = tStats.map(t => _tP2(t, n-1));
+    // BH-FDR: find largest rank k where p_(k) <= Q*k/n
+    const indexed = pVals.map((p,i)=>({p,i})).sort((a,b)=>a.p-b.p);
+    let lastSig = -1;
+    for (let r = 0; r < n; r++) { if (indexed[r].p <= Q*(r+1)/n) lastSig = r; }
+    const flagged = new Set();
+    if (lastSig >= 0) for (let r = 0; r <= lastSig; r++) flagged.add(indexed[r].i);
+    kept.length = 0; keptRows.length = 0;
+    vals.forEach((v,i)=>{
+      if (flagged.has(i)) outliers.push({ well: rows[i]?.[wellCol]||'', value: v, score: +tStats[i].toFixed(4) });
+      else { kept.push(v); keptRows.push(rows[i]); }
+    });
+  }
+  return { kept, keptRows, outliers };
+}
+function toggleOutlierDetail(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = el.style.display === 'none' ? '' : 'none';
+}
+
 // Core stats computation (all R-script metrics)
-function computeFullStatsGroups(rows, groupCol, valCol, ctrlGroup) {
-  const gv = {};
+// ctrlSpec: null | string (fixed key) | [{col,value,isIndividual}] (Individual mode)
+function computeFullStatsGroups(rows, groupCol, valCol, ctrlSpec, outlierSpec) {
+  const gv = {}, gr = {};
   for (const row of rows) {
     const g = Array.isArray(groupCol) ? makeGrpKey(row, groupCol) : (row[groupCol] ?? 'NA');
     const v = parseFloat(row[valCol]);
-    if (!isNaN(v)) { if (!gv[g]) gv[g] = []; gv[g].push(v); }
+    if (!isNaN(v)) {
+      if (!gv[g]) { gv[g] = []; gr[g] = []; }
+      gv[g].push(v); gr[g].push(row);
+    }
   }
-  const isCtrlKey = key => ctrlGroup && key === ctrlGroup;
-  const cv = Object.entries(gv).filter(([k]) => isCtrlKey(k)).flatMap(([, v]) => v);
+
+  // Apply outlier removal per group
+  const wellCol = state.designWellCol || '';
+  const outliersByGroup = {};
+  if (outlierSpec) {
+    for (const g of Object.keys(gv)) {
+      const { kept, keptRows, outliers } = detectOutliers(gv[g], gr[g], wellCol, outlierSpec.method, outlierSpec.threshold);
+      gv[g] = kept; gr[g] = keptRows; outliersByGroup[g] = outliers;
+    }
+  }
+
+  const specArr = Array.isArray(ctrlSpec) ? ctrlSpec : null;
+  const hasIndividual = specArr && specArr.some(s => s.isIndividual);
+  const fixedKey = !specArr ? (ctrlSpec || '') : (!hasIndividual ? specArr.map(s => s.value).join('|||') : null);
+
+  // Build ctrl key for a given group key
+  const getCtrlKeyFor = (groupKey) => {
+    if (!hasIndividual) return fixedKey || '';
+    const parts = groupKey.split('|||');
+    return specArr.map((s, i) => s.isIndividual ? (parts[i] ?? 'NA') : s.value).join('|||');
+  };
+
+  // Is a group the ctrl group?
+  const isCtrlGroup = (groupKey) => {
+    if (!ctrlSpec) return false;
+    if (!hasIndividual) return !!fixedKey && groupKey === fixedKey;
+    // Individual mode: ctrl if all fixed cols match their specified value
+    const parts = groupKey.split('|||');
+    return specArr.every((s, i) => s.isIndividual || (parts[i] ?? 'NA') === s.value);
+  };
+
+  // Pre-compute global ctrl vals (non-Individual mode only)
+  const globalCv = !hasIndividual
+    ? Object.entries(gv).filter(([k]) => isCtrlGroup(k)).flatMap(([, v]) => v)
+    : null;
+  const noCtrlFound = !hasIndividual && (!globalCv || !globalCv.length);
 
   return Object.entries(gv).map(([group, vals]) => {
-    const isCtrl = (isCtrlKey(group) || !cv.length);
-    if (isCtrl) {
+    const isCtrl = isCtrlGroup(group);
+    const cv = hasIndividual ? (gv[getCtrlKeyFor(group)] || []) : (globalCv || []);
+
+    if (isCtrl || noCtrlFound) {
       const n = vals.length;
       return {
         group, n,
@@ -2630,37 +2884,42 @@ function computeFullStatsGroups(rows, groupCol, valCol, ctrlGroup) {
         median: arrMedian(vals),
         mad: arrMAD(vals),
         sem: n > 0 ? (n >= 2 ? arrSD(vals) : 0) / Math.sqrt(n) : NaN,
-        isCtrl: true
+        isCtrl: true,
+        n_removed: (outliersByGroup[group] || []).length,
+        outliers: outliersByGroup[group] || []
       };
     }
-    return { group, isCtrl: false, ..._computeStatsForCtrl(vals, cv) };
+    return { group, isCtrl: false, ..._computeStatsForCtrl(vals, cv),
+      n_removed: (outliersByGroup[group] || []).length,
+      outliers: outliersByGroup[group] || [] };
   });
 }
 
-function computeFullStatsPerPlate(rows, plateCol, groupCol, valCol, ctrlGroup) {
+function computeFullStatsPerPlate(rows, plateCol, groupCol, valCol, ctrlGroup, outlierSpec) {
   const fr = rows.filter(r => String(r['is_masked'] || '').toLowerCase() !== 'true');
-  if (!plateCol) return [{ plate: null, stats: computeFullStatsGroups(fr, groupCol, valCol, ctrlGroup) }];
+  if (!plateCol) return [{ plate: null, stats: computeFullStatsGroups(fr, groupCol, valCol, ctrlGroup, outlierSpec) }];
   const plates = [...new Set(fr.map(r => r[plateCol]).filter(Boolean))].sort();
   return plates.map(plate => ({
     plate,
-    stats: computeFullStatsGroups(fr.filter(r => r[plateCol] === plate), groupCol, valCol, ctrlGroup)
+    stats: computeFullStatsGroups(fr.filter(r => r[plateCol] === plate), groupCol, valCol, ctrlGroup, outlierSpec)
   }));
 }
 
-function renderStatPerPlateHtml(plateData, groupCols) {
+function renderStatPerPlateHtml(plateData, groupCols, showOutlierCol) {
   if (!plateData.length) return '<p style="color:var(--muted);font-size:.85rem;">No data.</p>';
   const gcols = groupCols || [];
-  const statCols = ['n','Mean','SD','CV%','Median','MAD','SEM',
-    'n ctrl','Mean ctrl','SD ctrl','Median ctrl',
-    'FC (mean)','FC (med)',
-    'z-score (mean)','z-score (med)',
-    'SSMD (mean)','SSMD (med)',
-    "Z' (mean)","Z' (med)",
-    'Sp (mean)','Sp (med)',
-    'D-ratio (mean)','D-ratio (med)',
-    'p-value','Sig'];
-  const f4 = (v, d=3) => (v == null || isNaN(v)) ? '\u2014' : Number(v).toFixed(d);
-  const fPct = v => (v == null || isNaN(v)) ? '\u2014' : v.toFixed(1) + '%';
+  const valCol = getGlobalValCol();
+  const statCols = ['n_exp','mean_exp','sd_exp','cv_exp','median_exp','MAD_exp','SEM_exp',
+    'n_ctrl','mean_ctrl','sd_ctrl','cv_ctrl','median_ctrl','MAD_ctrl','SEM_ctrl',
+    'Fold_Change_mean','Fold_Change_median',
+    'z_score_mean','z_score_median',
+    'SSMD_mean','SSMD_median',
+    'Z_prime_mean','Z_prime_median',
+    'S_pooled_mean','S_pooled_median',
+    'D_ratio_mean','D_ratio_median',
+    'p_value','p_star',...(showOutlierCol ? ['n_outlier'] : [])];
+  const f4 = (v, d=6) => (v == null || isNaN(v)) ? '\u2014' : Number(v).toFixed(d);
+  const fPct = v => (v == null || isNaN(v)) ? '\u2014' : Number(v).toFixed(2) + '%';
   const sigStyle = {
     '****':'color:var(--err);font-weight:700','***':'color:var(--err);font-weight:600',
     '**':'color:var(--warn);font-weight:600','*':'color:var(--warn)','ns':'color:var(--muted)'
@@ -2684,37 +2943,42 @@ function renderStatPerPlateHtml(plateData, groupCols) {
     return out;
   }
 
-  // header columns: Plate (if present) + Group (combined) + individual gcols (only if >1) + stat cols
-  const showIndivCols = gcols.length > 1;
-  const allCols = [...(hasPlate ? ['Plate'] : []), 'Group', ...(showIndivCols ? gcols : []), ...statCols];
+  // header columns: Plate (if present) + Metric + Group (combined) + individual gcols + stat cols
+  const showIndivCols = true;
+  const allCols = [...(hasPlate ? ['Plate'] : []), 'Metric', 'Group', ...gcols, ...statCols];
 
   function rowToVals(s) {
     const gv = getGroupVals(s);
-    const pFmt = s.p == null || isNaN(s.p) ? '\u2014' : s.p < 0.0001 ? s.p.toExponential(2) : s.p.toFixed(4);
+    const pFmt = s.p == null || isNaN(s.p) ? '\u2014' : s.p < 0.001 ? s.p.toExponential(2) : s.p.toFixed(4);
     return {
       'Plate': s.plate != null ? String(s.plate) : '\u2014',
+      'Metric': valCol || '\u2014',
       ...gv,
-      'n': String(s.n),
-      'Mean': f4(s.mean), 'SD': f4(s.sd), 'CV%': fPct(s.cv_pct),
-      'Median': f4(s.median), 'MAD': f4(s.mad), 'SEM': f4(s.sem),
-      'n ctrl': s.isCtrl ? '\u2014' : String(s.n_ctrl),
-      'Mean ctrl': s.isCtrl ? '\u2014' : f4(s.mean_ctrl),
-      'SD ctrl': s.isCtrl ? '\u2014' : f4(s.sd_ctrl),
-      'Median ctrl': s.isCtrl ? '\u2014' : f4(s.median_ctrl),
-      'FC (mean)': s.isCtrl ? '\u2014' : f4(s.fc_mean),
-      'FC (med)': s.isCtrl ? '\u2014' : f4(s.fc_median),
-      'z-score (mean)': s.isCtrl ? '\u2014' : f4(s.z_score_mean),
-      'z-score (med)': s.isCtrl ? '\u2014' : f4(s.z_score_median),
-      'SSMD (mean)': s.isCtrl ? '\u2014' : f4(s.ssmd_mean),
-      'SSMD (med)': s.isCtrl ? '\u2014' : f4(s.ssmd_median),
-      "Z' (mean)": s.isCtrl ? '\u2014' : f4(s.zprime_mean),
-      "Z' (med)": s.isCtrl ? '\u2014' : f4(s.zprime_median),
-      'Sp (mean)': s.isCtrl ? '\u2014' : f4(s.spooled_mean),
-      'Sp (med)': s.isCtrl ? '\u2014' : f4(s.spooled_median),
-      'D-ratio (mean)': s.isCtrl ? '\u2014' : f4(s.dratio_mean),
-      'D-ratio (med)': s.isCtrl ? '\u2014' : f4(s.dratio_median),
-      'p-value': s.isCtrl ? '\u2014' : pFmt,
-      'Sig': s.isCtrl ? '\u2014' : (s.pStar ?? '\u2014'),
+      'n_exp': String(s.n),
+      'n_outlier': s.n_removed > 0 ? String(s.n_removed) : '',
+      'mean_exp': f4(s.mean), 'sd_exp': f4(s.sd), 'cv_exp': fPct(s.cv_pct),
+      'median_exp': f4(s.median), 'MAD_exp': f4(s.mad), 'SEM_exp': f4(s.sem),
+      'n_ctrl': s.isCtrl ? '\u2014' : String(s.n_ctrl),
+      'mean_ctrl': s.isCtrl ? '\u2014' : f4(s.mean_ctrl),
+      'sd_ctrl': s.isCtrl ? '\u2014' : f4(s.sd_ctrl),
+      'cv_ctrl': s.isCtrl ? '\u2014' : fPct(s.cv_ctrl_pct),
+      'median_ctrl': s.isCtrl ? '\u2014' : f4(s.median_ctrl),
+      'MAD_ctrl': s.isCtrl ? '\u2014' : f4(s.MAD_ctrl),
+      'SEM_ctrl': s.isCtrl ? '\u2014' : f4(s.sem_ctrl),
+      'Fold_Change_mean': s.isCtrl ? '\u2014' : f4(s.fc_mean, 2),
+      'Fold_Change_median': s.isCtrl ? '\u2014' : f4(s.fc_median, 2),
+      'z_score_mean': s.isCtrl ? '\u2014' : f4(s.z_score_mean, 2),
+      'z_score_median': s.isCtrl ? '\u2014' : f4(s.z_score_median, 2),
+      'SSMD_mean': s.isCtrl ? '\u2014' : f4(s.ssmd_mean, 2),
+      'SSMD_median': s.isCtrl ? '\u2014' : f4(s.ssmd_median, 2),
+      'Z_prime_mean': s.isCtrl ? '\u2014' : f4(s.zprime_mean),
+      'Z_prime_median': s.isCtrl ? '\u2014' : f4(s.zprime_median),
+      'S_pooled_mean': s.isCtrl ? '\u2014' : f4(s.spooled_mean),
+      'S_pooled_median': s.isCtrl ? '\u2014' : f4(s.spooled_median),
+      'D_ratio_mean': s.isCtrl ? '\u2014' : f4(s.dratio_mean),
+      'D_ratio_median': s.isCtrl ? '\u2014' : f4(s.dratio_median),
+      'p_value': s.isCtrl ? '\u2014' : pFmt,
+      'p_star': s.isCtrl ? '\u2014' : (s.pStar ?? '\u2014'),
     };
   }
 
@@ -2754,14 +3018,19 @@ function renderStatPerPlateHtml(plateData, groupCols) {
       const v = vals[col] ?? '\u2014';
       const isPlate = col === 'Plate';
       const isGroup = col === 'Group';
-      const isIndiv = showIndivCols && gcols.includes(col);
+      const isMetric = col === 'Metric';
+      const isIndiv = gcols.includes(col);
       if (isPlate) {
         html += `<td style="white-space:nowrap;font-weight:600;color:var(--muted);" data-col="Plate" data-v="${escHtml(v)}">${escHtml(v)}</td>`;
+      } else if (isMetric) {
+        html += `<td style="white-space:nowrap;color:var(--muted);" data-col="Metric" data-v="${escHtml(v)}">${escHtml(v)}</td>`;
       } else if (isGroup) {
         html += `<td style="white-space:nowrap;font-weight:600;" data-col="Group" data-v="${escHtml(v)}">${escHtml(v)}${s.isCtrl ? ' <span style="font-size:.62rem;background:var(--brand-soft);color:var(--brand);border:1px solid var(--line);border-radius:4px;padding:0 4px;">ctrl</span>' : ''}</td>`;
       } else if (isIndiv) {
         html += `<td style="white-space:nowrap;" data-col="${escHtml(col)}" data-v="${escHtml(v)}">${escHtml(v)}</td>`;
-      } else if (col === 'Sig') {
+      } else if (col === 'n_outlier') {
+        html += `<td>${escHtml(v)}</td>`;
+      } else if (col === 'p_star') {
         const ss = sigStyle[v] || '';
         html += `<td style="${ss}">${escHtml(v)}</td>`;
       } else {
@@ -2769,9 +3038,36 @@ function renderStatPerPlateHtml(plateData, groupCols) {
       }
     });
     html += '</tr>';
+    void (s.outliers); // rendered in separate outlier table below
   });
 
-  html += `</tbody></table></div></div>`;
+  html += `</tbody></table></div>`;
+
+  // Separate outlier table
+  const outlierRows = allRows.filter(s => (s.outliers||[]).length > 0);
+  if (outlierRows.length) {
+    html += `<div style="margin-top:14px;"><div style="font-size:.85rem;font-weight:600;color:var(--warn);margin-bottom:6px;">&#9888; Removed Outliers</div>`;
+    html += `<div class="table-wrap" style="max-height:280px;"><table><thead><tr>`;
+    [...(hasPlate ? ['Plate'] : []), 'Group', ...gcols, 'Well', 'Value', 'Score'].forEach(h => {
+      html += `<th style="white-space:nowrap;">${escHtml(h)}</th>`;
+    });
+    html += `</tr></thead><tbody>`;
+    outlierRows.forEach(s => {
+      (s.outliers||[]).forEach(o => {
+        html += `<tr>`;
+        if (hasPlate) html += `<td style="white-space:nowrap;color:var(--muted);">${escHtml(String(s.plate??'\u2014'))}</td>`;
+        html += `<td style="font-weight:600;">${escHtml(String(s.group).replace(/\|\|\|/g,'_'))}</td>`;
+        gcols.forEach((col, i) => { html += `<td>${escHtml(String(s.group.split('|||')[i]??'\u2014'))}</td>`; });
+        html += `<td>${escHtml(String(o.well||'\u2014'))}</td>`;
+        html += `<td>${(+o.value).toFixed(6)}</td>`;
+        html += `<td>${(+o.score).toFixed(4)}</td>`;
+        html += `</tr>`;
+      });
+    });
+    html += `</tbody></table></div></div>`;
+  }
+
+  html += `</div>`;
   return html;
 }
 
@@ -2805,15 +3101,15 @@ function statTblSort(tid, ci) {
   });
   const tbody = document.getElementById(tid + '_body');
   if (!tbody) return;
-  const rows = [...tbody.querySelectorAll('tr')];
-  rows.sort((a, b) => {
+  const dataRows = [...tbody.querySelectorAll('tr')];
+  dataRows.sort((a, b) => {
     const av = a.querySelectorAll('td')[ci]?.textContent || '';
     const bv = b.querySelectorAll('td')[ci]?.textContent || '';
     const an = parseFloat(av), bn = parseFloat(bv);
     if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
     return asc ? av.localeCompare(bv) : bv.localeCompare(av);
   });
-  rows.forEach(r => tbody.appendChild(r));
+  dataRows.forEach(r => { tbody.appendChild(r); });
 }
 
 function statTblFilter(tid) {
@@ -2847,9 +3143,10 @@ function renderStatTables() {
 
   if (assayGroupCols.length) {
     const assayCtrl = getCtrlGroupAssay();
-    const d = computeFullStatsPerPlate(state.mergedData.rows, assayPlateCol, assayGroupCols, valCol, assayCtrl);
+    const outlierSpec = getOutlierSpecAssay();
+    const d = computeFullStatsPerPlate(state.mergedData.rows, assayPlateCol, assayGroupCols, valCol, assayCtrl, outlierSpec);
     const el = document.getElementById('statTableAssay');
-    if (el) el.innerHTML = renderStatPerPlateHtml(d, assayGroupCols);
+    if (el) el.innerHTML = renderStatPerPlateHtml(d, assayGroupCols, !!outlierSpec);
   }
   if (diseaseGroupCols.length || document.getElementById('diseaseColSel')?.value) {
     const diseaseCol = document.getElementById('diseaseColSel')?.value || '';
@@ -2868,8 +3165,6 @@ function renderStatTables() {
     }
   }
 }
-
-function renderStatTable() { renderStatTables(); }
 
 // ─────────────────────────────────────────────
 // DISEASE WINDOW — Disease col logic
@@ -3131,23 +3426,88 @@ function exportStatCSV() {
     }
   } else {
     const ctrlGroup = getCtrlGroupAssay();
-    plateData = computeFullStatsPerPlate(state.mergedData.rows, plateCol, groupCols, valCol, ctrlGroup);
+    const outlierSpec = getOutlierSpecAssay();
+    plateData = computeFullStatsPerPlate(state.mergedData.rows, plateCol, groupCols, valCol, ctrlGroup, outlierSpec);
   }
   const allStats  = plateData.flatMap(({ plate, stats }) =>
     stats.map(s => ({ _plate: plate ?? '(all)', ...s }))
   );
-  const hdrs = ['_plate','group','n','mean','sd','cv_pct','median','mad','sem',
-    'n_ctrl','mean_ctrl','sd_ctrl','median_ctrl',
-    'fc_mean','fc_median','z_score_mean','z_score_median',
-    'ssmd_mean','ssmd_median','zprime_mean','zprime_median',
-    'spooled_mean','spooled_median','dratio_mean','dratio_median','p','pStar'];
+  // Formatting mirrors the table exactly — single source of truth
+  const fmtN  = (v, d=6) => (v == null || isNaN(+v)) ? '' : (+v).toFixed(d);
+  const fmtPct = v => (v == null || isNaN(+v)) ? '' : (+v).toFixed(2) + '%';
+  const fmtP   = v => (v == null || isNaN(+v)) ? '' : (+v).toExponential(2);
   const esc = v => { const s = String(v ?? '').replace(/\|\|\|/g,'_'); return (s.includes(',')||s.includes('"')||s.includes('\n')) ? `"${s.replace(/"/g,'""')}"` : s; };
-  const rows = [hdrs, ...allStats.map(s => hdrs.map(h => esc(s[h] ?? '')))];
+  const hasOutlierSpec = _curStatTab === 'assay' ? !!getOutlierSpecAssay() : false;
+  const hdrs = ['metric', '_plate', 'group', ...groupCols,
+    'n_exp','mean_exp','sd_exp','cv_exp','median_exp','MAD_exp','SEM_exp',
+    'n_ctrl','mean_ctrl','sd_ctrl','cv_ctrl','median_ctrl','MAD_ctrl','SEM_ctrl',
+    'Fold_Change_mean','Fold_Change_median','z_score_mean','z_score_median',
+    'SSMD_mean','SSMD_median','Z_prime_mean','Z_prime_median',
+    'S_pooled_mean','S_pooled_median','D_ratio_mean','D_ratio_median','p_value','p_star',...(hasOutlierSpec ? ['n_outlier'] : [])];
+  const buildCsvRow = s => {
+    const parts = s.group.split('|||');
+    const grpVals = {};
+    groupCols.forEach((col, i) => { grpVals[col] = parts[i] ?? s.group; });
+    const ic = s.isCtrl;
+    return {
+      'metric': valCol,
+      '_plate': s._plate,
+      'group': s.group,
+      ...grpVals,
+      'n_exp': s.n,
+      'n_outlier': hasOutlierSpec ? (s.n_removed || 0) : undefined,
+      'mean_exp': fmtN(s.mean), 'sd_exp': fmtN(s.sd), 'cv_exp': fmtPct(s.cv_pct),
+      'median_exp': fmtN(s.median), 'MAD_exp': fmtN(s.mad), 'SEM_exp': fmtN(s.sem),
+      'n_ctrl':          ic ? '' : s.n_ctrl,
+      'mean_ctrl':       ic ? '' : fmtN(s.mean_ctrl),
+      'sd_ctrl':         ic ? '' : fmtN(s.sd_ctrl),
+      'cv_ctrl':         ic ? '' : fmtPct(s.cv_ctrl_pct),
+      'median_ctrl':     ic ? '' : fmtN(s.median_ctrl),
+      'MAD_ctrl':        ic ? '' : fmtN(s.MAD_ctrl),
+      'SEM_ctrl':        ic ? '' : fmtN(s.sem_ctrl),
+      'Fold_Change_mean':    ic ? '' : fmtN(s.fc_mean, 2),
+      'Fold_Change_median':  ic ? '' : fmtN(s.fc_median, 2),
+      'z_score_mean':        ic ? '' : fmtN(s.z_score_mean, 2),
+      'z_score_median':      ic ? '' : fmtN(s.z_score_median, 2),
+      'SSMD_mean':           ic ? '' : fmtN(s.ssmd_mean, 2),
+      'SSMD_median':         ic ? '' : fmtN(s.ssmd_median, 2),
+      'Z_prime_mean':        ic ? '' : fmtN(s.zprime_mean),
+      'Z_prime_median':      ic ? '' : fmtN(s.zprime_median),
+      'S_pooled_mean':       ic ? '' : fmtN(s.spooled_mean),
+      'S_pooled_median':     ic ? '' : fmtN(s.spooled_median),
+      'D_ratio_mean':        ic ? '' : fmtN(s.dratio_mean),
+      'D_ratio_median':      ic ? '' : fmtN(s.dratio_median),
+      'p_value':  ic ? '' : fmtP(s.p),
+      'p_star':   ic ? '' : (s.pStar ?? ''),
+    };
+  };
+  const rows = [hdrs, ...allStats.map(s => hdrs.map(h => esc(buildCsvRow(s)[h] ?? '')))];
   const blob = new Blob([rows.map(r => r.join(',')).join('\r\n')], { type: 'text/csv' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = getDateStr() + (_curStatTab === 'assay' ? '_Assay_Win' : '_Disease_Win') + '.csv';
   a.click();
+  URL.revokeObjectURL(a.href);
+  // Outlier report (separate file, only if any outliers exist)
+  const allOutliers = allStats.flatMap(s => {
+    const parts = s.group.split('|||');
+    const grpVals = {};
+    groupCols.forEach((col, i) => { grpVals[col] = parts[i] ?? s.group; });
+    return (s.outliers || []).map(o => ({
+      metric: valCol, _plate: s._plate, group: s.group, ...grpVals,
+      well: o.well, value: o.value, score: o.score
+    }));
+  });
+  if (allOutliers.length) {
+    const oHdrs = ['metric', '_plate', 'group', ...groupCols, 'well', 'value', 'score'];
+    const oRows = [oHdrs, ...allOutliers.map(r => oHdrs.map(h => esc(r[h] ?? '')))];
+    const oBlob = new Blob([oRows.map(r => r.join(',')).join('\r\n')], { type: 'text/csv' });
+    const b = document.createElement('a');
+    b.href = URL.createObjectURL(oBlob);
+    b.download = getDateStr() + (_curStatTab === 'assay' ? '_Assay_Outliers' : '_Disease_Outliers') + '.csv';
+    b.click();
+    URL.revokeObjectURL(b.href);
+  }
   _btnOk(document.getElementById('btnExportStat'));
 }
 function exportCSV() {
@@ -3174,6 +3534,49 @@ function exportCSV() {
 // ─────────────────────────────────────────────
 // PRISM EXPORT
 // ─────────────────────────────────────────────
+function onPrismOutlierChange(pfx) {
+  if (!pfx) pfx = 'prism';
+  const method = document.getElementById(pfx+'OutlierMethod')?.value || 'none';
+  const methodDiv = document.getElementById(pfx+'OutlierMethodDiv');
+  if (methodDiv) methodDiv.style.display = method === 'none' ? 'none' : 'flex';
+  if (method === 'none') return;
+  const threshInp = document.getElementById(pfx+'OutlierThresh');
+  const threshLbl = document.getElementById(pfx+'OutlierThreshLabel');
+  if (threshInp) {
+    if (method === 'grubbs') { threshInp.value = '0.05'; threshInp.step = '0.01'; threshInp.min = '0.001'; }
+    else if (method === 'iqr')  { threshInp.value = '1.5';  threshInp.step = '0.5';  threshInp.min = '0'; }
+    else if (method === 'rout') { threshInp.value = '1';    threshInp.step = '0.1';  threshInp.min = '0.01'; }
+  }
+  if (threshLbl) threshLbl.textContent = method === 'grubbs' ? '\u03b1:' : method === 'rout' ? 'Q%:' : 'k:';
+}
+function getOutlierSpecPrism(pfx) {
+  if (!pfx) pfx = 'prism';
+  const method = document.getElementById(pfx+'OutlierMethod')?.value || 'none';
+  if (method === 'none') return null;
+  const defaults = { grubbs: 0.05, iqr: 1.5, rout: 1 };
+  const threshold = parseFloat(document.getElementById(pfx+'OutlierThresh')?.value) || (defaults[method] ?? 0.05);
+  return { method, threshold };
+}
+// Apply outlier removal to a string-value array; returns { kept, keptIndices, nRemoved }
+function applyOutliersToStrVals(strVals, outlierSpec) {
+  if (!outlierSpec) return { kept: strVals, keptIndices: strVals.map((_, i) => i), nRemoved: 0 };
+  const parsed = strVals.map((v, i) => ({ i, num: parseFloat(v) }));
+  const valid = parsed.filter(x => !isNaN(x.num));
+  if (valid.length < 3) return { kept: strVals, keptIndices: strVals.map((_, i) => i), nRemoved: 0 };
+  const nums = valid.map(x => x.num);
+  const { kept: keptNums } = detectOutliers(nums, nums.map(() => ({})), '', outlierSpec.method, outlierSpec.threshold);
+  const removedCount = nums.length - keptNums.length;
+  if (removedCount === 0) return { kept: strVals, keptIndices: strVals.map((_, i) => i), nRemoved: 0 };
+  const keptCopy = [...keptNums];
+  const keptIdxSet = new Set();
+  for (const { i, num } of valid) {
+    const pos = keptCopy.indexOf(num);
+    if (pos >= 0) { keptIdxSet.add(i); keptCopy.splice(pos, 1); }
+  }
+  parsed.filter(x => isNaN(x.num)).forEach(x => keptIdxSet.add(x.i));
+  const keptIndices = [...keptIdxSet].sort((a, b) => a - b);
+  return { kept: keptIndices.map(i => strVals[i]), keptIndices, nRemoved: removedCount };
+}
 let _prismSelectedType = null;
 let _prismLastRows = null;
 let _prismLastTSV = '';
@@ -3234,6 +3637,7 @@ function populatePrismSelectors() {
   fillPSel('pcol-y', numCols);
   pickSel('pcol-y', globalVal);
   fillPSel('pcol-rl', headers, true);
+  pickSel('pcol-rl', anovaDose || '');
   buildPrismChkList('pcol-grp-wrap', headers, globalGrp.length ? globalGrp : catCols.slice(0, 1));
   fillPSel('pcol-fc', headers, true);
 
@@ -3742,6 +4146,32 @@ function doPrismTransform(){
     renderPrismOutputs(outputs);
   }
 }
+function _rowIdStr(row){
+  // Try result well col first, then design well col (in design+result merge the row key is the design col name)
+  const wCol = (state.resultWellCol && row[state.resultWellCol]!=null && String(row[state.resultWellCol])!=='')
+    ? state.resultWellCol
+    : (state.designWellCol || '');
+  const pCol = (state.resultPlateCol && row[state.resultPlateCol]!=null && String(row[state.resultPlateCol])!=='')
+    ? state.resultPlateCol
+    : (state.designPlateCol || '');
+  const w=wCol?String(row[wCol]??''):'';
+  const p=pCol?String(row[pCol]??''):'';
+  if(p&&w)return p+':'+w;
+  return w||p||'';
+}
+function _buildOutlierHTML(details){
+  if(!details.length)return '';
+  const n=details.length;
+  const listHTML=details.map(d=>{
+    const lbl=d.label?'<code style="background:var(--brand-soft);padding:1px 5px;border-radius:4px;font-size:.8rem;">'+escHtml(d.label)+'</code> ':''
+    return '<li style="margin:2px 0;">'+lbl+'<span style="color:var(--muted);font-size:.79rem;">'+escHtml(d.ctx)+'</span></li>';
+  }).join('');
+  return ' &nbsp;&middot;&nbsp; <details style="display:inline;cursor:pointer;">'
+    +'<summary style="display:inline;color:var(--err);font-size:.82rem;cursor:pointer;">'
+    +n+' outlier'+(n>1?'s':'')+ ' removed &#9660;</summary>'
+    +'<ul style="margin:6px 0 4px 16px;padding:0;list-style:disc;">'
+    +listHTML+'</ul></details>';
+}
 function txPrismXY(data,label){
   const xCol=document.getElementById('pxy-x').value;
   const valCol=document.getElementById('pxy-y').value;
@@ -3755,13 +4185,24 @@ function txPrismXY(data,label){
   if(!grpCols.length){_btnWarn(_txBtn,'⚠ Check at least one Group column.');return null;}
   const{data:fd,removed}=applyPrismFilter(data,'pxy-fc','pxy-fv');
   if(!fd.length){_btnWarn(_txBtn,'⚠ No data remains after filtering.');return null;}
-  const xSet=new Set(),xOrd=[],grpOrd=[],grpSet=new Set(),pivot=new Map();
+  const xSet=new Set(),xOrd=[],grpOrd=[],grpSet=new Set(),pivot=new Map(),pivotLabels=new Map();
   for(const row of fd){
     const x=String(row[xCol]??''),gk=grpCols.map(c=>String(row[c]??'')).join(sep),v=String(row[valCol]??'');
     if(!xSet.has(x)){xSet.add(x);xOrd.push(x);}
     if(!grpSet.has(gk)){grpSet.add(gk);grpOrd.push(gk);}
-    if(!pivot.has(gk))pivot.set(gk,new Map());
+    if(!pivot.has(gk)){pivot.set(gk,new Map());pivotLabels.set(gk,new Map());}
     const gm=pivot.get(gk);if(!gm.has(x))gm.set(x,[]);gm.get(x).push(v);
+    const gl=pivotLabels.get(gk);if(!gl.has(x))gl.set(x,[]);gl.get(x).push(_rowIdStr(row));
+  }
+  const outlierSpec=getOutlierSpecPrism('prism');
+  const outlierDetails=[];
+  if(outlierSpec){
+    for(const gk of grpOrd)for(const[x,vals]of pivot.get(gk)){
+      const lbls=pivotLabels.get(gk)?.get(x)||[];
+      const{kept,keptIndices,nRemoved}=applyOutliersToStrVals(vals,outlierSpec);
+      if(nRemoved){const ks=new Set(keptIndices);for(let i=0;i<vals.length;i++){if(!ks.has(i))outlierDetails.push({label:lbls[i]||'',ctx:'group='+gk+', x='+x+', y='+(isNaN(+vals[i])?vals[i]:(+vals[i]).toFixed(2))});}}
+      pivot.get(gk).set(x,kept);
+    }
   }
   const xVals=sortXVals([...xSet],xOrd,xSort);
   const groups=sortGrp?[...grpOrd].sort():grpOrd;
@@ -3771,7 +4212,7 @@ function txPrismXY(data,label){
   const allRows=[hdr,...xVals.map(x=>{const r=[x];for(const gk of groups){const vs=pivot.get(gk).get(x)||[],n=reps.get(gk);for(let i=0;i<n;i++)r.push(i<vs.length?vs[i]:'');}return r;})];
   const maxR=Math.max(0,...[...reps.values()]);
   const pills=groups.map(gk=>'<span style="background:var(--brand-soft);border:1px solid var(--line);padding:1px 7px;border-radius:20px;font-size:.77rem;">'+escHtml(gk)+' \u00d7'+reps.get(gk)+'</span>').join(' ');
-  const summary=xVals.length+' X values &nbsp;&middot;&nbsp; '+groups.length+' groups &nbsp;&middot;&nbsp; max '+maxR+' rep'+(removed?' &nbsp;&middot;&nbsp; <span style="color:var(--err);">'+removed+' rows filtered</span>':'')+(pills?'<br><span style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">'+pills+'</span>':'');
+  const summary=xVals.length+' X values &nbsp;&middot;&nbsp; '+groups.length+' groups &nbsp;&middot;&nbsp; max '+maxR+' rep'+(removed?' &nbsp;&middot;&nbsp; <span style="color:var(--err);">'+removed+' rows filtered</span>':'')+_buildOutlierHTML(outlierDetails)+(pills?'<br><span style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">'+pills+'</span>':'');
   return{label:label||'Output',allRows,summary,tip:'<strong>Prism XY table:</strong> Paste into a new <em>XY</em> table. Repeated column headers = replicate sub-columns. Suitable for scatter plots, dose-response curves and time-course graphs.'};
 }
 function txPrismColumn(data,label){
@@ -3780,20 +4221,33 @@ function txPrismColumn(data,label){
   const grpCols=getCheckedPrism('pcol-grp-wrap');
   const sep=document.getElementById('pcol-sep')?.value||' | ';
   const sortGrp=!!(document.getElementById('pcol-sortGrp')?.checked);
+  const rowSort=document.querySelector('input[name="pcol-rs"]:checked')?.value||'numeric';
   const _txBtn=document.getElementById('btnPrismTransform');
   if(!valCol){_btnWarn(_txBtn,'⚠ Select a Y value column.');return null;}
   if(!grpCols.length){_btnWarn(_txBtn,'⚠ Check at least one Group column.');return null;}
   const{data:fd,removed}=applyPrismFilter(data,'pcol-fc','pcol-fv');
   if(!fd.length){_btnWarn(_txBtn,'⚠ No data remains after filtering.');return null;}
-  const grpOrd=[],grpSet=new Set(),grpVals=new Map(),grpLabels=new Map();
+  const grpOrd=[],grpSet=new Set(),grpVals=new Map(),grpLabels=new Map(),grpWells=new Map();
   for(const row of fd){
     const gk=grpCols.map(c=>String(row[c]??'')).join(sep),v=String(row[valCol]??'');
     if(!grpSet.has(gk)){grpSet.add(gk);grpOrd.push(gk);}
     if(!grpVals.has(gk))grpVals.set(gk,[]);
     grpVals.get(gk).push(v);
+    if(!grpWells.has(gk))grpWells.set(gk,[]);grpWells.get(gk).push(_rowIdStr(row));
     if(rlCol){if(!grpLabels.has(gk))grpLabels.set(gk,[]);grpLabels.get(gk).push(String(row[rlCol]??''));}
   }
-  const groups=sortGrp?[...grpOrd].sort():grpOrd;
+  const outlierSpec=getOutlierSpecPrism('pcol');
+  const outlierDetails=[];
+  if(outlierSpec){
+    for(const gk of grpOrd){
+      const vals=grpVals.get(gk),wells=grpWells.get(gk)||[];
+      const{kept,keptIndices,nRemoved}=applyOutliersToStrVals(vals,outlierSpec);
+      if(nRemoved){const ks=new Set(keptIndices);for(let i=0;i<vals.length;i++){if(!ks.has(i))outlierDetails.push({label:wells[i]||'',ctx:'group='+gk+', y='+(isNaN(+vals[i])?vals[i]:(+vals[i]).toFixed(2))});}}
+      grpVals.set(gk,kept);
+      if(rlCol&&grpLabels.has(gk)){grpLabels.set(gk,keptIndices.map(i=>grpLabels.get(gk)[i]??''));}
+    }
+  }
+  const groups=sortGrp?[...grpOrd].sort():sortXVals([...grpOrd],grpOrd,rowSort);
   const maxN=Math.max(0,...groups.map(gk=>grpVals.get(gk).length));
   const hdr=rlCol?['',  ...groups]:[...groups];
   const allRows=[hdr];
@@ -3802,7 +4256,7 @@ function txPrismColumn(data,label){
     else{allRows.push(groups.map(gk=>{const v=grpVals.get(gk);return i<v.length?v[i]:'';}));}
   }
   const pills=groups.map(gk=>'<span style="background:var(--brand-soft);border:1px solid var(--line);padding:1px 7px;border-radius:20px;font-size:.77rem;">'+escHtml(gk)+' \u00d7'+grpVals.get(gk).length+'</span>').join(' ');
-  const summary=groups.length+' groups &nbsp;&middot;&nbsp; max '+maxN+' rep'+(removed?' &nbsp;&middot;&nbsp; <span style="color:var(--err);">'+removed+' rows filtered</span>':'')+(pills?'<br><span style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">'+pills+'</span>':'');
+  const summary=groups.length+' groups &nbsp;&middot;&nbsp; max '+maxN+' rep'+(removed?' &nbsp;&middot;&nbsp; <span style="color:var(--err);">'+removed+' rows filtered</span>':'')+_buildOutlierHTML(outlierDetails)+(pills?'<br><span style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">'+pills+'</span>':'');
   const tipExtra=rlCol?' Row labels (first column) enable paired/repeated-measures analysis in Prism.':'';
   return{label:label||'Output',allRows,summary,tip:'<strong>Prism Column table:</strong> Paste into a new <em>Column</em> table. Suitable for bar graphs, dot plots and box-and-whiskers.'+tipExtra};
 }
@@ -3820,13 +4274,24 @@ function txPrismGrouped(data,label){
   if(colCols.includes(rowCol)){_btnWarn(_txBtn,'⚠ Row factor cannot also be a Column group.');return null;}
   const{data:fd,removed}=applyPrismFilter(data,'pgrp-fc','pgrp-fv');
   if(!fd.length){_btnWarn(_txBtn,'⚠ No data remains after filtering.');return null;}
-  const rowSet=new Set(),rowOrd=[],colSet=new Set(),colOrd=[],mat=new Map();
+  const rowSet=new Set(),rowOrd=[],colSet=new Set(),colOrd=[],mat=new Map(),matLabels=new Map();
   for(const row of fd){
     const rk=String(row[rowCol]??''),ck=colCols.map(c=>String(row[c]??'')).join(sep),v=String(row[valCol]??'');
     if(!rowSet.has(rk)){rowSet.add(rk);rowOrd.push(rk);}
     if(!colSet.has(ck)){colSet.add(ck);colOrd.push(ck);}
-    if(!mat.has(rk))mat.set(rk,new Map());
+    if(!mat.has(rk)){mat.set(rk,new Map());matLabels.set(rk,new Map());}
     const rm=mat.get(rk);if(!rm.has(ck))rm.set(ck,[]);rm.get(ck).push(v);
+    const rl=matLabels.get(rk);if(!rl.has(ck))rl.set(ck,[]);rl.get(ck).push(_rowIdStr(row));
+  }
+  const outlierSpec=getOutlierSpecPrism('pgrp');
+  const outlierDetails=[];
+  if(outlierSpec){
+    for(const[rk,rm]of mat){const rl=matLabels.get(rk)||new Map();for(const[ck,vals]of rm){
+      const lbls=rl.get(ck)||[];
+      const{kept,keptIndices,nRemoved}=applyOutliersToStrVals(vals,outlierSpec);
+      if(nRemoved){const ks=new Set(keptIndices);for(let i=0;i<vals.length;i++){if(!ks.has(i))outlierDetails.push({label:lbls[i]||'',ctx:'row='+rk+', col='+ck+', y='+(isNaN(+vals[i])?vals[i]:(+vals[i]).toFixed(2))});}}
+      rm.set(ck,kept);
+    }}
   }
   const colGroups=sortGrp?[...colOrd].sort():colOrd;
   const rowVals=sortXVals([...rowSet],rowOrd,rowSort);
@@ -3836,7 +4301,7 @@ function txPrismGrouped(data,label){
   const allRows=[hdr,...rowVals.map(rk=>{const r=[rk];for(const ck of colGroups){const vs=mat.get(rk)?.get(ck)||[],n=colReps.get(ck);for(let i=0;i<n;i++)r.push(i<vs.length?vs[i]:'');}return r;})];
   const maxR=Math.max(0,...[...colReps.values()]);
   const pills=colGroups.map(ck=>'<span style="background:var(--brand-soft);border:1px solid var(--line);padding:1px 7px;border-radius:20px;font-size:.77rem;">'+escHtml(ck)+' \u00d7'+colReps.get(ck)+'</span>').join(' ');
-  const summary=rowVals.length+' rows &nbsp;&middot;&nbsp; '+colGroups.length+' column groups &nbsp;&middot;&nbsp; max '+maxR+' rep'+(removed?' &nbsp;&middot;&nbsp; <span style="color:var(--err);">'+removed+' rows filtered</span>':'')+(pills?'<br><span style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">'+pills+'</span>':'');
+  const summary=rowVals.length+' rows &nbsp;&middot;&nbsp; '+colGroups.length+' column groups &nbsp;&middot;&nbsp; max '+maxR+' rep'+(removed?' &nbsp;&middot;&nbsp; <span style="color:var(--err);">'+removed+' rows filtered</span>':'')+_buildOutlierHTML(outlierDetails)+(pills?'<br><span style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">'+pills+'</span>':'');
   return{label:label||'Output',allRows,summary,tip:'<strong>Prism Grouped table:</strong> Paste into a new <em>Grouped</em> table. First column = row categories. Suitable for grouped bar graphs.'};
 }
 
@@ -3999,7 +4464,6 @@ function loadTemplate() {
     { name: 'template_result_P1.csv', shortName: 'P1', data: p1FileData, wellCol: 'Well', plateCol: '' },
     { name: 'template_result_P2.csv', shortName: 'P2', data: p2FileData, wellCol: 'Well', plateCol: '' }
   ];
-  state.resultData     = p1FileData;
   state.resultWellCol  = 'Well';
   state.resultPlateCol = '';
   if (!state.fileSelectedCols) state.fileSelectedCols = new Map();
@@ -4012,7 +4476,9 @@ function loadTemplate() {
 
   // Reset omit column (same as fresh file upload)
   state.omitCol   = '';
-  state.omitValue = '';
+  state.omitValue = '1';
+  const _omitValInput = document.getElementById('omitValueInput');
+  if (_omitValInput) _omitValInput.value = '1';
 
   const designInfo = document.getElementById('designInfo');
   if (designInfo) { designInfo.style.display='block'; designInfo.textContent=`${designRows.length} rows, ${designHeaders.length} cols`; }
@@ -4337,8 +4803,21 @@ document.addEventListener('DOMContentLoaded',()=>{
   onAnovaCheckChange();
 });
 
+function _syncPrismAxisToDose(val) {
+  // pxy-x → anovaDoseCol only (dose then syncs pcol-rl and pgrp-row)
+  const el = document.getElementById('anovaDoseCol');
+  if (el && val && el.querySelector(`option[value="${CSS.escape(val)}"]`)) {
+    el.value = val;
+    onAnovaDoseColChange();
+  }
+}
 function onAnovaDoseColChange() {
   const doseVal = document.getElementById('anovaDoseCol')?.value || '';
+  // Sync to Prism Export axis/row factor selectors
+  ['pxy-x','pcol-rl','pgrp-row'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && doseVal && el.querySelector(`option[value="${CSS.escape(doseVal)}"]`)) el.value = doseVal;
+  });
   const wrap = document.getElementById('anovaGroupColWrap');
   if (!wrap) return;
   wrap.querySelectorAll('input[type=checkbox]').forEach(cb => {
@@ -4400,7 +4879,7 @@ function runAnovaTable() {
   const fmtGrp = g => g.split('|||').join('_');
   const sigSt={'****':'color:var(--err);font-weight:700','***':'color:var(--err);font-weight:600','**':'color:var(--warn);font-weight:600','*':'color:var(--warn)','ns':'color:var(--muted)'};
   const fmtN = v => v==null||isNaN(v)?'\u2014':v.toFixed(4);
-  const fmtP = v => v==null||isNaN(v)?'\u2014':v<0.001?v.toExponential(2):v.toFixed(4);
+  const fmtP = v => v==null||isNaN(v)?'\u2014':v.toExponential(2);
   const fmtEta = v => v==null||isNaN(v)?'\u2014':v.toFixed(3);
   const fmtEC50 = v => v==null||isNaN(v)?'\u2014':v<0.001?v.toExponential(3):parseFloat(v.toPrecision(4)).toString();
 
