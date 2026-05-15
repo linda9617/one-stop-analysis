@@ -350,11 +350,16 @@ body{padding-bottom:28px;}
           <input id="omitWellsInput" type="text" placeholder="e.g. A1, A01, B03" style="width:260px;margin-top:4px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:.84rem;background:#fff;color:var(--ink);outline:none;" oninput="state.omitWells=this.value" />
 
         </div>
-        <div>
-          <span class="label">Keep omit column:</span>
-          <label style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:.84rem;cursor:pointer;">
+        <div style="padding-top:22px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:.84rem;cursor:pointer;height:38px;">
             <input type="checkbox" id="keepOmitCol" onchange="state.keepOmitCol=this.checked" style="accent-color:var(--brand);width:16px;height:16px;cursor:pointer;">
             Include omit column
+          </label>
+        </div>
+        <div style="padding-top:22px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:.84rem;cursor:pointer;height:38px;">
+            <input type="checkbox" id="removeEmptyCols" onchange="state.removeEmptyCols=this.checked" style="accent-color:var(--brand);width:16px;height:16px;cursor:pointer;">
+            Remove all-empty columns
           </label>
         </div>
       </div>
@@ -1226,7 +1231,7 @@ function renderFcRow(fi) {
 
   let html = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">';
   // Full filename (read-only)
-  html += '<div style="font-size:.88rem;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escHtml(f.name) + '">' + escHtml(f.name) + '</div>';
+  html += '<div style="font-size:.9rem;font-weight:600;color:var(--ink);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escHtml(f.name) + '">' + escHtml(f.name) + '</div>';
   // Short name input
   const sn = escHtml(f.shortName || f.name.replace(/\.[^.]+$/, ''));
   html += '<span style="font-size:.8rem;color:var(--muted);white-space:nowrap;">Short name:</span>';
@@ -1338,7 +1343,7 @@ function populateMergeKeySelects() {
   const selStyle = 'height:32px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.83rem;background:#fff;color:var(--ink);min-width:130px;';
   const lblStyle = 'display:block;font-size:.8rem;color:var(--muted);margin-bottom:3px;';
   const rowStyle = 'display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;';
-  const fhStyle  = 'font-size:.78rem;font-weight:600;color:var(--muted);padding-bottom:3px;border-bottom:1px solid var(--line);margin-bottom:6px;';
+  const fhStyle  = 'font-size:.9rem;font-weight:600;color:var(--ink);padding-bottom:3px;border-bottom:1px solid var(--line);margin-bottom:6px;';
   const makeOpts = (headers, selected) =>
     `<option value="">(none)</option>` +
     headers.map(h => `<option value="${escHtml(h)}"${h===selected?' selected':''}>${escHtml(h)}</option>`).join('');
@@ -1666,8 +1671,9 @@ function doMerge() {
       for (const h of data.headers) { if (!seen.has(h)) { allHeaders.push(h); seen.add(h); } }
     const mergedRows = state.resultFiles.flatMap(({ data }) => data.rows.map(r => { const o = {}; for (const h of allHeaders) o[h] = r[h] ?? ''; return o; }));
     state.mergedData = { headers: allHeaders, rows: mergedRows };
-    state.mergedNumericCols = allHeaders.filter(h => mergedRows.some(r => !isNaN(parseFloat(r[h]))));
-    document.getElementById('mergeSummary').innerHTML = `<div class="stat-card"><div class="val">${mergedRows.length}</div><div class="lbl">Result rows</div></div><div class="stat-card"><div class="val">${allHeaders.length}</div><div class="lbl">Total columns</div></div>`;
+    if (state.removeEmptyCols) stripEmptyCols(state.mergedData);
+    state.mergedNumericCols = state.mergedData.headers.filter(h => state.mergedData.rows.some(r => !isNaN(parseFloat(r[h]))));
+    document.getElementById('mergeSummary').innerHTML = `<div class="stat-card"><div class="val">${mergedRows.length}</div><div class="lbl">Result rows</div></div><div class="stat-card"><div class="val">${state.mergedData.headers.length}</div><div class="lbl">Total columns</div></div>`;
     document.getElementById('mergeWarnings').innerHTML = '';
     populateAnalysisSelects(); renderMergedTable(); renderHeatmapSetup(); renderStatTable(); renderBarChart();
     goStep(2); return;
@@ -1680,8 +1686,9 @@ function doMerge() {
     const dHeaders = _dSelected === null ? _dAllHeaders : _dAllHeaders.filter(h => _dSelected.includes(h));
     const mergedRows = state.designData.rows.map(r => { const o = {}; for (const h of dHeaders) o[h] = r[h] ?? ''; return o; });
     state.mergedData = { headers: dHeaders, rows: mergedRows };
-    state.mergedNumericCols = dHeaders.filter(h => mergedRows.some(r => !isNaN(parseFloat(r[h]))));
-    document.getElementById('mergeSummary').innerHTML = `<div class="stat-card"><div class="val">${mergedRows.length}</div><div class="lbl">Design rows</div></div><div class="stat-card"><div class="val">${dHeaders.length}</div><div class="lbl">Total columns</div></div>`;
+    if (state.removeEmptyCols) stripEmptyCols(state.mergedData);
+    state.mergedNumericCols = state.mergedData.headers.filter(h => state.mergedData.rows.some(r => !isNaN(parseFloat(r[h]))));
+    document.getElementById('mergeSummary').innerHTML = `<div class="stat-card"><div class="val">${mergedRows.length}</div><div class="lbl">Design rows</div></div><div class="stat-card"><div class="val">${state.mergedData.headers.length}</div><div class="lbl">Total columns</div></div>`;
     document.getElementById('mergeWarnings').innerHTML = '';
     populateAnalysisSelects(); renderMergedTable(); renderHeatmapSetup(); renderStatTable(); renderBarChart();
     goStep(2); return;
@@ -1807,7 +1814,12 @@ let matchCount = 0, noMatchCount = 0;
   }
   state.mergedEmptyCols = emptyCols;
   state.mergedData = { headers: mergedHeaders, rows: mergedRows };
-  state.mergedNumericCols = mergedHeaders.filter(h => {
+  if (state.removeEmptyCols && emptyCols.size) {
+    const keep = mergedHeaders.filter(h => !emptyCols.has(h));
+    mergedRows.forEach(r => { for (const h of emptyCols) delete r[h]; });
+    state.mergedData.headers = keep;
+  }
+  state.mergedNumericCols = state.mergedData.headers.filter(h => {
     const vals = mergedRows.map(r => parseFloat(r[h])).filter(v => !isNaN(v));
     return vals.length > 0;
   });
@@ -1834,6 +1846,21 @@ let matchCount = 0, noMatchCount = 0;
   renderBarChart();
   _btnOk(document.getElementById('btnMerge'));
   goStep(2);
+}
+
+// ─────────────────────────────────────────────
+// EMPTY COL STRIP HELPER
+// ─────────────────────────────────────────────
+function stripEmptyCols(mergedData) {
+  const { headers, rows } = mergedData;
+  const toRemove = new Set();
+  for (const h of headers) {
+    const hasVal = rows.some(r => { const v = r[h]; return v != null && String(v).trim() !== '' && String(v).trim() !== 'NA'; });
+    if (!hasVal) toRemove.add(h);
+  }
+  if (!toRemove.size) return;
+  mergedData.headers = headers.filter(h => !toRemove.has(h));
+  rows.forEach(r => { for (const h of toRemove) delete r[h]; });
 }
 
 // ─────────────────────────────────────────────
