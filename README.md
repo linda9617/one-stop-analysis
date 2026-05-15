@@ -42,7 +42,8 @@ A self-contained, browser-based tool for merging plate-reader result files with 
 
 ## Getting Started
 
-1. Download `one-stop-analysis.html`
+0. linda9617.github.io/one-stop-analysis/
+1. Download `index.html`
 2. Open it in any modern browser (Chrome, Edge, Firefox, Safari)
 3. No internet connection required — all libraries (Chart.js 4.4.0, PapaParse 5.4.1) are bundled inline
 
