@@ -61,6 +61,11 @@ h3{font-size:.85rem;font-weight:600;color:var(--muted);text-transform:uppercase;
 
 /* Header */
 header{background:linear-gradient(135deg,var(--brand) 0%,var(--brand-mid) 100%);color:#fff;padding:16px 24px 12px;box-shadow:0 3px 18px rgba(0,0,0,.18);}
+.guide-fab{position:fixed;bottom:36px;right:20px;width:42px;height:42px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 4px 16px rgba(0,56,101,.35);z-index:500;font-size:1.15rem;font-weight:700;transition:.15s;border:2px solid rgba(255,255,255,.25);}
+.guide-fab:hover{background:var(--brand-mid);box-shadow:0 6px 22px rgba(0,56,101,.45);transform:translateY(-2px);}
+.guide-fab title{display:none;}
+.section-guide{display:inline-flex;align-items:center;gap:5px;font-size:.8rem;font-weight:600;color:var(--brand-mid);text-decoration:none;padding:4px 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);transition:.15s;vertical-align:middle;margin-left:10px;}
+.section-guide:hover{background:var(--brand-soft);border-color:var(--brand-mid);color:var(--brand);}
 header h1{font-size:1.9rem;font-weight:700;letter-spacing:.2px;margin:0;color:#fff;}
 header p{font-size:.8rem;opacity:.78;margin-top:3px;}
 .author{font-size:.8rem;opacity:.78;margin-top:2px;text-align:right;}
@@ -233,9 +238,11 @@ body{padding-bottom:28px;}
 </head>
 <body>
 <header>
-  <h1>One-Stop Analysis v1.4</h1>
-  <p>Merge assay design + result files, explore heatmaps/charts, and export Prism-ready tables.</p>
-  <div class="author">By ILYH</div>
+  <div class="header-left">
+    <h1>One-Stop Analysis v1.5</h1>
+    <p>Merge assay design + result files, explore heatmaps/charts, and export Prism-ready tables.</p>
+    <div class="author">By ILYH</div>
+  </div>
 </header>
 
 <main>
@@ -436,7 +443,13 @@ body{padding-bottom:28px;}
 
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-        <h2 style="margin-bottom:0;">Statistics Table</h2>
+        <div style="display:flex;align-items:center;">
+          <h2 style="margin-bottom:0;">Statistics Table</h2>
+          <a class="section-guide" href="one-stop-analysis-guide.html#assay-window" target="_blank">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm.75 10.5h-1.5v-5h1.5v5zm0-6.5h-1.5V3.5h1.5V5z"/></svg>
+            Guide
+          </a>
+        </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <button id="btnExportStat" class="btn btn-sm btn-secondary" onclick="exportStatCSV()">Export Stats CSV</button>
           <span id="btnExportStatMsg" style="font-size:.8rem;color:var(--err);"></span>
@@ -476,6 +489,13 @@ body{padding-bottom:28px;}
                 style="width:70px;border:1px solid var(--line);border-radius:10px;font-size:.84rem;"
                 onchange="renderStatTables()">
             </div>
+            <div><span class="label">Correction (p):</span>
+              <select id="statAdjMethodAssay" class="analysis-col-select" style="min-width:120px;" onchange="renderStatTables()">
+                <option value="none" selected>None</option>
+                <option value="holm">Holm (FWER)</option>
+                <option value="bh">BH (FDR)</option>
+              </select>
+            </div>
           </div>
         </div>
         <hr style="border:none;border-top:1px solid var(--line);margin:4px 0 12px;">
@@ -504,6 +524,15 @@ body{padding-bottom:28px;}
             </div>
           </div>
         </div>
+          <div class="group-select-row" style="flex-wrap:wrap;margin-top:8px;">
+            <div><span class="label">Correction (p):</span>
+              <select id="statAdjMethodDisease" class="analysis-col-select" style="min-width:120px;" onchange="renderStatTables()">
+                <option value="none" selected>None</option>
+                <option value="holm">Holm (FWER)</option>
+                <option value="bh">BH (FDR)</option>
+              </select>
+            </div>
+          </div>
         <hr style="border:none;border-top:1px solid var(--line);margin:4px 0 12px;">
         <div id="statTableDisease"></div>
       </div>
@@ -540,6 +569,12 @@ body{padding-bottom:28px;}
               <div id="anovaRefGroupDiv"><span class="label">Reference group:</span>
                 <select id="anovaRefGroup" class="analysis-col-select" style="min-width:140px;"></select>
               </div>
+              <div><span class="label">Correction:</span>
+                <select id="anovaAdjMethod" class="analysis-col-select" style="min-width:120px;">
+                  <option value="holm" selected>Holm (FWER)</option>
+                  <option value="bh">BH (FDR)</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -575,7 +610,12 @@ body{padding-bottom:28px;}
   <!-- STEP 3: Prism Export -->
   <div class="panel" id="panel3">
     <div class="card">
-      <h2>Select Table &amp; Graph Type</h2>
+      <h2>Select Table &amp; Graph Type
+        <a class="section-guide" href="one-stop-analysis-guide.html#step4" target="_blank" style="font-size:.7rem;">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm.75 10.5h-1.5v-5h1.5v5zm0-6.5h-1.5V3.5h1.5V5z"/></svg>
+          Guide
+        </a>
+      </h2>
       <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px;">Choose the Prism table format. The merged data will be reshaped for direct paste into GraphPad Prism.</p>
       <div class="type-grid">
         <div class="type-tile" id="ptXY" onclick="selectPrismType('xy')">
@@ -632,6 +672,7 @@ body{padding-bottom:28px;}
         <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.84rem;padding-bottom:8px;border-bottom:1px solid var(--line);">
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Filter col:</span><select id="pxy-fc" class="analysis-col-select" style="min-width:110px;"><option value="">(none)</option></select></div>
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">≠ value:</span><input id="pxy-fv" type="text" value="1" style="width:64px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:.84rem;"></div>
+          <span style="width:1px;height:20px;background:var(--line);flex-shrink:0;"></span>
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Separator:</span><select id="pxy-sep" class="analysis-col-select" style="min-width:80px;"><option value=" | "> | </option><option value=" ">space</option><option value="_" selected>_</option><option value=", ">, </option></select></div>
           <span style="width:1px;height:20px;background:var(--line);flex-shrink:0;"></span>
           <span class="label" style="font-size:.82rem;margin:0;">X sort:</span>
@@ -647,17 +688,19 @@ body{padding-bottom:28px;}
           <label id="pxy-anova-lbl" style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pxy-anova" checked> 2-way ANOVA</label>
           <label id="pxy-ec50-lbl" style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pxy-ec50" checked> EC50</label>
         </div>
-        <div id="pxy-anova-ctrl-row" style="display:flex;gap:6px;align-items:center;font-size:.84rem;margin-top:10px;">
+        <div id="pxy-anova-ctrl-row" style="display:flex;gap:14px;align-items:center;font-size:.84rem;margin-top:10px;">
+          <div id="pxy-ec50-zero-div" style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">0 in log as</span><select id="pxy-ec50-zero" class="analysis-col-select" style="min-width:80px;"><option value="exclude">exclude</option><option value="0.001">0.001</option><option value="0.01" selected>0.01</option><option value="0.1">0.1</option></select></div>
           <div id="pxy-anova-ctrl-div" style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Control group:</span>
           <select id="pxy-anova-ctrl" class="analysis-col-select" style="min-width:140px;"></select></div>
-          <div id="pxy-ec50-zero-div" style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">0 in log as</span><select id="pxy-ec50-zero" class="analysis-col-select" style="min-width:80px;"><option value="exclude">exclude</option><option value="0.001">0.001</option><option value="0.01" selected>0.01</option><option value="0.1">0.1</option></select></div>
+          <div id="pxy-adj-method-div" style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Correction:</span><select id="pxy-adj-method" class="analysis-col-select" style="min-width:110px;"><option value="holm" selected>Holm (FWER)</option><option value="bh">BH (FDR)</option></select></div>
+          <div id="pxy-mse-scope-div" style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">MSE from:</span><select id="pxy-mse-scope" class="analysis-col-select" style="min-width:130px;"><option value="all" selected>All groups (Prism)</option><option value="pair">Per-pair only</option></select></div>
         </div>
       </div>
       <!-- Column config -->
       <div id="prism-cfg-column" style="display:none">
         <div class="group-select-row" style="flex-wrap:wrap;margin-bottom:10px;">
-          <div style="display:flex;flex-direction:column;gap:4px;"><span class="label">Row factor:</span><select id="pcol-rl" class="analysis-col-select" onchange="_syncGroupByExclusions('pcol-grp-wrap',document.getElementById('pcol-y')?.value,this.value)"><option value="">(none)</option></select></div>
-          <div style="display:flex;flex-direction:column;gap:4px;"><span class="label">Y value:</span><select id="pcol-y" class="analysis-col-select" onchange="_syncGroupByExclusions('pcol-grp-wrap',this.value,document.getElementById('pcol-rl')?.value)"></select></div>
+          <div style="display:flex;flex-direction:column;gap:4px;"><span class="label">Row factor:</span><select id="pcol-rl" class="analysis-col-select" onchange="_syncGroupByExclusions('pcol-grp-wrap',document.getElementById('pcol-y')?.value)"><option value="">(none)</option></select></div>
+          <div style="display:flex;flex-direction:column;gap:4px;"><span class="label">Y value:</span><select id="pcol-y" class="analysis-col-select" onchange="_syncGroupByExclusions('pcol-grp-wrap',this.value)"></select></div>
           <div style="display:flex;flex-direction:column;gap:4px;">
             <span class="label">Outlier:</span>
             <div style="display:flex;gap:8px;align-items:center;">
@@ -682,6 +725,7 @@ body{padding-bottom:28px;}
         <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.84rem;padding-bottom:8px;border-bottom:1px solid var(--line);">
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Filter col:</span><select id="pcol-fc" class="analysis-col-select" style="min-width:110px;"><option value="">(none)</option></select></div>
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">≠ value:</span><input id="pcol-fv" type="text" value="1" style="width:64px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:.84rem;"></div>
+          <span style="width:1px;height:20px;background:var(--line);flex-shrink:0;"></span>
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Separator:</span><select id="pcol-sep" class="analysis-col-select" style="min-width:80px;"><option value=" | "> | </option><option value=" ">space</option><option value="_" selected>_</option><option value=", ">, </option></select></div>
           <span style="width:1px;height:20px;background:var(--line);flex-shrink:0;"></span>
           <span class="label" style="font-size:.82rem;margin:0;">Row sort:</span>
@@ -690,6 +734,15 @@ body{padding-bottom:28px;}
           <label style="display:flex;gap:4px;align-items:center;"><input type="radio" name="pcol-rs" value="none"> As-is</label>
           <span style="width:1px;height:20px;background:var(--line);flex-shrink:0;"></span>
           <label style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pcol-sortGrp"> Sort groups A→Z</label>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:.84rem;padding:15px 0 6px;">
+          <label style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pcol-ttest" onchange="_updatePcolTtestVisibility()"> Welch's t-test</label>
+        </div>
+        <div id="pcol-ttest-ctrl-row" style="display:none;gap:14px;align-items:center;font-size:.84rem;margin-top:4px;">
+          <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Comparison:</span><select id="pcol-ttest-mode" class="analysis-col-select" style="min-width:130px;" onchange="_updatePcolTtestVisibility()"><option value="ctrl" selected>vs Control</option><option value="allpairs">All pairs</option></select></div>
+          <div id="pcol-ttest-ctrl-div" style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Control group:</span><select id="pcol-ttest-ctrl" class="analysis-col-select" style="min-width:140px;"></select></div>
+          <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Correction:</span><select id="pcol-ttest-adj" class="analysis-col-select" style="min-width:110px;"><option value="none" selected>None</option><option value="holm">Holm (FWER)</option><option value="bh">BH (FDR)</option></select></div>
+          <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Star style:</span><select id="pcol-ttest-style" class="analysis-col-select" style="min-width:110px;"><option value="top" selected>Top of bar</option><option value="bracket">Bracket</option></select></div>
         </div>
       </div>
       <!-- Grouped config -->
@@ -721,6 +774,7 @@ body{padding-bottom:28px;}
         <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.84rem;padding-bottom:8px;border-bottom:1px solid var(--line);">
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Filter col:</span><select id="pgrp-fc" class="analysis-col-select" style="min-width:110px;"><option value="">(none)</option></select></div>
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">≠ value:</span><input id="pgrp-fv" type="text" value="1" style="width:64px;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font-size:.84rem;"></div>
+          <span style="width:1px;height:20px;background:var(--line);flex-shrink:0;"></span>
           <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Separator:</span><select id="pgrp-sep" class="analysis-col-select" style="min-width:80px;"><option value=" | "> | </option><option value=" ">space</option><option value="_" selected>_</option><option value=", ">, </option></select></div>
           <span style="width:1px;height:20px;background:var(--line);flex-shrink:0;"></span>
           <span class="label" style="font-size:.82rem;margin:0;">Row sort:</span>
@@ -729,6 +783,15 @@ body{padding-bottom:28px;}
           <label style="display:flex;gap:4px;align-items:center;"><input type="radio" name="pgrp-rs" value="none"> As-is</label>
           <span style="width:1px;height:20px;background:var(--line);flex-shrink:0;"></span>
           <label style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pgrp-sortGrp"> Sort groups A→Z</label>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:.84rem;padding:15px 0 6px;">
+          <label style="display:flex;gap:5px;align-items:center;"><input type="checkbox" id="pgrp-ttest" onchange="_updatePgrpTtestVisibility()"> Welch's t-test</label>
+        </div>
+        <div id="pgrp-ttest-ctrl-row" style="display:none;gap:14px;align-items:center;font-size:.84rem;margin-top:4px;">
+          <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Comparison:</span><select id="pgrp-ttest-mode" class="analysis-col-select" style="min-width:130px;" onchange="_updatePgrpTtestVisibility()"><option value="ctrl" selected>vs Control col</option><option value="allpairs">All col pairs</option></select></div>
+          <div id="pgrp-ttest-ctrl-div" style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Control column:</span><select id="pgrp-ttest-ctrl" class="analysis-col-select" style="min-width:140px;"></select></div>
+          <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Correction:</span><select id="pgrp-ttest-adj" class="analysis-col-select" style="min-width:110px;"><option value="none" selected>None</option><option value="holm">Holm (FWER)</option><option value="bh">BH (FDR)</option></select></div>
+          <div style="display:flex;gap:6px;align-items:center;"><span class="label" style="font-size:.82rem;">Star style:</span><select id="pgrp-ttest-style" class="analysis-col-select" style="min-width:110px;"><option value="top" selected>Top of bar</option><option value="bracket">Bracket</option></select></div>
         </div>
       </div>
       <div style="margin-top:16px;">
@@ -3131,6 +3194,23 @@ function statTblFilter(tid) {
   });
 }
 
+function _applyStatAdj(plateData, method) {
+  if (!method || method === 'none') return;
+  for (const { stats } of plateData) {
+    const nc = stats.filter(s => !s.isCtrl && s.p != null && !isNaN(s.p));
+    const m = nc.length; if (m < 2) continue;
+    const sorted = [...nc].sort((a, b) => a.p - b.p);
+    if (method === 'holm') {
+      let prev = 0;
+      sorted.forEach((s, k) => { const pa = Math.min(1, Math.max(prev, (m - k) * s.p)); s.p = pa; s.pStar = pToStars(pa); prev = pa; });
+    } else if (method === 'bh') {
+      sorted.forEach((s, k) => { s._pa = Math.min(1, s.p * m / (k + 1)); });
+      let mn = 1;
+      for (let i = sorted.length - 1; i >= 0; i--) { sorted[i]._pa = Math.min(sorted[i]._pa, mn); mn = sorted[i]._pa; sorted[i].p = sorted[i]._pa; sorted[i].pStar = pToStars(sorted[i]._pa); }
+    }
+  }
+}
+
 function renderStatTables() {
   if (!state.mergedData) return;
   const valCol = getGlobalValCol();
@@ -3140,11 +3220,14 @@ function renderStatTables() {
   const diseaseGroupCols = getCheckedCols('statGroupColDiseaseWrap');
   const assayPlateCol    = document.getElementById('statPlateColAssay')?.value  || '';
   const diseasePlateCol  = document.getElementById('statPlateColDisease')?.value || '';
+  const assayAdj    = document.getElementById('statAdjMethodAssay')?.value  || 'none';
+  const diseaseAdj  = document.getElementById('statAdjMethodDisease')?.value || 'none';
 
   if (assayGroupCols.length) {
     const assayCtrl = getCtrlGroupAssay();
     const outlierSpec = getOutlierSpecAssay();
     const d = computeFullStatsPerPlate(state.mergedData.rows, assayPlateCol, assayGroupCols, valCol, assayCtrl, outlierSpec);
+    _applyStatAdj(d, assayAdj);
     const el = document.getElementById('statTableAssay');
     if (el) el.innerHTML = renderStatPerPlateHtml(d, assayGroupCols, !!outlierSpec);
   }
@@ -3155,11 +3238,13 @@ function renderStatTables() {
       // Disease col mode: ctrl = chosen ctrl value from Disease column
       const diseaseCtrlVal = getCtrlGroupDisease();
       d = computeDiseaseStatsPerPlate(state.mergedData.rows, diseasePlateCol, diseaseGroupCols, diseaseCol, diseaseCtrlVal, valCol);
+      _applyStatAdj(d, diseaseAdj);
       const el = document.getElementById('statTableDisease');
       if (el) el.innerHTML = renderStatPerPlateHtml(d, diseaseGroupCols);
     } else if (diseaseGroupCols.length) {
       const diseaseCtrl = getCtrlGroupDisease();
       d = computeFullStatsPerPlate(state.mergedData.rows, diseasePlateCol, diseaseGroupCols, valCol, diseaseCtrl);
+      _applyStatAdj(d, diseaseAdj);
       const el = document.getElementById('statTableDisease');
       if (el) el.innerHTML = renderStatPerPlateHtml(d, diseaseGroupCols);
     }
@@ -3343,6 +3428,7 @@ function exportStatCSV() {
     const valCol      = getGlobalValCol();
     const refGroup    = document.getElementById('anovaRefGroup')?.value;
     const pairMode    = document.getElementById('anovaPairMode')?.value || 'dunnett';
+    const adjMethod   = document.getElementById('anovaAdjMethod')?.value || 'holm';
     const doEC50      = !!(document.getElementById('anovaDoEC50')?.checked);
     const doAnova     = !!(document.getElementById('anovaDoAnova')?.checked);
     const zeroHandling = document.getElementById('anovaEC50Zero')?.value || '0.01';
@@ -3374,7 +3460,7 @@ function exportStatCSV() {
     // ANOVA section
     if (doAnova) {
       if (pairMode === 'dunnett' && !refGroup) { _btnWarn(_btn, '⚠ 请先设置 Reference group。'); return; }
-      const result = computeTwoWayAnova(fr2, valCol, '_grpKey', doseCol, refGroup, pairMode);
+      const result = computeTwoWayAnova(fr2, valCol, '_grpKey', doseCol, refGroup, pairMode, adjMethod);
       const groupDisplayName = groupCols.length === 1 ? groupCols[0] : groupCols.join(' / ');
       const fmtTerm = t => t.replace('_grpKey', groupDisplayName);
       if (result && !result._tooBig) {
@@ -3386,11 +3472,12 @@ function exportStatCSV() {
         csvSections.push('2-way ANOVA Table\r\n' + anovaRows.map(r => r.join(',')).join('\r\n'));
         // Post-hoc
         if (result.posthoc && result.posthoc.length) {
-          const phHdr = ['Group1','Dose1','Group2','Dose2','p_raw','p_BH_adj','Sig'];
+          const _expAdjLbl = adjMethod === 'bh' ? 'BH-FDR' : 'Holm-FWER';
+          const phHdr = ['Group1','Dose1','Group2','Dose2','p_raw','p_adj','Sig'];
           const phRows = [phHdr.map(esc), ...result.posthoc.map(r =>
             [fmtGrp(r.g1), r.d1, fmtGrp(r.g2), r.d2, r.p, r.p_adj, r.pStarAdj].map(v => esc(v == null || (typeof v === 'number' && isNaN(v)) ? '' : typeof v === 'number' ? v.toPrecision(5) : v))
           )];
-          csvSections.push('Post-hoc (Welch t-test, BH-FDR)\r\n' + phRows.map(r => r.join(',')).join('\r\n'));
+          csvSections.push(`Post-hoc (pooled MSE t-test, ${_expAdjLbl})\r\n` + phRows.map(r => r.join(',')).join('\r\n'));
         }
       }
     }
@@ -3662,8 +3749,7 @@ function populatePrismSelectors() {
     const xyY = document.getElementById('pxy-y')?.value || '';
     _syncGroupByExclusions('pxy-grp-wrap', xyX, xyY);
     const colY = document.getElementById('pcol-y')?.value || '';
-    const colRl = document.getElementById('pcol-rl')?.value || '';
-    _syncGroupByExclusions('pcol-grp-wrap', colY, colRl);
+    _syncGroupByExclusions('pcol-grp-wrap', colY);
     const grpY = document.getElementById('pgrp-y')?.value || '';
     const grpRow = document.getElementById('pgrp-row')?.value || '';
     _syncGroupByExclusions('pgrp-col-wrap', grpY, grpRow);
@@ -3796,8 +3882,50 @@ function fit4PL(xs,ys){
   const C0=Math.exp(xPos.reduce((s,v)=>s+Math.log(v),0)/xPos.length);
   function ssr([A,B,C,D]){if(C<=0||!isFinite(B)||Math.abs(B)>60)return 1e20;
     return xs.reduce((s,x,i)=>{const r=D+(A-D)/(1+Math.pow(Math.abs(x/C),B));return s+(isNaN(r)||!isFinite(r)?1e6:(ys[i]-r)**2);},0);}
-  const r1=nelderMead(ssr,[yMn,1,C0,yMx]);
-  const r2=nelderMead(ssr,[yMx,-1,C0,yMn]);
+  // Levenberg-Marquardt (analytic Jacobian; replaces Nelder-Mead)
+  // Model: f = D + (A-D)/(1+(x/C)^B),  params=[A,B,C,D]
+  function lmFit(p0){
+    let p=[...p0],lam=1e-2,S=ssr(p);
+    for(let it=0;it<400;it++){
+      const[A,B,C,D]=p;
+      if(C<=0||!isFinite(B))break;
+      const B2=Math.min(Math.max(B,-59),59);
+      const JtJ=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],Jtr=[0,0,0,0];
+      let cnt=0;
+      for(let i=0;i<xs.length;i++){
+        const x=xs[i];if(x<=0)continue;
+        const ratio=Math.abs(x/C),u=Math.pow(ratio,B2);
+        if(!isFinite(u))continue;
+        const s1=1+u,s2=s1*s1,lnr=Math.log(ratio);
+        const ri=ys[i]-(D+(A-D)/s1);
+        // ∂f/∂A=1/s1, ∂f/∂B=-(A-D)*u*ln(x/C)/s2, ∂f/∂C=(A-D)*B*u/(C*s2), ∂f/∂D=u/s1
+        const J=[1/s1,-(A-D)*u*lnr/s2,(A-D)*B2*u/(C*s2),u/s1];
+        for(let a=0;a<4;a++){Jtr[a]+=J[a]*ri;for(let b=0;b<4;b++)JtJ[a][b]+=J[a]*J[b];}
+        cnt++;
+      }
+      if(!cnt)break;
+      // Augmented normal equations: (JtJ + lam*diag(JtJ)) delta = Jtr
+      const M=JtJ.map((r,a)=>r.map((v,b)=>a===b?v*(1+lam):v));
+      const Aug=M.map((r,i)=>[...r,Jtr[i]]);
+      let ok=true;
+      for(let c=0;c<4;c++){
+        let mx=c;for(let r=c+1;r<4;r++)if(Math.abs(Aug[r][c])>Math.abs(Aug[mx][c]))mx=r;
+        [Aug[c],Aug[mx]]=[Aug[mx],Aug[c]];
+        if(Math.abs(Aug[c][c])<1e-14){ok=false;break;}
+        const pv=Aug[c][c];for(let cc=c;cc<=4;cc++)Aug[c][cc]/=pv;
+        for(let r=0;r<4;r++){if(r===c)continue;const f=Aug[r][c];for(let cc=c;cc<=4;cc++)Aug[r][cc]-=f*Aug[c][cc];}
+      }
+      if(!ok){lam=Math.min(lam*10,1e8);if(lam>1e7)break;continue;}
+      const del=Aug.map(r=>r[4]);
+      const pN=[p[0]+del[0],p[1]+del[1],Math.max(p[2]+del[2],1e-12),p[3]+del[3]];
+      const Sn=ssr(pN);
+      if(Sn<S){p=pN;S=Sn;lam=Math.max(lam/10,1e-10);if(del.reduce((s,d)=>s+d*d,0)<1e-18)break;}
+      else{lam=Math.min(lam*10,1e8);if(lam>1e7)break;}
+    }
+    return{params:p,ssr:S};
+  }
+  const r1=lmFit([yMn,1,C0,yMx]);
+  const r2=lmFit([yMx,-1,C0,yMn]);
   return r1.ssr<=r2.ssr?r1.params:r2.params;
 }
 function chartXY(ctx,allRows,ml,mt,pw,ph,W){
@@ -3889,20 +4017,33 @@ function chartXY(ctx,allRows,ml,mt,pw,ph,W){
     const ctrlGi=groups.findIndex(g=>g.name===ctrlGrpName);
     if(ctrlGi>=0){
       const ctrlData=gData[ctrlGi];
-      // BH-FDR: collect all p-values first
+      const _xyAdj=document.getElementById('pxy-adj-method')?.value||'holm';
+      const _xyMseScope=document.getElementById('pxy-mse-scope')?.value||'all';
+      // Pooled MSE: either from all groups (Prism) or per-pair (test+ctrl only)
+      let _xySS_all=0,_xyDF_all=0;
+      gData.forEach(pts=>pts.forEach(p=>{if(isNaN(p.mean)||p.vals.length<2)return;
+        _xySS_all+=p.vals.reduce((s,v)=>s+(v-p.mean)**2,0);_xyDF_all+=p.vals.length-1;}));
+      const _xyMS_all=_xyDF_all>0?_xySS_all/_xyDF_all:NaN;
       const tests=[];
       gData.forEach((pts,gi)=>{if(gi===ctrlGi)return;
+        // per-pair MSE: pool only test group + ctrl group
+        let _pairMS=_xyMS_all,_pairDF=_xyDF_all;
+        if(_xyMseScope==='pair'){
+          let _ss=0,_df=0;
+          pts.forEach(p=>{if(isNaN(p.mean)||p.vals.length<2)return;_ss+=p.vals.reduce((s,v)=>s+(v-p.mean)**2,0);_df+=p.vals.length-1;});
+          ctrlData.forEach(p=>{if(isNaN(p.mean)||p.vals.length<2)return;_ss+=p.vals.reduce((s,v)=>s+(v-p.mean)**2,0);_df+=p.vals.length-1;});
+          _pairMS=_df>0?_ss/_df:NaN;_pairDF=_df;
+        }
         pts.forEach((p,ri)=>{if(isNaN(p.mean)||!p.vals.length)return;
           const cp=ctrlData[ri];if(!cp||isNaN(cp.mean)||!cp.vals.length)return;
-          const{p:pv}=welchTTest(p.vals,cp.vals);if(isNaN(pv))return;
+          const _na=p.vals.length,_nb=cp.vals.length;
+          const _se=isFinite(_pairMS)&&_pairMS>0?Math.sqrt(_pairMS*(1/_na+1/_nb)):NaN;
+          const _tv=isFinite(_se)&&_se>0?Math.abs(p.mean-cp.mean)/_se:NaN;
+          const pv=_tP2(_tv,_pairDF);if(isNaN(pv))return;
           tests.push({gi,ri,pv});});});
-      // BH correction
-      tests.sort((a,b)=>a.pv-b.pv);
-      const m=tests.length;
-      const adjP=tests.map((t,i)=>Math.min(1,t.pv*m/(i+1)));
-      for(let i=m-2;i>=0;i--)adjP[i]=Math.min(adjP[i],adjP[i+1]);
+      const _xyAdjPs=_xyAdj==='bh'?bhFDR(tests.map(t=>t.pv)):holmFWER(tests.map(t=>t.pv));
       const sigMap=new Map();
-      tests.forEach((t,i)=>{sigMap.set(t.gi+'|'+t.ri,{pv:t.pv,adj:adjP[i],star:pToStars(adjP[i])});});
+      tests.forEach((t,i)=>{sigMap.set(t.gi+'|'+t.ri,{pv:t.pv,adj:_xyAdjPs[i],star:pToStars(_xyAdjPs[i])});});
 
       // Star at each group's own mean+sem, 3px above
       gData.forEach((pts,gi)=>{if(gi===ctrlGi)return;
@@ -3924,6 +4065,8 @@ function chartColumn(ctx,allRows,ml,mt,pw,ph,W){
   const stats=groups.map((g,gi)=>{const c=startC+gi,vals=dataRows.map(r=>numVal(r[c])).filter(v=>!isNaN(v));allY.push(...vals);
     const n=vals.length,mean=n?vals.reduce((a,b)=>a+b)/n:0,sd=n>1?Math.sqrt(vals.reduce((s,v)=>s+(v-mean)**2,0)/(n-1)):0;
     return{g,vals,mean,sem:n?sd/Math.sqrt(n):0};});
+  // populate control group select for t-test
+  {const sel=document.getElementById('pcol-ttest-ctrl');if(sel&&sel.getAttribute('data-groups')!==groups.join('|')){const prev=sel.value;sel.innerHTML=groups.map(g=>`<option value="${escHtml(g)}">${escHtml(g)}</option>`).join('');if(prev&&groups.includes(prev))sel.value=prev;sel.setAttribute('data-groups',groups.join('|'));}}
   const yMn=Math.min(0,...allY.filter(isFinite),...stats.filter(s=>s.sem>0).map(s=>s.mean-s.sem));
   const yMx=Math.max(...allY.filter(isFinite),...stats.filter(s=>s.sem>0).map(s=>s.mean+s.sem));
   const yT=niceAxisTicks(yMn,yMx+(Math.abs(yMx-yMn)||Math.abs(yMx)||1)*0.12,5),yLo=yT[0],yHi=yT[yT.length-1];
@@ -3940,6 +4083,63 @@ function chartColumn(ctx,allRows,ml,mt,pw,ph,W){
     if(s.sem>0){const y1=mt+toFY(s.mean+s.sem)*ph,y2=mt+toFY(s.mean-s.sem)*ph;
       ctx.save();ctx.strokeStyle='#333';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(cx,y1);ctx.lineTo(cx,y2);ctx.moveTo(cx-4,y1);ctx.lineTo(cx+4,y1);ctx.moveTo(cx-4,y2);ctx.lineTo(cx+4,y2);ctx.stroke();ctx.restore();}});
   ctx.restore();
+  // Welch's t-test stars/brackets
+  const _doTtest=!!(document.getElementById('pcol-ttest')?.checked);
+  if(_doTtest&&stats.length>=2){
+    const _ttMode=document.getElementById('pcol-ttest-mode')?.value||'ctrl';
+    const _ttStyle=document.getElementById('pcol-ttest-style')?.value||'top';
+    const _ctrlName=document.getElementById('pcol-ttest-ctrl')?.value||'';
+    const _pairs=[];
+    if(_ttMode==='ctrl'){const _ci=stats.findIndex(s=>s.g===_ctrlName);if(_ci>=0)stats.forEach((_,i)=>{if(i!==_ci)_pairs.push({ai:i,bi:_ci});});}
+    else{for(let _i=0;_i<stats.length;_i++)for(let _j=_i+1;_j<stats.length;_j++)_pairs.push({ai:_i,bi:_j});}
+    const _ttAdj=document.getElementById('pcol-ttest-adj')?.value||'none';
+    const _rawP=_pairs.map(({ai,bi})=>{
+      const a=stats[ai],b=stats[bi];if(a.n<2||b.n<2)return null;
+      const va=a.vals.reduce((s,v)=>s+(v-a.mean)**2,0)/(a.n-1)/a.n;
+      const vb=b.vals.reduce((s,v)=>s+(v-b.mean)**2,0)/(b.n-1)/b.n;
+      const se=Math.sqrt(va+vb);if(!se)return null;
+      const t=Math.abs(a.mean-b.mean)/se;
+      const df=(va+vb)**2/(va**2/(a.n-1)+vb**2/(b.n-1));
+      return{ai,bi,p:_tP2(t,df),span:Math.abs(ai-bi)};
+    }).filter(Boolean);
+    const _m=_rawP.length;
+    const _adjArr=[..._rawP].sort((a,b)=>a.p-b.p);
+    if(_m>1&&_ttAdj==='holm'){
+      let _prev=0;_adjArr.forEach((r,k)=>{r.padj=Math.min(1,Math.max(_prev,(_m-k)*r.p));_prev=r.padj;});
+    }else if(_m>1&&_ttAdj==='bh'){
+      _adjArr.forEach((r,k)=>{r.padj=Math.min(1,r.p*_m/(k+1));});
+      let _mn=1;for(let _i=_adjArr.length-1;_i>=0;_i--){_adjArr[_i].padj=Math.min(_adjArr[_i].padj,_mn);_mn=_adjArr[_i].padj;}
+    }
+    const _sigP=_rawP.map(r=>{
+      const star=pToStars(r.padj??r.p);
+      if(star==='ns'||star==='N/A')return null;
+      return{ai:r.ai,bi:r.bi,star,span:r.span};
+    }).filter(Boolean);
+    if(_sigP.length){
+      const _cxArr=stats.map((_,i)=>ml+(i+0.5)/n*pw);
+      if(_ttStyle==='top'){
+        _sigP.forEach(r=>{
+          const s=stats[r.ai];
+          ctx.save();ctx.font='bold 10px Arial,sans-serif';ctx.fillStyle=MORANDI[r.ai%MORANDI.length];
+          ctx.textAlign='center';ctx.textBaseline='bottom';
+          ctx.fillText(r.star,_cxArr[r.ai],mt+toFY(s.mean+(s.sem||0))*ph-3);ctx.restore();
+        });
+      }else{
+        const _sorted=[..._sigP].sort((a,b)=>a.span-b.span);
+        _sorted.forEach((r,lvl)=>{
+          const x1=_cxArr[Math.min(r.ai,r.bi)],x2=_cxArr[Math.max(r.ai,r.bi)];
+          const s1=stats[r.ai],s2=stats[r.bi];
+          const yTop=Math.min(mt+toFY(s1.mean+(s1.sem||0))*ph,mt+toFY(s2.mean+(s2.sem||0))*ph);
+          const bY=yTop-8-lvl*16;
+          ctx.save();ctx.strokeStyle='#555';ctx.lineWidth=1.2;
+          ctx.beginPath();ctx.moveTo(x1,yTop-3);ctx.lineTo(x1,bY);ctx.lineTo(x2,bY);ctx.lineTo(x2,yTop-3);ctx.stroke();
+          ctx.font='bold 10px Arial,sans-serif';ctx.fillStyle='#333';
+          ctx.textAlign='center';ctx.textBaseline='bottom';
+          ctx.fillText(r.star,(x1+x2)/2,bY-1);ctx.restore();
+        });
+      }
+    }
+  }
   prismLegend(ctx,stats.slice(0,7).map((s,i)=>[s.g,MORANDI[i%MORANDI.length]]),ml+pw+12,mt+6);
 }
 function chartGrouped(ctx,allRows,ml,mt,pw,ph,W){
@@ -3949,7 +4149,7 @@ function chartGrouped(ctx,allRows,ml,mt,pw,ph,W){
   const allY=[];
   const mat=dataRows.map(row=>colGroups.map(cg=>{const vals=cg.cols.map(c=>numVal(row[c])).filter(v=>!isNaN(v));allY.push(...vals);
     const n=vals.length,mean=n?vals.reduce((a,b)=>a+b)/n:NaN,sd=n>1?Math.sqrt(vals.reduce((s,v)=>s+(v-mean)**2,0)/(n-1)):0;
-    return{mean,sem:n?sd/Math.sqrt(n):0};}));
+    return{mean,sem:n?sd/Math.sqrt(n):0,vals,n};}));
   const _grpSem=mat.flat().filter(s=>s.sem>0);
   const yMn=Math.min(0,...allY.filter(isFinite),..._grpSem.map(s=>s.mean-s.sem));
   const yMx=Math.max(...allY.filter(isFinite),..._grpSem.map(s=>s.mean+s.sem));
@@ -3968,6 +4168,58 @@ function chartGrouped(ctx,allRows,ml,mt,pw,ph,W){
       if(s.sem>0){const y1=mt+toFY(s.mean+s.sem)*ph,y2=mt+toFY(s.mean-s.sem)*ph;
         ctx.save();ctx.strokeStyle='#333';ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(bx,y1);ctx.lineTo(bx,y2);ctx.moveTo(bx-3,y1);ctx.lineTo(bx+3,y1);ctx.moveTo(bx-3,y2);ctx.lineTo(bx+3,y2);ctx.stroke();ctx.restore();}});});
   ctx.restore();
+  // populate ctrl select
+  const _pgrpCtrlEl=document.getElementById('pgrp-ttest-ctrl');
+  if(_pgrpCtrlEl){const _cnames=colGroups.map(g=>g.name),_prev=_pgrpCtrlEl.dataset.cols;if(_prev!==JSON.stringify(_cnames)){_pgrpCtrlEl.dataset.cols=JSON.stringify(_cnames);const _cur=_pgrpCtrlEl.value;_pgrpCtrlEl.innerHTML=_cnames.map(n=>`<option value="${n}"${n===_cur?' selected':''}>${n}</option>`).join('');}}
+  // Welch's t-test stars
+  const _doGrpTtest=!!(document.getElementById('pgrp-ttest')?.checked);
+  if(_doGrpTtest&&nC>=2&&nR>=1){
+    const _ttMode=document.getElementById('pgrp-ttest-mode')?.value||'ctrl';
+    const _ttStyle=document.getElementById('pgrp-ttest-style')?.value||'top';
+    const _ttAdj=document.getElementById('pgrp-ttest-adj')?.value||'none';
+    const _ctrlName=document.getElementById('pgrp-ttest-ctrl')?.value||'';
+    const _ctrlCi=colGroups.findIndex(g=>g.name===_ctrlName);
+    const _allRaw=[];
+    for(let ri=0;ri<nR;ri++){
+      const _pairs=[];
+      if(_ttMode==='ctrl'){if(_ctrlCi>=0)colGroups.forEach((_,ci)=>{if(ci!==_ctrlCi)_pairs.push({ai:ci,bi:_ctrlCi});});}
+      else{for(let ci=0;ci<nC;ci++)for(let cj=ci+1;cj<nC;cj++)_pairs.push({ai:ci,bi:cj});}
+      for(const {ai,bi} of _pairs){
+        const a=mat[ri][ai],b=mat[ri][bi];if(a.n<2||b.n<2)continue;
+        const va=a.vals.reduce((s,v)=>s+(v-a.mean)**2,0)/(a.n-1)/a.n;
+        const vb=b.vals.reduce((s,v)=>s+(v-b.mean)**2,0)/(b.n-1)/b.n;
+        const se=Math.sqrt(va+vb);if(!se)continue;
+        const t=Math.abs(a.mean-b.mean)/se;
+        const df=(va+vb)**2/(va**2/(a.n-1)+vb**2/(b.n-1));
+        _allRaw.push({ri,ai,bi,p:_tP2(t,df)});
+      }
+    }
+    const _m=_allRaw.length;
+    if(_m>1&&_ttAdj==='holm'){const _s=[..._allRaw].sort((a,b)=>a.p-b.p);let _prev=0;_s.forEach((r,k)=>{r.padj=Math.min(1,Math.max(_prev,(_m-k)*r.p));_prev=r.padj;});}
+    else if(_m>1&&_ttAdj==='bh'){const _s=[..._allRaw].sort((a,b)=>a.p-b.p);_s.forEach((r,k)=>{r._pa=Math.min(1,r.p*_m/(k+1));});let _mn=1;for(let i=_s.length-1;i>=0;i--){_s[i]._pa=Math.min(_s[i]._pa,_mn);_mn=_s[i]._pa;_s[i].padj=_s[i]._pa;}}
+    const _sigTests=_allRaw.map(r=>{const star=pToStars(r.padj??r.p);if(star==='ns'||star==='N/A')return null;return{...r,star};}).filter(Boolean);
+    if(_sigTests.length){
+      const _bx=(ri,ci)=>ml+(ri+0.5)/nR*pw+(ci-(nC-1)/2)*(bw*1.18);
+      const _byTop=(ri,ci)=>mt+toFY(mat[ri][ci].mean+(mat[ri][ci].sem||0))*ph;
+      if(_ttStyle==='top'){
+        _sigTests.forEach(r=>{const x=_bx(r.ri,r.ai),y=_byTop(r.ri,r.ai);
+          ctx.save();ctx.font='bold 10px Arial,sans-serif';ctx.fillStyle=MORANDI[r.ai%MORANDI.length];
+          ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(r.star,x,y-3);ctx.restore();});
+      }else{
+        const _rowMap={};
+        _sigTests.forEach(r=>{if(!_rowMap[r.ri])_rowMap[r.ri]=[];_rowMap[r.ri].push(r);});
+        Object.entries(_rowMap).forEach(([ri,tests])=>{ri=+ri;
+          const _sorted=[...tests].sort((a,b)=>Math.abs(a.ai-a.bi)-Math.abs(b.ai-b.bi));
+          _sorted.forEach((r,lvl)=>{const x1=_bx(ri,Math.min(r.ai,r.bi)),x2=_bx(ri,Math.max(r.ai,r.bi));
+            const yTop=Math.min(_byTop(ri,r.ai),_byTop(ri,r.bi)),bY=yTop-8-lvl*14;
+            ctx.save();ctx.strokeStyle='#555';ctx.lineWidth=1.2;
+            ctx.beginPath();ctx.moveTo(x1,yTop-3);ctx.lineTo(x1,bY);ctx.lineTo(x2,bY);ctx.lineTo(x2,yTop-3);ctx.stroke();
+            ctx.font='bold 10px Arial,sans-serif';ctx.fillStyle='#333';
+            ctx.textAlign='center';ctx.textBaseline='bottom';
+            ctx.fillText(r.star,(x1+x2)/2,bY-1);ctx.restore();});});
+      }
+    }
+  }
   prismLegend(ctx,colGroups.slice(0,7).map((g,i)=>[g.name,MORANDI[i%MORANDI.length]]),ml+pw+12,mt+6);
 }
 function getLegendEntriesPrism(type,allRows){
@@ -4577,6 +4829,19 @@ function bhFDR(pArr) {
   }
   return adj;
 }
+// Holm step-down FWER correction (controls family-wise error rate; Prism default for Dunnett/Tukey)
+function holmFWER(pArr) {
+  const n = pArr.length;
+  if (n === 0) return [];
+  const indexed = pArr.map((p, i) => ({ p: isNaN(p) ? 1 : p, i })).sort((a, b) => a.p - b.p);
+  const adj = new Array(n);
+  let running = 0;
+  for (let k = 0; k < n; k++) {
+    running = Math.max(running, indexed[k].p * (n - k));
+    adj[indexed[k].i] = Math.min(running, 1);
+  }
+  return adj;
+}
 
 // ─── Matrix helpers for Type III ANOVA (OLS) ─────────────────────────────────
 // Gauss-Jordan with partial pivoting; returns solution vector or null if singular
@@ -4665,7 +4930,7 @@ function computeEC50group(rows, valCol, doseCol, zeroHandling = 'exclude') {
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
-function computeTwoWayAnova(rows, valCol, groupCol, doseCol, refGroup, pairMode = 'dunnett') {
+function computeTwoWayAnova(rows, valCol, groupCol, doseCol, refGroup, pairMode = 'dunnett', adjMethod = 'holm') {
   const valid = rows.filter(r => {
     const v = parseFloat(r[valCol]);
     return !isNaN(v) && r[groupCol] && r[doseCol] != null && r[doseCol] !== '';
@@ -4741,11 +5006,16 @@ function computeTwoWayAnova(rows, valCol, groupCol, doseCol, refGroup, pairMode 
     if(a.g!==b.g&&a.d!==b.d) continue;
     const isGroupComp = a.d===b.d;
     if(pairMode==='dunnett' && a.g!==refGroup && b.g!==refGroup) continue;
-    const{p}=welchTTest(a.vals,b.vals);
+    // Pooled MSE t-test (emmeans approach, same as Prism post-hoc)
+    const _na=a.vals.length,_nb=b.vals.length;
+    const _ma=a.vals.reduce((s,v)=>s+v,0)/_na,_mb=b.vals.reduce((s,v)=>s+v,0)/_nb;
+    const _se=MS_error>0?Math.sqrt(MS_error*(1/_na+1/_nb)):NaN;
+    const _tv=isFinite(_se)&&_se>0?Math.abs(_ma-_mb)/_se:NaN;
+    const p=_tP2(_tv,df_error);
     posthoc.push({g1:a.g,d1:a.d,g2:b.g,d2:b.d,p,p_adj:null,pStarAdj:null,
       type: isGroupComp ? 'Group comp.' : 'Dose comp.'});
   }
-  const phAdj=bhFDR(posthoc.map(r=>r.p));
+  const phAdj=adjMethod==='bh'?bhFDR(posthoc.map(r=>r.p)):holmFWER(posthoc.map(r=>r.p));
   posthoc.forEach((r,i)=>{r.p_adj=phAdj[i];r.pStarAdj=pStarFromP(phAdj[i]);});
 
   return {
@@ -4786,14 +5056,28 @@ function _updatePxyAnovaCtrlVisibility(){
   const lg=!!(document.getElementById('pxy-log')?.checked);
   const av=!!(document.getElementById('pxy-anova')?.checked);
   const ev=!!(document.getElementById('pxy-ec50')?.checked);
-  const showZero=lg||pl; // 0= needed whenever log axis or 4PL is active
+  const showZero=lg; // 0= only needed when log axis is active
   const showCtrl=pl&&av;
   const row=document.getElementById('pxy-anova-ctrl-row');if(row)row.style.display=(showCtrl||showZero)?'flex':'none';
   const cd=document.getElementById('pxy-anova-ctrl-div');if(cd)cd.style.display=showCtrl?'flex':'none';
+  const adj=document.getElementById('pxy-adj-method-div');if(adj)adj.style.display=showCtrl?'flex':'none';
+  const mse=document.getElementById('pxy-mse-scope-div');if(mse)mse.style.display=showCtrl?'flex':'none';
   const zd=document.getElementById('pxy-ec50-zero-div');if(zd)zd.style.display=showZero?'flex':'none';
 }
 function _updatePxyEC50ZeroVisibility(){
   _updatePxyAnovaCtrlVisibility();
+}
+function _updatePcolTtestVisibility(){
+  const on=!!(document.getElementById('pcol-ttest')?.checked);
+  const mode=document.getElementById('pcol-ttest-mode')?.value||'ctrl';
+  const row=document.getElementById('pcol-ttest-ctrl-row');if(row)row.style.display=on?'flex':'none';
+  const cd=document.getElementById('pcol-ttest-ctrl-div');if(cd)cd.style.display=(on&&mode==='ctrl')?'flex':'none';
+}
+function _updatePgrpTtestVisibility(){
+  const on=!!(document.getElementById('pgrp-ttest')?.checked);
+  const mode=document.getElementById('pgrp-ttest-mode')?.value||'ctrl';
+  const row=document.getElementById('pgrp-ttest-ctrl-row');if(row)row.style.display=on?'flex':'none';
+  const cd=document.getElementById('pgrp-ttest-ctrl-div');if(cd)cd.style.display=(on&&mode==='ctrl')?'flex':'none';
 }
 document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('pxy-anova')?.addEventListener('change',_updatePxyAnovaCtrlVisibility);
@@ -4855,6 +5139,7 @@ function runAnovaTable() {
   const valCol    = getGlobalValCol();
   const refGroup  = document.getElementById('anovaRefGroup')?.value;
   const pairMode  = document.getElementById('anovaPairMode')?.value || 'dunnett';
+  const adjMethod = document.getElementById('anovaAdjMethod')?.value || 'holm';
   const doEC50    = document.getElementById('anovaDoEC50')?.checked;
   const doAnova   = document.getElementById('anovaDoAnova')?.checked;
   const zeroHandling = document.getElementById('anovaEC50Zero')?.value || 'exclude';
@@ -4909,7 +5194,7 @@ function runAnovaTable() {
 
   // ── 2-way ANOVA section ────────────────────────────────────────
   if (doAnova) {
-    const result = computeTwoWayAnova(fr2, valCol, '_grpKey', doseCol, refGroup, pairMode);
+    const result = computeTwoWayAnova(fr2, valCol, '_grpKey', doseCol, refGroup, pairMode, adjMethod);
     if (!result) { html += '<p style="color:var(--err);">⚠ Not enough data for ANOVA (≥6 rows, ≥2 levels per factor).</p>'; }
     else if (result._tooBig) { html += `<p style="color:var(--err);">⚠ Design too large (${result.G}×${result.D} cells, max 200).</p>`; }
     else {
@@ -4919,7 +5204,8 @@ function runAnovaTable() {
               + '⚠ <b>Unbalanced design detected</b>. Type III SS used — main effects valid, interaction may be approximate.</p>';
       }
       html += '<h3 style="margin-top:0;">2-way ANOVA Table</h3>';
-      html += '<p style="font-size:.78rem;color:var(--muted);margin-bottom:8px;">Method: Type III SS (OLS). Post-hoc: Welch t-test, BH-FDR corrected.</p>';
+      const _adjLbl=adjMethod==='bh'?'BH-FDR':'Holm-FWER';
+      html += `<p style="font-size:.78rem;color:var(--muted);margin-bottom:8px;">Method: Type III SS (OLS). Post-hoc: pooled MSE t-test, ${_adjLbl} corrected.</p>`;
       html += '<div class="table-wrap" style="margin-bottom:16px;"><table><thead><tr><th>Term</th><th>Df</th><th>SS</th><th>MS</th><th>F</th><th>p-value</th><th>Sig</th><th>partial \u03b7\xb2</th></tr></thead><tbody>';
       for(const row of result.table){
         const star=pStarFromP(row.p);
@@ -4928,7 +5214,7 @@ function runAnovaTable() {
       html+='</tbody></table></div>';
       if(result.posthoc && result.posthoc.length>0){
         const phTid = 'anova_ph_' + Math.random().toString(36).slice(2,7);
-        html+='<h3 style="margin-top:28px;">Post-hoc: Pairwise Cell Comparisons (Welch t-test, BH-FDR corrected)</h3>';
+        html+=`<h3 style="margin-top:28px;">Post-hoc: Pairwise Cell Comparisons (pooled MSE t-test, ${_adjLbl} corrected)</h3>`;
         html+=`<div id="${phTid}_wrap">`;
         html+=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
           <input type="text" placeholder="Filter Group 1…" data-filtercol="g1" oninput="statTblFilter('${phTid}')" style="height:30px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.8rem;min-width:120px;max-width:180px;outline:none;">
@@ -4936,7 +5222,7 @@ function runAnovaTable() {
           <input type="text" placeholder="Filter Group 2…" data-filtercol="g2" oninput="statTblFilter('${phTid}')" style="height:30px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.8rem;min-width:120px;max-width:180px;outline:none;">
           <input type="text" placeholder="Filter Dose 2…"  data-filtercol="d2" oninput="statTblFilter('${phTid}')" style="height:30px;border:1px solid var(--line);border-radius:8px;padding:0 8px;font-size:.8rem;min-width:100px;max-width:140px;outline:none;">
         </div>`;
-        html+=`<div class="table-wrap"><table id="${phTid}"><thead><tr><th>Group 1</th><th>Dose 1</th><th>Group 2</th><th>Dose 2</th><th>p (raw)</th><th>p (BH-adj)</th><th>Sig (adj)</th></tr></thead><tbody id="${phTid}_body">`;
+        html+=`<div class="table-wrap"><table id="${phTid}"><thead><tr><th>Group 1</th><th>Dose 1</th><th>Group 2</th><th>Dose 2</th><th>p (raw)</th><th>p (adj)</th><th>Sig (adj)</th></tr></thead><tbody id="${phTid}_body">`;
         for(const r of result.posthoc){
           const sameG=r.g1===r.g2, sameD=r.d1===r.d2;
           const g1d=escHtml(fmtGrp(r.g1)),d1d=escHtml(String(r.d1)),g2d=escHtml(fmtGrp(r.g2)),d2d=escHtml(String(r.d2));
@@ -4958,5 +5244,7 @@ function runAnovaTable() {
   _btnOk(_btn);
 }
 </script>
+
+<a class="guide-fab" href="one-stop-analysis-guide.html" target="_blank" title="User Guide">?</a>
 </body>
 </html>

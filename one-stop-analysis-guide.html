@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>One-Stop Analysis — User Guide v1.5</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#eef3f8;--panel:#fff;--panel-2:#f7f9fc;--line:#d3dbe8;
+  --brand:#003865;--brand-dk:#002b4d;--brand-mid:#0f4f83;--brand-soft:#dbe8f5;
+  --ink:#152433;--muted:#64748b;--ok:#1f7a4a;--warn:#a05a00;--err:#a11c1c;
+  --r:10px;--shadow:0 4px 16px rgba(0,0,0,.08);
+  --sidebar:260px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#f3f6fa 0%,#eaf0f7 100%);color:var(--ink);min-height:100vh;padding-bottom:40px;}
+a{color:var(--brand-mid);text-decoration:none;}
+a:hover{text-decoration:underline;}
+code{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:.85em;font-family:Consolas,Monaco,monospace;color:var(--brand-dk);}
+hr{border:none;border-top:1px solid var(--line);margin:20px 0;}
+
+/* Header */
+header{background:var(--brand-dk);color:#fff;height:60px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:3px solid var(--brand-mid);position:sticky;top:0;z-index:200;flex-shrink:0;}
+header h1{font-size:1.05rem;font-weight:700;letter-spacing:.2px;margin:0;color:#fff;white-space:nowrap;}
+header p{font-size:.78rem;color:rgba(255,255,255,.7);margin:0;}
+.author{font-size:.75rem;color:rgba(255,255,255,.55);white-space:nowrap;}
+
+/* Layout */
+.layout{display:flex;min-height:calc(100vh - 60px);}
+
+/* Sidebar */
+nav.sidebar{width:var(--sidebar);flex-shrink:0;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;background:var(--panel);border-right:1px solid var(--line);padding:16px 0 40px;}
+.nav-section{padding:10px 18px 4px;font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+.nav-item{display:block;padding:7px 18px 7px 24px;font-size:.84rem;color:var(--ink);border-left:3px solid transparent;transition:.15s;line-height:1.3;}
+.nav-item:hover{background:var(--brand-soft);color:var(--brand);border-left-color:var(--brand-mid);}
+.nav-item.active{background:var(--brand-soft);color:var(--brand);border-left-color:var(--brand);font-weight:600;}
+.nav-sub{padding-left:36px;font-size:.8rem;color:var(--muted);}
+.nav-sub:hover{color:var(--brand);}
+
+/* Main content */
+main{flex:1;min-width:0;padding:28px 36px 60px;}
+section{max-width:860px;margin-bottom:48px;scroll-margin-top:72px;}
+h2,h3,h4{scroll-margin-top:72px;}
+h2{color:var(--brand);font-size:1.15rem;font-weight:700;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--brand-soft);}
+h3{color:var(--brand-mid);font-size:.97rem;font-weight:700;margin:24px 0 10px;}
+h4{font-size:.88rem;font-weight:600;color:var(--ink);margin:16px 0 6px;}
+p{font-size:.88rem;line-height:1.75;color:var(--ink);margin-bottom:10px;}
+ul,ol{padding-left:20px;margin-bottom:10px;}
+li{font-size:.88rem;line-height:1.75;margin-bottom:2px;}
+
+/* Cards */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px 22px;margin-bottom:16px;}
+
+/* Term table */
+.term-table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:.85rem;}
+.term-table th{background:var(--brand);color:#fff;padding:8px 12px;text-align:left;white-space:nowrap;}
+.term-table td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.6;}
+.term-table tr:hover td{background:var(--panel-2);}
+.term-table td:first-child{white-space:nowrap;font-weight:600;color:var(--brand-dk);}
+.term-table td.formula{font-family:Consolas,Monaco,monospace;font-size:.82rem;color:#444;}
+
+/* Callout boxes */
+.tip{background:#edf7f0;border:1px solid #a3d4b5;border-radius:8px;padding:12px 16px;margin:12px 0;font-size:.84rem;line-height:1.65;}
+.tip::before{content:"💡 Tip: ";font-weight:700;color:var(--ok);}
+.warn-box{background:#fff8ec;border:1px solid #e3c57a;border-radius:8px;padding:12px 16px;margin:12px 0;font-size:.84rem;line-height:1.65;}
+.warn-box::before{content:"⚠ Note: ";font-weight:700;color:var(--warn);}
+.info-box{background:var(--brand-soft);border:1px solid #b8d4f0;border-radius:8px;padding:12px 16px;margin:12px 0;font-size:.84rem;line-height:1.65;}
+.info-box::before{content:"ℹ ";font-weight:700;color:var(--brand-mid);}
+
+/* Option rows */
+.opt-block{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:14px 18px;margin-bottom:10px;}
+.opt-block .opt-name{font-weight:700;font-size:.88rem;color:var(--brand-dk);margin-bottom:4px;}
+.opt-block .opt-desc{font-size:.85rem;line-height:1.7;color:var(--ink);}
+.opt-block .opt-when{font-size:.82rem;color:var(--muted);margin-top:6px;padding-top:6px;border-top:1px dashed var(--line);}
+.opt-block .opt-when::before{content:"When to use: ";font-weight:600;color:var(--warn);}
+.badge{display:inline-block;background:var(--brand-soft);color:var(--brand-dk);border:1px solid #b8d4f0;border-radius:12px;padding:1px 9px;font-size:.75rem;font-weight:600;white-space:nowrap;vertical-align:middle;}
+
+/* Step badge */
+.step-pill .num{display:none;}
+.step-pill .step-label{display:none;}
+
+/* Math */
+.math{font-family:Consolas,Monaco,monospace;font-size:.85rem;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:8px 14px;margin:8px 0;display:block;overflow-x:auto;}
+.math-row{display:flex;align-items:center;gap:8px;margin:8px 0;}
+.math-row .math{margin:0;flex:1;}
+.badge-robust{display:inline-block;background:#edf7f0;color:var(--ok);border:1px solid #a3d4b5;border-radius:10px;padding:1px 8px;font-size:.72rem;font-weight:700;white-space:nowrap;flex-shrink:0;}
+
+/* Copyright */
+.copyright-fixed{position:fixed;bottom:0;left:0;right:0;text-align:center;font-size:.72rem;color:var(--muted);padding:5px 0 4px;background:var(--bg);border-top:1px solid var(--line);z-index:100;}
+body{padding-bottom:28px;}
+@media(max-width:800px){.layout{flex-direction:column;}nav.sidebar{width:100%;height:auto;position:static;border-right:none;border-bottom:1px solid var(--line);}main{padding:20px 16px 60px;}}
+</style>
+</head>
+<body>
+<header>
+  <div style="display:flex;align-items:baseline;gap:12px;"><h1>One-Stop Analysis</h1><p>User Guide</p></div>
+  <p class="author">By ILYH &middot; 2026</p>
+</header>
+
+<div class="layout">
+<!-- ═══ SIDEBAR ═══ -->
+<nav class="sidebar" id="sidebar">
+  <div class="nav-section">Getting Started</div>
+  <a class="nav-item" href="#overview">Overview</a>
+  <a class="nav-item" href="#workflow">Workflow</a>
+
+  <div class="nav-section">Steps</div>
+  <a class="nav-item" href="#step1">Step 1 — Upload Files</a>
+  <a class="nav-item nav-sub" href="#metadata-file">Metadata File</a>
+  <a class="nav-item nav-sub" href="#result-files">Result File(s)</a>
+  <a class="nav-item nav-sub" href="#merge-key">Merge Key</a>
+  <a class="nav-item" href="#step2">Step 2 — Configure Columns</a>
+  <a class="nav-item nav-sub" href="#metadata-cols">Metadata Columns</a>
+  <a class="nav-item nav-sub" href="#cols-to-merge">Columns to Merge</a>
+  <a class="nav-item nav-sub" href="#filters">Filters &amp; Masking</a>
+  <a class="nav-item nav-sub" href="#computed">Computed Columns</a>
+  <a class="nav-item" href="#step3">Step 3 — Results</a>
+  <a class="nav-item nav-sub" href="#analysis-cols">Analysis Columns</a>
+  <a class="nav-item nav-sub" href="#heatmap">Plate Heatmap</a>
+  <a class="nav-item nav-sub" href="#bar-chart">Bar Chart</a>
+  <a class="nav-item nav-sub" href="#assay-window">Assay Window</a>
+  <a class="nav-item nav-sub" href="#disease-window">Disease Window</a>
+  <a class="nav-item nav-sub" href="#dose-group">Dose Group (ANOVA)</a>
+  <a class="nav-item" href="#step4">Step 4 — Prism Export</a>
+  <a class="nav-item nav-sub" href="#common-settings">Common Settings</a>
+  <a class="nav-item nav-sub" href="#xy-chart">XY Chart</a>
+  <a class="nav-item nav-sub" href="#column-chart">Column Chart</a>
+  <a class="nav-item nav-sub" href="#grouped-chart">Grouped Chart</a>
+
+  <div class="nav-section">Reference</div>
+  <a class="nav-item" href="#stat-terms">Statistical Terms</a>
+  <a class="nav-item nav-sub" href="#descriptive">Descriptive Stats</a>
+  <a class="nav-item nav-sub" href="#effect-size">Effect Size Metrics</a>
+  <a class="nav-item nav-sub" href="#testing">Hypothesis Testing</a>
+  <a class="nav-item nav-sub" href="#correction">Multiple Testing</a>
+  <a class="nav-item nav-sub" href="#outliers">Outlier Removal</a>
+  <a class="nav-item nav-sub" href="#curve-fit">Curve Fitting</a>
+</nav>
+
+<!-- ═══ MAIN CONTENT ═══ -->
+<main>
+
+<!-- ─── OVERVIEW ─── -->
+<section id="overview">
+  <h2>Overview</h2>
+  <p><strong>One-Stop Analysis</strong> is a browser-based tool for merging plate-based experimental data with metadata, computing statistics, and exporting Prism-ready tables. No installation required — everything runs locally in your browser.</p>
+  <div class="info-box">All computation happens client-side. No data is sent to any server.</div>
+
+  <h3 id="workflow">Typical Workflow</h3>
+  <div class="card">
+    <table class="term-table">
+      <tr><th>Step</th><th>What you do</th><th>Output</th></tr>
+      <tr><td>Step 1 · Upload</td><td>Upload metadata CSV + result CSV(s)</td><td>Merged dataset</td></tr>
+      <tr><td>Step 2 · Configure</td><td>Select columns, set filters, add formulas</td><td>Cleaned dataset</td></tr>
+      <tr><td>Step 3 · Results</td><td>View heatmap, bar chart, statistics tables</td><td>QC metrics, p-values</td></tr>
+      <tr><td>Step 4 · Prism Export</td><td>Choose XY / Column / Grouped format</td><td>TSV ready to paste into Prism</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ─── STEP 1 ─── -->
+<section id="step1">
+  <h2>Step 1 — Upload Files</h2>
+
+  <h3 id="metadata-file">Metadata File</h3>
+  <p>A CSV or TSV that maps each well to experimental conditions. Typically contains columns like <code>Well</code>, <code>Plate</code>, <code>Treatment</code>, <code>Dose</code>, <code>siRNA</code>, etc.</p>
+  <div class="tip">The metadata file can contain any number of annotation columns — you'll choose which ones to include in Step 2.</div>
+
+  <h3 id="result-files">Result File(s)</h3>
+  <p>One or more CSV/TSV files containing measurement values (e.g. fluorescence, luminescence, absorbance). Multiple files are merged column-by-column using the Well (and optionally Plate) key. Each file can have different measurement columns.</p>
+
+  <h3 id="merge-key">Merge Key</h3>
+  <p>The merge key defines which columns to use for joining the metadata and result tables.</p>
+
+  <div class="opt-block">
+    <div class="opt-name">Well column</div>
+    <div class="opt-desc">The column that contains the well identifier (e.g. <code>A01</code>, <code>A1</code>, <code>B03</code>). Well formats are normalized automatically — <code>A1</code> and <code>A01</code> are treated as the same well.</div>
+    <div class="opt-when">Required in both metadata and every result file. The tool will warn if well coverage is &lt;100%.</div>
+  </div>
+
+  <div class="opt-block">
+    <div class="opt-name">Plate column</div>
+    <div class="opt-desc">An optional column identifying the plate number or name (e.g. <code>Plate1</code>, <code>P1</code>). When set, merging uses <strong>Plate + Well</strong> as the composite key, allowing multiple plates per file.</div>
+    <div class="opt-when">Use when your experiment spans multiple plates within a single file. Leave blank for single-plate files.</div>
+  </div>
+
+  <div class="warn-box">If Metadata has a Plate column but a Result file does not, the merge falls back to Well-only for that file, and a warning is shown. The Plate column on the Metadata side must be cleared if you want Well-only matching across all files.</div>
+</section>
+
+<!-- ─── STEP 2 ─── -->
+<section id="step2">
+  <h2>Step 2 — Configure Columns</h2>
+
+  <h3 id="metadata-cols">Metadata Columns</h3>
+  <p>Select which metadata annotation columns to carry through into the merged dataset. Deselect any columns that are irrelevant to your analysis (e.g. internal IDs, barcodes).</p>
+  <div class="tip">Click <strong>Select All</strong> to include all columns. The output alias field lets you rename a column in the merged output.</div>
+
+  <h3 id="cols-to-merge">Columns to Merge</h3>
+  <p>For each result file, select which measurement columns to include. You can rename each column with a custom alias.</p>
+
+  <h3 id="filters">Filter Rows / Wells</h3>
+
+  <div class="opt-block">
+    <div class="opt-name">Omit column + Omit value</div>
+    <div class="opt-desc">Mask (hide from analysis) all rows where the specified column equals the specified value. The default is to omit rows where a <code>QC</code> or <code>Flag</code> column equals <code>1</code>.</div>
+    <div class="opt-when">Use to exclude failed wells, edge wells, or QC-flagged measurements. Masked wells are shown in grey in the merged table and excluded from all statistics.</div>
+  </div>
+
+  <div class="opt-block">
+    <div class="opt-name">Omit wells</div>
+    <div class="opt-desc">Manually specify wells to mask, e.g. <code>A1, B03, H12</code>. Both zero-padded (<code>A01</code>) and unpadded (<code>A1</code>) formats are accepted.</div>
+    <div class="opt-when">Use for known bad wells (e.g. stuck dispenser, bubble) that don't have a QC flag column.</div>
+  </div>
+
+  <div class="opt-block">
+    <div class="opt-name">Include omit column</div>
+    <div class="opt-desc">When checked, the "Omit column" is still exported in the merged CSV even though it's used for masking.</div>
+  </div>
+
+  <div class="opt-block">
+    <div class="opt-name">Remove all-empty columns</div>
+    <div class="opt-desc">After masking, any column where every non-masked value is empty is dropped from the output.</div>
+  </div>
+
+  <h3 id="computed">Computed Columns</h3>
+  <p>Add derived columns calculated from existing result columns using a formula. First map result columns to single-letter variables (a, b, c…), then write a formula like <code>(a-b)/c</code> or <code>a/b*100</code>.</p>
+  <div class="tip">Formulas support standard arithmetic (+, −, ×, ÷), power (<code>**</code>), and parentheses. The result is computed row-by-row.</div>
+  <div class="warn-box">If a formula references a column with missing values, the computed value for that row will be <code>NaN</code> and excluded from statistics.</div>
+</section>
+
+<!-- ─── STEP 3 ─── -->
+<section id="step3">
+  <h2>Step 3 — Results</h2>
+
+  <h3 id="analysis-cols">Analysis Columns (Apply to all)</h3>
+  <div class="opt-block">
+    <div class="opt-name">Plate column</div>
+    <div class="opt-desc">If set, all statistics are computed independently per plate. Heatmap and bar chart switch to per-plate view.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Value column</div>
+    <div class="opt-desc">The measurement column used for all statistics (heatmap, bar chart, stats tables).</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Group by</div>
+    <div class="opt-desc">One or more metadata columns used to define experimental groups (e.g. <code>Treatment</code>, or both <code>siRNA</code> and <code>Dose</code>). Groups are the combination of all selected columns.</div>
+  </div>
+
+  <h3 id="heatmap">Plate Heatmap</h3>
+  <p>A spatial visualization of measurement values in plate-well layout. Color gradient ranges from the minimum (cool) to maximum (warm) value on the plate. Hover over any cell to see the exact value and well ID.</p>
+  <p>Use <strong>Small / Large</strong> to adjust cell size. <strong>Export Figure</strong> saves as PNG.</p>
+
+  <h3 id="bar-chart">Bar Chart</h3>
+  <p>Mean ± SEM per group. Used for quick visual QC of group separation before running formal statistics.</p>
+
+  <hr>
+
+  <!-- ASSAY WINDOW -->
+  <h3 id="assay-window">Statistics Table — Assay Window</h3>
+  <p>Compares each experimental group against a designated <strong>control group</strong> within each plate. Reports a comprehensive set of effect size and quality metrics plus Welch's t-test p-value.</p>
+
+  <h3>Settings</h3>
+  <div class="opt-block">
+    <div class="opt-name">Group by</div>
+    <div class="opt-desc">Columns defining how wells are assigned to groups for this tab (can differ from the global Group by).</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Plate column</div>
+    <div class="opt-desc">If set, statistics are computed per plate separately. Leave blank to pool all plates.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Control group</div>
+    <div class="opt-desc">The reference group all other groups are compared to (e.g. <code>DMSO</code>, <code>NTC</code>, <code>WT</code>).</div>
+    <div class="opt-when">Select the negative control — the baseline condition with no expected effect.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Outlier removal</div>
+    <div class="opt-desc">Method to detect and exclude outlier values within each group before computing statistics. See <a href="#outliers">Outlier Removal</a> section for details.</div>
+    <div class="opt-when">Use Grubbs for small n (3–6). Use ROUT as a more robust alternative. Use IQR for larger n or non-normal data. Leave as <em>none</em> if you prefer to flag outliers manually.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Correction (p)</div>
+    <div class="opt-desc">Multiple testing correction applied to the Welch t-test p-values. <code>None</code>: raw p-values. <code>Holm (FWER)</code>: controls family-wise error rate. <code>BH (FDR)</code>: controls false discovery rate. Correction is applied per plate (within-plate family).</div>
+    <div class="opt-when">Use <strong>Holm</strong> when you need high confidence that each significant result is real (confirmatory). Use <strong>BH</strong> for exploratory screening with many groups where some false positives are acceptable.</div>
+  </div>
+
+  <h3>Output Columns</h3>
+  <table class="term-table">
+    <tr><th>Column</th><th>Description</th></tr>
+    <tr><td>n_exp</td><td>Number of replicate values in the experimental group (after outlier removal)</td></tr>
+    <tr><td>mean_exp</td><td>Mean of the experimental group</td></tr>
+    <tr><td>sd_exp</td><td>Standard deviation (SD) of the experimental group</td></tr>
+    <tr><td>cv_exp</td><td>Coefficient of variation = SD / |mean| × 100%. Measures within-group variability as a percentage. Lower is more reproducible.</td></tr>
+    <tr><td>median_exp</td><td>Median (50th percentile)</td></tr>
+    <tr><td>MAD_exp</td><td>Median Absolute Deviation — robust equivalent of SD</td></tr>
+    <tr><td>SEM_exp</td><td>Standard Error of the Mean = SD / √n</td></tr>
+    <tr><td>n_ctrl / mean_ctrl … </td><td>Same descriptive statistics for the control group</td></tr>
+    <tr><td>Fold_Change_mean</td><td>mean_exp / mean_ctrl. See <a href="#fc">Fold Change</a>.</td></tr>
+    <tr><td>Fold_Change_median</td><td>median_exp / median_ctrl — robust fold change less affected by outliers. <span class="badge-robust">Robust</span></td></tr>
+    <tr><td>z_score_mean</td><td>(mean_exp − mean_ctrl) / SD_ctrl. See <a href="#zscore">Z-score</a>.</td></tr>
+    <tr><td>z_score_median</td><td>(median_exp − median_ctrl) / MAD_ctrl — robust Z-score using median and MAD. <span class="badge-robust">Robust</span></td></tr>
+    <tr><td>SSMD_mean</td><td>Strictly Standardized Mean Difference (mean-based). See <a href="#ssmd">SSMD</a>.</td></tr>
+    <tr><td>SSMD_median</td><td>SSMD computed from medians and MADs — robust to outliers. <span class="badge-robust">Robust</span></td></tr>
+    <tr><td>Z_prime_mean</td><td>Plate quality metric (mean-based). See <a href="#zprime">Z' factor</a>.</td></tr>
+    <tr><td>Z_prime_median</td><td>Z' factor computed from medians and MADs — more stable on plates with outlier wells. <span class="badge-robust">Robust</span></td></tr>
+    <tr><td>S_pooled_mean</td><td>Pooled standard deviation (mean-based). See <a href="#spooled">S_pooled</a>.</td></tr>
+    <tr><td>S_pooled_median</td><td>S_pooled computed from MADs — robust equivalent. <span class="badge-robust">Robust</span></td></tr>
+    <tr><td>D_ratio_mean</td><td>D-ratio (mean-based). See <a href="#dratio">D-ratio</a>.</td></tr>
+    <tr><td>D_ratio_median</td><td>D-ratio computed from MADs — robust equivalent. <span class="badge-robust">Robust</span></td></tr>
+    <tr><td>p_value</td><td>Welch's t-test p-value (adjusted if correction is set)</td></tr>
+    <tr><td>p_star</td><td>Significance stars: * p&lt;0.05, ** p&lt;0.01, *** p&lt;0.001, **** p&lt;0.0001</td></tr>
+    <tr><td>n_outlier</td><td>Number of values removed as outliers (shown only when outlier removal is active)</td></tr>
+  </table>
+
+  <!-- DISEASE WINDOW -->
+  <h3 id="disease-window">Statistics Table — Disease Window</h3>
+  <p>Extends the Assay Window by adding a <strong>Disease column</strong> dimension. Compares "disease" vs "healthy" (or any two disease states) within each experimental group combination.</p>
+  <p>Example: Groups = siRNA + Dose. Disease column = <code>Condition</code> with values <code>Normal</code> / <code>Disease</code>. The table shows how each siRNA × Dose combination differs between Normal and Disease conditions.</p>
+
+  <div class="opt-block">
+    <div class="opt-name">Disease column</div>
+    <div class="opt-desc">The metadata column encoding disease state (e.g. <code>Condition</code>, <code>Cell_type</code>). This column becomes the comparison axis rather than a grouping factor.</div>
+    <div class="opt-when">Use when your plate has both healthy and disease-model wells, and you want to compute effect sizes for the "disease effect" within each treatment group.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Disease control</div>
+    <div class="opt-desc">The reference value within the Disease column (e.g. <code>Normal</code>). All other disease values are compared to this.</div>
+  </div>
+
+  <!-- DOSE GROUP -->
+  <h3 id="dose-group">Statistics Table — Dose Group</h3>
+  <p>Runs dose-response analysis (EC50 fitting) and 2-way ANOVA on grouped dose-response data.</p>
+
+  <div class="opt-block">
+    <div class="opt-name">EC50 checkbox</div>
+    <div class="opt-desc">Fits a 4-parameter logistic (4PL) curve to each group's dose-response data and extracts the EC50. See <a href="#ec50">EC50 / 4PL</a>.</div>
+    <div class="opt-when">Enable when your experiment has a dose-response design (multiple concentrations per compound/treatment).</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">2-way ANOVA checkbox</div>
+    <div class="opt-desc">Runs a 2-way ANOVA (Group × Dose) using Type III sum of squares, followed by pairwise post-hoc comparisons with multiple testing correction.</div>
+    <div class="opt-when">Enable to test whether different treatment groups respond differently across doses (interaction effect).</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Dose column</div>
+    <div class="opt-desc">The column containing dose/concentration values (numeric). Used as the X-axis for EC50 fitting and ANOVA.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">0 in log as</div>
+    <div class="opt-desc">Dose = 0 cannot be represented on a log scale. This setting replaces 0 with the chosen small value (<code>0.001</code>, <code>0.01</code>, <code>0.1</code>) or excludes those wells entirely (<code>exclude</code>).</div>
+    <div class="opt-when">Use <code>0.01</code> (default) to keep vehicle wells on the plot. Use <code>exclude</code> if the vehicle wells would distort the curve fit.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Comparison</div>
+    <div class="opt-desc"><code>vs Reference</code>: each group is compared only to the reference group (Dunnett-style). <code>All pairs</code>: all possible group pairs are compared.</div>
+    <div class="opt-when">Use <strong>vs Reference</strong> when you have a clear negative control group and want to test each treatment against it. Use <strong>All pairs</strong> when no single reference exists and all groups are equally interesting.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Correction</div>
+    <div class="opt-desc"><code>Holm (FWER)</code>: controls probability of any false positive. <code>BH (FDR)</code>: controls proportion of false positives among significant results.</div>
+  </div>
+</section>
+
+<!-- ─── STEP 4 ─── -->
+<section id="step4">
+  <h2>Step 4 — Prism Export</h2>
+  <p>Reshapes the merged data into GraphPad Prism table format (TSV). Click <strong>📋 Copy to Prism</strong> then paste directly into a Prism table. A preview chart is rendered in-browser with the same layout as Prism.</p>
+
+  <h3 id="common-settings">Common Settings</h3>
+  <div class="opt-block">
+    <div class="opt-name">Figure output by</div>
+    <div class="opt-desc">Split the output into separate tables/figures by a metadata column (e.g. <code>Plate</code>, <code>Assay</code>). Each unique value of that column becomes one Prism table.</div>
+    <div class="opt-when">Use when you want one Prism file per plate, or one figure per compound.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Outlier (Prism)</div>
+    <div class="opt-desc">Removes outliers from individual replicates before computing mean/SEM for the Prism table. Uses the same methods as the Statistics Table (Grubbs, IQR, ROUT).</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Group by</div>
+    <div class="opt-desc">The metadata columns that define groups (columns in the Prism table). Each unique combination becomes one data set (column group) in Prism.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Filter col + ≠ value</div>
+    <div class="opt-desc">Exclude rows where the specified column equals the specified value before building the Prism table. Useful for removing vehicle wells from a dose-response table.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Separator</div>
+    <div class="opt-desc">Character used to join multiple Group by column values into a single label (e.g. <code>siRNA_Dose</code> with separator <code>_</code>).</div>
+  </div>
+
+  <!-- XY -->
+  <h3 id="xy-chart">XY Chart</h3>
+  <p>Dose-response format. X axis = dose/concentration. Y axis = mean ± SEM. Each group becomes one curve. Output matches Prism XY table.</p>
+
+  <div class="opt-block">
+    <div class="opt-name">X axis</div>
+    <div class="opt-desc">The column used as the X axis — typically your dose/concentration column.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">X sort</div>
+    <div class="opt-desc"><code>Numeric</code>: sort dose values numerically (0.001, 0.01, 0.1…). <code>Alpha</code>: sort alphabetically. <code>As-is</code>: preserve original order in the data.</div>
+    <div class="opt-when">Use <strong>Numeric</strong> for concentration series. Use <strong>As-is</strong> if your data is already in the right order.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Log₁₀ X axis</div>
+    <div class="opt-desc">Display the X axis on a log₁₀ scale. Standard for dose-response curves (concentrations span multiple orders of magnitude).</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">4PL fit preview</div>
+    <div class="opt-desc">Overlays a fitted 4-parameter logistic curve on each group in the preview chart. Does not affect the exported Prism table — Prism performs its own fitting.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">2-way ANOVA</div>
+    <div class="opt-desc">Runs 2-way ANOVA (Group × Dose, Type III SS) on the individual data points and annotates the preview chart with significance stars at each dose point.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">EC50</div>
+    <div class="opt-desc">Fits 4PL to each group and displays EC50 values in the legend of the preview chart.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">0 in log as</div>
+    <div class="opt-desc">Visible only when Log₁₀ is active. Replaces dose = 0 with a small proxy value so it can appear on the log axis. Same options as in the Dose Group tab.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Control group (ANOVA)</div>
+    <div class="opt-desc">The reference group for ANOVA post-hoc comparisons. Visible only when 2-way ANOVA is checked.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Correction (ANOVA)</div>
+    <div class="opt-desc">Multiple testing correction for ANOVA post-hoc p-values. <code>Holm (FWER)</code> or <code>BH (FDR)</code>.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">MSE from</div>
+    <div class="opt-desc"><code>All groups (Prism)</code>: uses the pooled mean squared error from all groups in the ANOVA model (same as Prism/emmeans). Gives more statistical power when groups share similar variance. <code>Per-pair only</code>: recomputes MSE using only the two groups being compared, relaxing the equal-variance assumption.</div>
+    <div class="opt-when">Use <strong>All groups</strong> to match Prism's default behavior. Use <strong>Per-pair only</strong> if groups have very different variances or if you want a more conservative test.</div>
+  </div>
+
+  <!-- COLUMN -->
+  <h3 id="column-chart">Column Chart</h3>
+  <p>Bar plot format. Each group = one bar (mean ± SEM). Rows in the Prism table = replicates. Output matches Prism Column table.</p>
+
+  <div class="opt-block">
+    <div class="opt-name">Row factor</div>
+    <div class="opt-desc">An optional metadata column used to create sub-rows within each group (e.g. replicate ID, biological repeat). When set, each unique value becomes a separate row in the Prism table.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Row sort</div>
+    <div class="opt-desc">How to order the rows/groups in the output: <code>Numeric</code>, <code>Alpha</code>, or <code>As-is</code>.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Welch's t-test</div>
+    <div class="opt-desc">After checking this box, significance stars are drawn on the preview chart using Welch's t-test for each selected comparison pair.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Comparison (t-test)</div>
+    <div class="opt-desc"><code>vs Control</code>: each group is compared only to the designated control group. <code>All pairs</code>: all possible group pairs are compared.</div>
+    <div class="opt-when">Use <strong>vs Control</strong> for 30 siRNAs vs NTC. Use <strong>All pairs</strong> when every group comparison is of interest.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Control group (t-test)</div>
+    <div class="opt-desc">The reference group when Comparison = vs Control. Populated automatically from the current groups.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Correction (t-test)</div>
+    <div class="opt-desc"><code>None</code>: raw p-values, no adjustment. <code>Holm (FWER)</code>: recommended when comparing many groups to one control and each star needs to be reliable. <code>BH (FDR)</code>: allows a controlled proportion of false positives.</div>
+    <div class="opt-when">Use <strong>None</strong> for 2–3 comparisons. Use <strong>Holm</strong> for 10+ groups vs control. Use <strong>BH</strong> for high-throughput screening where you plan to validate hits anyway.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Star style</div>
+    <div class="opt-desc"><code>Top of bar</code>: stars appear above each significant test group bar, colored to match the bar. <code>Bracket</code>: classical bracket-style annotation connecting the two compared groups, sorted by span to minimize overlap.</div>
+    <div class="opt-when">Use <strong>Top of bar</strong> for vs-control comparisons (clean, uncluttered). Use <strong>Bracket</strong> for all-pairs comparisons where relationships between groups matter.</div>
+  </div>
+
+  <!-- GROUPED -->
+  <h3 id="grouped-chart">Grouped Chart</h3>
+  <p>Grouped bar plot. Rows = one grouping factor (e.g. treatment, siRNA). Columns = another grouping factor (e.g. cell line, condition). Output matches Prism Grouped table.</p>
+
+  <div class="opt-block">
+    <div class="opt-name">Row factor</div>
+    <div class="opt-desc">The metadata column that defines the rows (X-axis clusters) in the Prism table (e.g. <code>Treatment</code>).</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Group by (columns)</div>
+    <div class="opt-desc">The metadata column(s) that define the bar groups within each cluster (e.g. <code>Cell_line</code>). Each unique combination becomes one bar per cluster.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Welch's t-test (Grouped)</div>
+    <div class="opt-desc">Same as Column chart, but comparisons are performed between column groups <em>within each row cluster</em>. For example, if comparing WT vs KO for each siRNA, each siRNA cluster gets its own independent t-test.</div>
+    <div class="opt-when">Use to annotate which row clusters show a significant difference between column groups (e.g. which siRNAs show a significant WT vs KO difference).</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Comparison (Grouped t-test)</div>
+    <div class="opt-desc"><code>vs Control col</code>: each column group is compared to the designated control column within each row cluster. <code>All col pairs</code>: all column-group pairs within each cluster.</div>
+  </div>
+  <div class="opt-block">
+    <div class="opt-name">Correction (Grouped t-test)</div>
+    <div class="opt-desc">Family = all row × pair tests across the entire figure (e.g. 5 rows × 3 column pairs = 15 tests corrected together).</div>
+  </div>
+</section>
+
+<!-- ─── GLOSSARY ─── -->
+<section id="stat-terms">
+  <h2>Statistical Terms Glossary</h2>
+
+  <!-- Descriptive -->
+  <h3 id="descriptive">Descriptive Statistics</h3>
+  <table class="term-table">
+    <tr><th>Term</th><th>Formula / Definition</th><th>Interpretation</th></tr>
+    <tr>
+      <td>Mean (x̄)</td>
+      <td class="formula">Σxᵢ / n</td>
+      <td>Average value. Sensitive to outliers.</td>
+    </tr>
+    <tr>
+      <td>SD</td>
+      <td class="formula">√[Σ(xᵢ−x̄)² / (n−1)]</td>
+      <td>Spread of individual values around the mean. Larger SD = more variable group.</td>
+    </tr>
+    <tr>
+      <td>SEM</td>
+      <td class="formula">SD / √n</td>
+      <td>Uncertainty in the estimated mean. Used as error bars in bar charts. Decreases as n increases.</td>
+    </tr>
+    <tr>
+      <td>CV%</td>
+      <td class="formula">SD / |mean| × 100%</td>
+      <td>Relative variability. CV &lt;10% is typically excellent for HTS assays; &lt;20% is acceptable.</td>
+    </tr>
+    <tr>
+      <td>Median</td>
+      <td>Middle value when sorted</td>
+      <td>Robust alternative to mean. Less affected by outliers or skewed distributions.</td>
+    </tr>
+    <tr>
+      <td>MAD</td>
+      <td class="formula">1.4826 × median(|xᵢ − median|)</td>
+      <td>Median Absolute Deviation, scaled by <strong>1.4826</strong> (= 1 / Φ⁻¹(0.75)) so that MAD ≈ SD for normally distributed data. This factor makes MAD a consistent estimator of σ, allowing direct comparison with SD-based metrics. Without scaling, MAD ≈ 0.674 × SD for a normal distribution.</td>
+    </tr>
+  </table>
+
+  <!-- Effect size -->
+  <h3 id="effect-size">Effect Size Metrics</h3>
+
+  <h4 id="fc">Fold Change (FC)</h4>
+  <code class="math">FC_mean   = mean_exp / mean_ctrl</code>
+  <div class="math-row"><code class="math">FC_median = median_exp / median_ctrl</code><span class="badge-robust">Robust</span></div>
+  <p>How many times larger (or smaller) the experimental value is relative to control. FC = 2 means the signal doubled; FC = 0.5 means halved; FC = 1 means no change. The median-based version is more robust to outlier wells distorting the group average.</p>
+  <div class="warn-box">FC is undefined when the control mean/median is 0. Fold change is scale-dependent — FC of 2 is more meaningful when both values are well above the detection limit.</div>
+
+  <h4 id="zscore">Z-score</h4>
+  <code class="math">Z_mean   = (mean_exp − mean_ctrl) / SD_ctrl</code>
+  <div class="math-row"><code class="math">Z_median = (median_exp − median_ctrl) / MAD_ctrl</code><span class="badge-robust">Robust</span></div>
+  <p>How many spread-units the experimental location is above or below the control. Used in HTS to rank hits; |Z| &gt; 2 is a common preliminary threshold.</p>
+  <p>The median version substitutes MAD (scaled by 1.4826) for SD_ctrl. Because MAD is insensitive to extreme values, Z_median is more stable when the control group has a few outlier wells — a common occurrence in HTS plates.</p>
+
+  <h4 id="ssmd">SSMD (Strictly Standardized Mean Difference)</h4>
+  <code class="math">SSMD_mean   = (mean_exp − mean_ctrl) / √(SD_exp² + SD_ctrl²)</code>
+  <div class="math-row"><code class="math">SSMD_median = (median_exp − median_ctrl) / √(MAD_exp² + MAD_ctrl²)</code><span class="badge-robust">Robust</span></div>
+  <p>Similar to Z-score but accounts for variability in <em>both</em> groups simultaneously. Widely used in RNAi and compound screening QC. The median version uses MAD (×1.4826) in place of SD, providing the same robustness advantage as Z_median — particularly useful when both the experimental and control groups may contain outliers.</p>
+  <table class="term-table">
+    <tr><th>|SSMD|</th><th>Hit classification</th></tr>
+    <tr><td>&gt;3</td><td>Extremely strong</td></tr>
+    <tr><td>2–3</td><td>Strong</td></tr>
+    <tr><td>1–2</td><td>Moderate</td></tr>
+    <tr><td>&lt;1</td><td>Weak / no effect</td></tr>
+  </table>
+
+  <h4 id="zprime">Z' Factor</h4>
+  <code class="math">Z'_mean   = 1 − 3(SD_exp + SD_ctrl) / |mean_exp − mean_ctrl|</code>
+  <div class="math-row"><code class="math">Z'_median = 1 − 3(MAD_exp + MAD_ctrl) / |median_exp − median_ctrl|</code><span class="badge-robust">Robust</span></div>
+  <p>A plate quality metric quantifying the separation between positive (PC) and negative (NC) control populations. The factor 3 corresponds to 3σ coverage (~99.7% of a normal distribution). Z' ≥ 0.5 means the PC and NC distributions are well separated with no overlap at the 3σ level.</p>
+  <p>The median version substitutes MAD (×1.4826) for SD. On HTS plates where a few stuck dispensers or edge effects create outlier control wells, Z'_median gives a more reliable read of true assay quality than Z'_mean.</p>
+  <table class="term-table">
+    <tr><th>Z'</th><th>Plate quality</th></tr>
+    <tr><td>≥ 0.5</td><td>Excellent — suitable for HTS</td></tr>
+    <tr><td>0 – 0.5</td><td>Marginal — use with caution</td></tr>
+    <tr><td>&lt; 0</td><td>Unusable — controls not separated</td></tr>
+  </table>
+  <div class="warn-box">Z' is only meaningful when comparing a positive control group to a negative control group. It is not a measure of hit effect.</div>
+
+  <h4 id="spooled">S_pooled (Pooled Standard Deviation)</h4>
+  <code class="math">S_pooled_mean   = √[((n_ctrl−1)·SD_ctrl² + (n_exp−1)·SD_exp²) / (n_ctrl+n_exp−2)]</code>
+  <div class="math-row"><code class="math">S_pooled_median = √[((n_ctrl−1)·MAD_ctrl² + (n_exp−1)·MAD_exp²) / (n_ctrl+n_exp−2)]</code><span class="badge-robust">Robust</span></div>
+  <p>A degrees-of-freedom weighted average of the two groups' spread. Used as the noise estimate in Student's t-test and D-ratio. The median version uses MAD (×1.4826) in place of SD — because MAD is already scaled to be on the same unit as SD for normal data, the pooling formula is directly applicable. This gives a pooled noise estimate that is robust to outliers in either group.</p>
+
+  <h4 id="dratio">D-ratio</h4>
+  <code class="math">D-ratio_mean   = (z₀.₈ + z₀.₉₇₅) × S_pooled_mean   × √(1/n_ctrl + 1/n_exp) / |mean_exp − mean_ctrl|</code>
+  <div class="math-row"><code class="math">D-ratio_median = (z₀.₈ + z₀.₉₇₅) × S_pooled_median × √(1/n_ctrl + 1/n_exp) / |median_exp − median_ctrl|</code><span class="badge-robust">Robust</span></div>
+  <p>Where <code>z₀.₈ + z₀.₉₇₅ = 0.8416 + 1.96 ≈ 2.80</code> (the constants for 80% power at α = 0.05, two-sided). The median version substitutes S_pooled_median (computed from MAD ×1.4826) and the median signal window — making it robust to outlier wells distorting the apparent PC–NC separation.</p>
+  <p>The numerator is the <strong>Minimum Detectable Difference (MDD)</strong> — the smallest signal difference that a two-sample t-test with the given n would reliably detect (power ≥ 80%, α = 0.05). The denominator is the actual observed PC–NC signal window.</p>
+  <p>D-ratio = MDD / Signal window. In other words: <em>what fraction of the full PC–NC window does a compound need to reach before it can be statistically detected?</em></p>
+  <p>A D-ratio of 0.3 means any compound that reaches ≥ 30% of the PC effect will be detectable with &gt;80% power. This makes 30% of PC a defensible hit threshold. The lower the D-ratio, the more sensitive the assay.</p>
+  <table class="term-table" style="margin-top:10px;">
+    <tr><th>D-ratio</th><th>Assay quality</th><th>Practical hit threshold</th></tr>
+    <tr><td>&lt; 0.1</td><td>Excellent — very wide signal window</td><td>Can set hit at 10–20% of PC effect</td></tr>
+    <tr><td>&lt; 0.3</td><td>Good — HTS standard</td><td>Set hit at ~30% of PC effect</td></tr>
+    <tr><td>0.3 – 1.0</td><td>Marginal — use with caution</td><td>Raise hit threshold accordingly</td></tr>
+    <tr><td>&gt; 1.0</td><td>Insufficient signal-to-noise</td><td>Not suitable for screening</td></tr>
+  </table>
+  <div class="warn-box">D-ratio evaluates the <em>quality of the assay window</em> between a chosen PC and NC — it does not determine whether a compound is biologically meaningful. Always pair with Z' factor for a full QC picture.</div>
+
+  <!-- Testing -->
+  <h3 id="testing">Hypothesis Testing</h3>
+
+  <h4>Welch's t-test</h4>
+  <code class="math">t = |mean_exp − mean_ctrl| / √(SD_exp²/n_exp + SD_ctrl²/n_ctrl)</code>
+  <p>A modified Student's t-test that does <strong>not</strong> assume equal variance between groups (more appropriate than Student's t-test for most biological data). The Welch-Satterthwaite approximation is used for degrees of freedom:</p>
+  <code class="math">df = (v_a + v_b)² / (v_a²/(n_a−1) + v_b²/(n_b−1))  where v = SD²/n</code>
+  <p>The resulting <strong>p-value</strong> is the probability of observing a difference this large (or larger) by chance alone, assuming the null hypothesis is true (no real difference). A small p-value (e.g. &lt;0.05) is evidence against the null.</p>
+
+  <h4>Significance Stars</h4>
+  <table class="term-table">
+    <tr><th>Symbol</th><th>p-value threshold</th><th>Meaning</th></tr>
+    <tr><td>ns</td><td>≥ 0.05</td><td>Not significant</td></tr>
+    <tr><td>*</td><td>&lt; 0.05</td><td>Significant (5% level)</td></tr>
+    <tr><td>**</td><td>&lt; 0.01</td><td>Highly significant</td></tr>
+    <tr><td>***</td><td>&lt; 0.001</td><td>Very highly significant</td></tr>
+    <tr><td>****</td><td>&lt; 0.0001</td><td>Extremely significant</td></tr>
+  </table>
+
+  <h4>2-way ANOVA</h4>
+  <p>Tests whether the mean response differs across groups (Treatment effect), across doses (Dose effect), and whether groups respond differently to dose (Interaction effect). This tool uses <strong>Type III sum of squares</strong> (effect coding), which gives equal weight to all groups regardless of sample size — consistent with Prism's default.</p>
+
+  <!-- Correction -->
+  <h3 id="correction">Multiple Testing Correction</h3>
+  <p>When you perform many t-tests simultaneously, the probability of at least one false positive increases. For example, 30 tests at α=0.05 gives a ~78% chance of at least one spurious significant result by chance alone.</p>
+
+  <div class="opt-block">
+    <div class="opt-name">None</div>
+    <div class="opt-desc">Raw p-values, no adjustment. Each test is evaluated at the nominal α level (e.g. 0.05).</div>
+    <div class="opt-when">Acceptable for 1–3 comparisons where you have a strong a priori hypothesis. Not appropriate for 10+ comparisons.</div>
+  </div>
+
+  <div class="opt-block">
+    <div class="opt-name">Holm (FWER — Family-Wise Error Rate)</div>
+    <div class="opt-desc">A step-down procedure. Sort p-values in ascending order. Multiply the smallest p by m (total tests), the 2nd smallest by m−1, etc. Take the running maximum to ensure monotonicity. Controls the probability that <em>any</em> result in the family is a false positive at ≤ α.</div>
+    <div class="opt-when"><strong>Use when each significant star must be trustworthy.</strong> Confirmatory experiments, e.g. 30 siRNAs vs NTC where you need confidence in every hit before follow-up.</div>
+  </div>
+
+  <div class="opt-block">
+    <div class="opt-name">BH (FDR — Benjamini-Hochberg False Discovery Rate)</div>
+    <div class="opt-desc">A step-up procedure. Sort p-values in ascending order. Adjusted p = p × m / rank. Controls the <em>expected proportion</em> of false positives among significant results at ≤ α. More lenient than Holm — more power, but allows some false positives.</div>
+    <div class="opt-when"><strong>Use for exploratory / screening experiments</strong> where you can validate hits in a follow-up assay. Appropriate for proteomics, genomics, or high-throughput compound screening (hundreds to thousands of tests).</div>
+  </div>
+
+  <table class="term-table" style="margin-top:8px;">
+    <tr><th>Method</th><th>Controls</th><th>Power</th><th>Suitable for</th></tr>
+    <tr><td>None</td><td>Per-comparison α</td><td>Highest</td><td>1–3 comparisons, pre-specified hypotheses</td></tr>
+    <tr><td>Holm (FWER)</td><td>Any false positive</td><td>Moderate</td><td>Confirmatory, 5–50 comparisons</td></tr>
+    <tr><td>BH (FDR)</td><td>% false positives</td><td>High</td><td>Exploratory, 50+ comparisons, follow-up planned</td></tr>
+  </table>
+
+  <!-- Outliers -->
+  <h3 id="outliers">Outlier Removal</h3>
+  <p>Outlier removal is applied per-group before computing statistics. Removed values are counted in the <code>n_outlier</code> column.</p>
+
+  <div class="opt-block">
+    <div class="opt-name">Grubbs test</div>
+    <div class="opt-desc">Tests whether the most extreme value in a group is a statistical outlier. Assumes normality. Parameter α is the significance level for the test (default 0.05).</div>
+    <div class="opt-when"><strong>Best for small n (3–6 replicates)</strong> where other methods lack power. Standard choice for plate-based assays.</div>
+  </div>
+
+  <div class="opt-block">
+    <div class="opt-name">IQR (Interquartile Range)</div>
+    <div class="opt-desc">Marks values outside <code>Q1 − k·IQR</code> to <code>Q3 + k·IQR</code> as outliers. Default k = 1.5 (standard "box" of a box plot). Does not assume normality.</div>
+    <div class="opt-when"><strong>Good for non-normal distributions or larger n (&gt;6).</strong> More permissive than Grubbs at the default threshold. Increase k to 3 for a "far outlier" criterion.</div>
+  </div>
+
+  <div class="opt-block">
+    <div class="opt-name">ROUT</div>
+    <div class="opt-desc">Robust outlier detection using a nonlinear regression-based approach (Prism's method). Parameter Q is the maximum acceptable FDR for outlier identification (default 1%).</div>
+    <div class="opt-when"><strong>Use as an alternative to Grubbs when normality cannot be assumed.</strong> Matches Prism's built-in ROUT outlier removal exactly.</div>
+  </div>
+
+  <!-- Curve fitting -->
+  <h3 id="curve-fit">Curve Fitting &amp; EC50</h3>
+
+  <h4>4-Parameter Logistic (4PL)</h4>
+  <code class="math">y = d + (a − d) / (1 + (x/c)^b)</code>
+  <table class="term-table">
+    <tr><th>Parameter</th><th>Meaning</th><th>Biological interpretation</th></tr>
+    <tr><td>a</td><td>Top asymptote</td><td>Baseline response (zero drug)</td></tr>
+    <tr><td>b</td><td>Hill coefficient / slope</td><td>Steepness of the curve. b&gt;0 = activator, b&lt;0 = inhibitor</td></tr>
+    <tr><td>c</td><td>EC50 (inflection point)</td><td>Concentration producing 50% of maximum effect</td></tr>
+    <tr><td>d</td><td>Bottom asymptote</td><td>Maximum response at saturating concentration</td></tr>
+  </table>
+
+  <h4 id="ec50">EC50</h4>
+  <p>The <strong>half-maximal effective concentration</strong> — the dose that produces 50% of the maximum effect defined by the 4PL fit. EC50 is derived from parameter <em>c</em> and is reported in the same units as the dose column.</p>
+  <div class="tip">EC50 values are log-normally distributed. Always compare log(EC50) values when doing statistics across groups.</div>
+  <div class="warn-box">EC50 fitting requires at least 4 dose points spanning the response range (ideally top and bottom plateaus reached). Fitting may fail or give unreliable results with sparse data.</div>
+
+  <hr>
+  <p style="font-size:.8rem;color:var(--muted);margin-top:20px;">
+    One-Stop Analysis User Guide · Updated 2026-05-18 · For questions or bug reports, contact ILYH.
+  </p>
+</section>
+
+</main>
+</div>
+
+<div class="copyright-fixed">Copyright &copy; 2026 Lin. All rights reserved.</div>
+
+<script>
+// Highlight active nav item on scroll
+(function(){
+  const items=document.querySelectorAll('.nav-item[href^="#"]');
+  const sections=[];
+  items.forEach(a=>{const id=a.getAttribute('href').slice(1),el=document.getElementById(id);if(el)sections.push({el,a});});
+  function update(){
+    let cur=sections[0];
+    sections.forEach(s=>{if(window.scrollY+80>=s.el.offsetTop)cur=s;});
+    items.forEach(a=>a.classList.remove('active'));
+    if(cur)cur.a.classList.add('active');
+  }
+  window.addEventListener('scroll',update,{passive:true});
+  update();
+})();
+</script>
+</body>
+</html>
