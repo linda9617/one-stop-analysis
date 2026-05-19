@@ -415,9 +415,9 @@ body{padding-bottom:28px;}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
         <h2 style="margin:0;">Plate Heatmap</h2>
         <div style="display:flex;gap:4px;">
-          <button id="hmSizeSmall" onclick="setHeatmapSize(false)" style="padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel-2);font-size:.78rem;cursor:pointer;color:var(--ink);">Small</button>
-          <button id="hmSizeLarge" onclick="setHeatmapSize(true)"  style="padding:8px 10px;border-radius:6px;border:1px solid var(--brand);background:var(--brand);font-size:.78rem;cursor:pointer;color:#fff;">Large</button>
-          <button onclick="exportHeatmapFig()" style="padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel-2);font-size:.78rem;cursor:pointer;color:var(--ink);">Export Figure</button>
+          <button id="hmSizeSmall" class="btn btn-sm btn-secondary" onclick="setHeatmapSize(false)">Small</button>
+          <button id="hmSizeLarge" class="btn btn-sm btn-primary"   onclick="setHeatmapSize(true)">Large</button>
+          <button class="btn btn-sm btn-secondary" onclick="exportHeatmapFig()">Export Figure</button>
         </div>
       </div>
       <div id="heatmapPlateTabs" style="display:none;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px;"></div>
@@ -429,7 +429,7 @@ body{padding-bottom:28px;}
       <div class="chart-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
           <h2 style="margin:0;">Bar Chart</h2>
-          <button onclick="exportBarChartFig()" style="padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel-2);font-size:.78rem;cursor:pointer;color:var(--ink);">Export Figure</button>
+          <button class="btn btn-sm btn-secondary" onclick="exportBarChartFig()">Export Figure</button>
         </div>
         <div id="barPlateTabs" style="display:none;display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px;"></div>
         <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
@@ -445,10 +445,6 @@ body{padding-bottom:28px;}
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
         <div style="display:flex;align-items:center;">
           <h2 style="margin-bottom:0;">Statistics Table</h2>
-          <a class="section-guide" href="one-stop-analysis-guide.html#assay-window" target="_blank">
-            <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm.75 10.5h-1.5v-5h1.5v5zm0-6.5h-1.5V3.5h1.5V5z"/></svg>
-            Guide
-          </a>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <button id="btnExportStat" class="btn btn-sm btn-secondary" onclick="exportStatCSV()">Export Stats CSV</button>
@@ -595,7 +591,7 @@ body{padding-bottom:28px;}
             <input type="checkbox" id="hideMasked" onchange="renderMergedTable()" checked />
             Hide masked wells
           </label>
-          <button id="btnExportCSV" class="btn btn-success btn-sm" onclick="exportCSV()">Export CSV</button>
+          <button id="btnExportCSV" class="btn btn-sm btn-secondary" onclick="exportCSV()">Export CSV</button>
           <span id="btnExportCSVMsg" style="font-size:.8rem;color:var(--err);"></span>
         </div>
       </div>
@@ -610,12 +606,7 @@ body{padding-bottom:28px;}
   <!-- STEP 3: Prism Export -->
   <div class="panel" id="panel3">
     <div class="card">
-      <h2>Select Table &amp; Graph Type
-        <a class="section-guide" href="one-stop-analysis-guide.html#step4" target="_blank" style="font-size:.7rem;">
-          <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm.75 10.5h-1.5v-5h1.5v5zm0-6.5h-1.5V3.5h1.5V5z"/></svg>
-          Guide
-        </a>
-      </h2>
+      <h2>Select Table &amp; Graph Type</h2>
       <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px;">Choose the Prism table format. The merged data will be reshaped for direct paste into GraphPad Prism.</p>
       <div class="type-grid">
         <div class="type-tile" id="ptXY" onclick="selectPrismType('xy')">
@@ -2134,8 +2125,8 @@ function setHeatmapSize(large) {
   state._heatmapLarge = large;
   const btnS = document.getElementById('hmSizeSmall');
   const btnL = document.getElementById('hmSizeLarge');
-  if (btnS) { btnS.style.background = large ? 'var(--panel-2)' : 'var(--brand)'; btnS.style.color = large ? 'var(--ink)' : '#fff'; btnS.style.borderColor = large ? 'var(--line)' : 'var(--brand)'; }
-  if (btnL) { btnL.style.background = large ? 'var(--brand)' : 'var(--panel-2)'; btnL.style.color = large ? '#fff' : 'var(--ink)'; btnL.style.borderColor = large ? 'var(--brand)' : 'var(--line)'; }
+  if (btnS) { btnS.classList.toggle('btn-primary', !large); btnS.classList.toggle('btn-secondary', large); }
+  if (btnL) { btnL.classList.toggle('btn-primary', large);  btnL.classList.toggle('btn-secondary', !large); }
   renderHeatmap();
 }
 
@@ -2754,6 +2745,48 @@ function _computeStatsForCtrl(vals, ctrlVals) {
   };
 }
 
+// SIPhONN-style metrics:
+//   Z_score_SIPhONN  = (mean_group − mean_ctrl) / SD_all_wells_on_plate
+//   SSMD_SIPhONN     = (mean_group − mean_ctrl) / S_pooled  (Cohen's d / equal-variance)
+//   Effect_size_SIPhONN = mean(per-well Z-scores / SD_ctrl_Z-scores)  (second-order)
+//   p_SIPhONN        = Welch t-test on per-well effect-size values
+function _computeSIPhONNStats(vals, ctrlVals, allPlateVals) {
+  const n = vals.length, n_ctrl = ctrlVals.length;
+  const _nan = { zscore_siphonn: NaN, ssmd_siphonn: NaN, effect_size_siphonn: NaN, p_siphonn: NaN, pStar_siphonn: 'N/A' };
+  if (n === 0 || n_ctrl === 0 || !allPlateVals || allPlateVals.length < 2) return _nan;
+
+  const sd_plate  = arrSD(allPlateVals);
+  const mean_ctrl = arrMean(ctrlVals);
+  const mean      = arrMean(vals);
+
+  // Z_score_SIPhONN
+  const zscore_siphonn = sd_plate > 0 ? (mean - mean_ctrl) / sd_plate : NaN;
+
+  // SSMD_SIPhONN — Cohen's d with pooled SD
+  const sd      = n >= 2      ? arrSD(vals)     : 0;
+  const sd_ctrl = n_ctrl >= 2 ? arrSD(ctrlVals) : 0;
+  const pooled_sd = (n + n_ctrl - 2 > 0)
+    ? Math.sqrt(((n_ctrl-1)*sd_ctrl*sd_ctrl + (n-1)*sd*sd) / (n+n_ctrl-2))
+    : NaN;
+  const ssmd_siphonn = (!isNaN(pooled_sd) && pooled_sd > 0) ? (mean - mean_ctrl) / pooled_sd : NaN;
+
+  if (sd_plate <= 0) return { zscore_siphonn: NaN, ssmd_siphonn, effect_size_siphonn: NaN, p_siphonn: NaN, pStar_siphonn: 'N/A' };
+
+  // Per-well Z-scores (denominator = plate SD, centred on ctrl mean)
+  const ctrlZ = ctrlVals.map(v => (v - mean_ctrl) / sd_plate);
+  const valZ  = vals.map(v  => (v - mean_ctrl) / sd_plate);
+
+  // SD of ctrl Z-scores (normaliser for effect size)
+  const sd_ctrlZ = ctrlZ.length >= 2 ? arrSD(ctrlZ) : NaN;
+  if (isNaN(sd_ctrlZ) || sd_ctrlZ <= 0) return { zscore_siphonn, ssmd_siphonn, effect_size_siphonn: NaN, p_siphonn: NaN, pStar_siphonn: 'N/A' };
+
+  const valES  = valZ.map(z  => z / sd_ctrlZ);
+  const ctrlES = ctrlZ.map(z => z / sd_ctrlZ);
+  const effect_size_siphonn = arrMean(valES);
+  const { p: p_siphonn, pStar: pStar_siphonn } = welchTTest(valES, ctrlES);
+  return { zscore_siphonn, ssmd_siphonn, effect_size_siphonn, p_siphonn, pStar_siphonn };
+}
+
 function onOutlierMethodChange(tab) {
   const Cap = tab.charAt(0).toUpperCase() + tab.slice(1);
   const method = document.getElementById(`statOutlierMethod${Cap}`)?.value || 'none';
@@ -2933,6 +2966,9 @@ function computeFullStatsGroups(rows, groupCol, valCol, ctrlSpec, outlierSpec) {
     : null;
   const noCtrlFound = !hasIndividual && (!globalCv || !globalCv.length);
 
+  // All plate values (post outlier removal) — denominator for SIPhONN plate-wide SD
+  const allPlateVals = Object.values(gv).flat();
+
   return Object.entries(gv).map(([group, vals]) => {
     const isCtrl = isCtrlGroup(group);
     const cv = hasIndividual ? (gv[getCtrlKeyFor(group)] || []) : (globalCv || []);
@@ -2953,6 +2989,7 @@ function computeFullStatsGroups(rows, groupCol, valCol, ctrlSpec, outlierSpec) {
       };
     }
     return { group, isCtrl: false, ..._computeStatsForCtrl(vals, cv),
+      ..._computeSIPhONNStats(vals, cv, allPlateVals),
       n_removed: (outliersByGroup[group] || []).length,
       outliers: outliersByGroup[group] || [] };
   });
@@ -2980,7 +3017,9 @@ function renderStatPerPlateHtml(plateData, groupCols, showOutlierCol) {
     'Z_prime_mean','Z_prime_median',
     'S_pooled_mean','S_pooled_median',
     'D_ratio_mean','D_ratio_median',
-    'p_value','p_star',...(showOutlierCol ? ['n_outlier'] : [])];
+    'p_value','p_star',
+    'Z_score_SIPhONN','SSMD_SIPhONN','Effect_size_SIPhONN','p_SIPhONN','p_star_SIPhONN',
+    ...(showOutlierCol ? ['n_outlier'] : [])];
   const f4 = (v, d=6) => (v == null || isNaN(v)) ? '\u2014' : Number(v).toFixed(d);
   const fPct = v => (v == null || isNaN(v)) ? '\u2014' : Number(v).toFixed(2) + '%';
   const sigStyle = {
@@ -3042,6 +3081,11 @@ function renderStatPerPlateHtml(plateData, groupCols, showOutlierCol) {
       'D_ratio_median': s.isCtrl ? '\u2014' : f4(s.dratio_median),
       'p_value': s.isCtrl ? '\u2014' : pFmt,
       'p_star': s.isCtrl ? '\u2014' : (s.pStar ?? '\u2014'),
+      'Z_score_SIPhONN':     s.isCtrl ? '\u2014' : f4(s.zscore_siphonn, 4),
+      'SSMD_SIPhONN':        s.isCtrl ? '\u2014' : f4(s.ssmd_siphonn, 4),
+      'Effect_size_SIPhONN': s.isCtrl ? '\u2014' : f4(s.effect_size_siphonn, 4),
+      'p_SIPhONN':           s.isCtrl ? '\u2014' : (s.p_siphonn == null || isNaN(s.p_siphonn) ? '\u2014' : s.p_siphonn < 0.001 ? s.p_siphonn.toExponential(2) : s.p_siphonn.toFixed(4)),
+      'p_star_SIPhONN':      s.isCtrl ? '\u2014' : (s.pStar_siphonn ?? '\u2014'),
     };
   }
 
@@ -3093,7 +3137,7 @@ function renderStatPerPlateHtml(plateData, groupCols, showOutlierCol) {
         html += `<td style="white-space:nowrap;" data-col="${escHtml(col)}" data-v="${escHtml(v)}">${escHtml(v)}</td>`;
       } else if (col === 'n_outlier') {
         html += `<td>${escHtml(v)}</td>`;
-      } else if (col === 'p_star') {
+      } else if (col === 'p_star' || col === 'p_star_SIPhONN') {
         const ss = sigStyle[v] || '';
         html += `<td style="${ss}">${escHtml(v)}</td>`;
       } else {
@@ -3530,7 +3574,9 @@ function exportStatCSV() {
     'n_ctrl','mean_ctrl','sd_ctrl','cv_ctrl','median_ctrl','MAD_ctrl','SEM_ctrl',
     'Fold_Change_mean','Fold_Change_median','z_score_mean','z_score_median',
     'SSMD_mean','SSMD_median','Z_prime_mean','Z_prime_median',
-    'S_pooled_mean','S_pooled_median','D_ratio_mean','D_ratio_median','p_value','p_star',...(hasOutlierSpec ? ['n_outlier'] : [])];
+    'S_pooled_mean','S_pooled_median','D_ratio_mean','D_ratio_median','p_value','p_star',
+    'Z_score_SIPhONN','SSMD_SIPhONN','Effect_size_SIPhONN','p_SIPhONN','p_star_SIPhONN',
+    ...(hasOutlierSpec ? ['n_outlier'] : [])];
   const buildCsvRow = s => {
     const parts = s.group.split('|||');
     const grpVals = {};
@@ -3566,6 +3612,11 @@ function exportStatCSV() {
       'D_ratio_median':      ic ? '' : fmtN(s.dratio_median),
       'p_value':  ic ? '' : fmtP(s.p),
       'p_star':   ic ? '' : (s.pStar ?? ''),
+      'Z_score_SIPhONN':     ic ? '' : fmtN(s.zscore_siphonn, 4),
+      'SSMD_SIPhONN':        ic ? '' : fmtN(s.ssmd_siphonn, 4),
+      'Effect_size_SIPhONN': ic ? '' : fmtN(s.effect_size_siphonn, 4),
+      'p_SIPhONN':           ic ? '' : fmtP(s.p_siphonn),
+      'p_star_SIPhONN':      ic ? '' : (s.pStar_siphonn ?? ''),
     };
   };
   const rows = [hdrs, ...allStats.map(s => hdrs.map(h => esc(buildCsvRow(s)[h] ?? '')))];
