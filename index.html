@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -97,7 +97,7 @@ main{max-width:1200px;margin:0 auto;padding:16px;}
 .file-info{margin-top:12px;padding:10px 14px;background:#edf7f0;border:1px solid #a3d4b5;border-radius:7px;font-size:.85rem;color:var(--ok);}
 
 /* Table */
-.table-wrap{overflow-x:auto;max-height:380px;border-radius:7px;border:1px solid var(--line);}
+.table-wrap{overflow-x:auto;overflow-y:auto;max-height:456px;border-radius:7px;border:1px solid var(--line);}
 table{border-collapse:collapse;width:100%;font-size:.82rem;}
 th{background:var(--brand);color:#fff;padding:7px 10px;text-align:left;position:sticky;top:0;white-space:nowrap;}
 td{padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap;color:var(--ink);}
@@ -249,8 +249,10 @@ body{padding-bottom:28px;}
   <div class="stepper">
     <div class="step active" id="step0" onclick="goStep(0)"><span class="step-num">1</span> Upload Files</div>
     <div class="step" id="step1" onclick="goStep(1)"><span class="step-num">2</span> Configure Columns</div>
-    <div class="step" id="step2" onclick="goStep(2)"><span class="step-num">3</span> Results</div>
-    <div class="step" id="step3" onclick="goStep(3)"><span class="step-num">4</span> Prism Export</div>
+    <div class="step" id="step2" onclick="goStep(2)"><span class="step-num">3</span> Merge</div>
+    <div class="step" id="step3" onclick="goStep(3)"><span class="step-num">4</span> Visualization</div>
+    <div class="step" id="step4" onclick="goStep(4)"><span class="step-num">5</span> Statistic Analysis</div>
+    <div class="step" id="step5" onclick="goStep(5)"><span class="step-num">6</span> Prism Export</div>
   </div>
 
   <!-- STEP 0: Upload -->
@@ -383,7 +385,7 @@ body{padding-bottom:28px;}
     </div>
   </div>
 
-  <!-- STEP 2: Results -->
+  <!-- STEP 2: Merge -->
   <div class="panel" id="panel2">
     <div class="card">
       <h2>Merge Summary</h2>
@@ -391,6 +393,28 @@ body{padding-bottom:28px;}
       <div id="mergeWarnings"></div>
     </div>
 
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h2>Merged Data Table</h2>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <label style="font-size:.82rem;display:flex;align-items:center;gap:4px;">
+            <input type="checkbox" id="hideMasked" onchange="renderMergedTable()" checked />
+            Hide masked wells
+          </label>
+          <button id="btnExportCSV" class="btn btn-sm btn-secondary" onclick="exportCSV()">Export CSV</button>
+          <span id="btnExportCSVMsg" style="font-size:.8rem;color:var(--err);"></span>
+        </div>
+      </div>
+      <div class="table-wrap" id="mergedTable" style="max-height:456px;overflow-y:auto;"></div>
+    </div>
+    <div class="flex-end">
+      <button class="btn btn-secondary" style="padding:10px 20px;" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-primary" style="padding:10px 22px;" onclick="goStep(3)">Visualization →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Visualization -->
+  <div class="panel" id="panel3">
     <div class="card">
       <h2>Analysis Columns (Apply to all)</h2>
       <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;">
@@ -440,7 +464,14 @@ body{padding-bottom:28px;}
         <canvas id="barChart" style="max-height:320px;"></canvas>
       </div>
     </div>
+    <div class="flex-end">
+      <button class="btn btn-secondary" style="padding:10px 20px;" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-primary" style="padding:10px 22px;" onclick="goStep(4)">Statistic Analysis →</button>
+    </div>
+  </div>
 
+  <!-- STEP 4: Statistic Analysis -->
+  <div class="panel" id="panel4">
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
         <div style="display:flex;align-items:center;">
@@ -582,29 +613,15 @@ body{padding-bottom:28px;}
         <div id="anovaResult" style="margin-top:14px;"></div>
       </div>
     </div>
-
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <h2>Merged Data Table</h2>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <label style="font-size:.82rem;display:flex;align-items:center;gap:4px;">
-            <input type="checkbox" id="hideMasked" onchange="renderMergedTable()" checked />
-            Hide masked wells
-          </label>
-          <button id="btnExportCSV" class="btn btn-sm btn-secondary" onclick="exportCSV()">Export CSV</button>
-          <span id="btnExportCSVMsg" style="font-size:.8rem;color:var(--err);"></span>
-        </div>
-      </div>
-      <div class="table-wrap" id="mergedTable"></div>
-    </div>
     <div class="flex-end">
-      <button class="btn btn-secondary" style="padding:10px 20px;" onclick="goStep(1)">← Back</button>
-      <button class="btn btn-primary" style="padding:10px 22px;" onclick="goStep(3)">Prism Export →</button>
+      <button class="btn btn-secondary" style="padding:10px 20px;" onclick="goStep(3)">← Back</button>
+      <button class="btn btn-primary" style="padding:10px 22px;" onclick="goStep(5)">Prism Export →</button>
     </div>
   </div>
 
-  <!-- STEP 3: Prism Export -->
-  <div class="panel" id="panel3">
+
+  <!-- STEP 5: Prism Export -->
+  <div class="panel" id="panel5">
     <div class="card">
       <h2>Select Table &amp; Graph Type</h2>
       <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px;">Choose the Prism table format. The merged data will be reshaped for direct paste into GraphPad Prism.</p>
@@ -794,10 +811,14 @@ body{padding-bottom:28px;}
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
         <h2 style="margin-bottom:0;">Prism Output Preview</h2>
         <div style="display:flex;gap:8px;align-items:center;">
-          <button id="btnCopyPrism" class="btn btn-sm btn-secondary" onclick="copyPrismTSV()">📋 Copy to Prism</button>
+          <button id="btnCopyPrism" class="btn btn-sm btn-secondary" onclick="copyPrismTSV()">Copy to Prism</button>
           <span id="btnCopyPrismMsg" style="font-size:.8rem;color:var(--err);"></span>
-          <button id="btnDownloadPrism" class="btn btn-sm btn-secondary" onclick="downloadPrismCSV()">Download .csv</button>
+          <button id="btnDownloadPrism" class="btn btn-sm btn-secondary" onclick="downloadPrismCSV()" style="display:none">Download .csv</button>
           <span id="btnDownloadPrismMsg" style="font-size:.8rem;color:var(--err);"></span>
+          <button id="btnExportPzfx" class="btn btn-sm btn-secondary" onclick="exportPzfxXY()" style="display:none !important" title="Export as GraphPad Prism file (.pzfx) — XY table only">Export .pzfx</button>
+          <span id="btnExportPzfxMsg" style="font-size:.8rem;color:var(--err);"></span>
+          <button id="btnExportPrism" class="btn btn-sm btn-secondary" onclick="exportPrism()" style="display:none" title="Export as Prism 10 project file (.prism) — XY table only">Export .prism</button>
+          <span id="btnExportPrismMsg" style="font-size:.8rem;color:var(--err);"></span>
         </div>
       </div>
       <div id="prismTabBar" style="display:none;flex-wrap:wrap;gap:6px;margin-bottom:12px;"></div>
@@ -811,7 +832,7 @@ body{padding-bottom:28px;}
     </div>
 
     <div class="flex-end">
-      <button class="btn btn-secondary" style="padding:10px 20px;" onclick="goStep(2)">← Back to Results</button>
+      <button class="btn btn-secondary" style="padding:10px 20px;" onclick="goStep(4)">← Back</button>
     </div>
   </div>
 </main>
@@ -830,7 +851,7 @@ window.onerror = function(msg, src, line, col, err) {
 // ─────────────────────────────────────────────
 // TYPES & STATE
 // ─────────────────────────────────────────────
-const STEPS = 4;
+const STEPS = 6;
 const state = {
   designData: null,   // {headers, rows}
   designWellCol: '',
@@ -1008,6 +1029,75 @@ function parseFile(file, cb) {
   });
 }
 
+// Smart parser for result files: auto-detects header row and strips surrounding metadata/footer.
+// Problem: instrument CSVs (e.g. QuantStudio) pad every row to the same column count with trailing
+// commas, so column-count alone cannot distinguish metadata from data.
+// Strategy:
+//   - Header  = first row where ≥85% of cells are non-empty  (all column names present)
+//   - Data    = subsequent rows where ≥15% of cells are non-empty
+//   - Stop    = first row where <15% of cells are non-empty  (empty separator / footer)
+function parseFileSmart(file, cb) {
+  Papa.parse(file, {
+    header: false,
+    skipEmptyLines: false,   // keep empty rows so footer detection works
+    dynamicTyping: false,
+    complete: (res) => {
+      const rawRows = res.data;
+      if (!rawRows.length) { cb({ headers: [], rows: [] }); return; }
+
+      // Determine the dominant column width (mode of row lengths, ignoring truly blank lines)
+      const freq = {};
+      rawRows.forEach(row => {
+        if (row.length > 1 || (row.length === 1 && row[0].trim() !== '')) {
+          freq[row.length] = (freq[row.length] || 0) + 1;
+        }
+      });
+      const modeCount = freq && Object.keys(freq).length
+        ? parseInt(Object.keys(freq).reduce((a, b) => freq[a] > freq[b] ? a : b))
+        : 1;
+
+      const nonEmpty = row => row.filter(c => String(c).trim() !== '').length;
+
+      // Step 1: find header — first row (with modeCount cols) where ≥85% cells are non-empty
+      let headerIdx = -1;
+      for (let i = 0; i < rawRows.length; i++) {
+        const row = rawRows[i];
+        if (row.length !== modeCount) continue;
+        if (nonEmpty(row) / modeCount >= 0.85) { headerIdx = i; break; }
+      }
+      // Fallback: first row with the most non-empty cells
+      if (headerIdx === -1) {
+        let best = 0;
+        rawRows.forEach((row, i) => { const n = nonEmpty(row); if (n > best) { best = n; headerIdx = i; } });
+      }
+      if (headerIdx === -1) { cb({ headers: [], rows: [] }); return; }
+
+      // Step 2: build deduplicated header names
+      const rawHdrs = rawRows[headerIdx].map(h => String(h).trim());
+      const seenH = {};
+      const headers = rawHdrs.map(h => {
+        const k = h || '(empty)';
+        seenH[k] = (seenH[k] || 0) + 1;
+        return seenH[k] > 1 ? `${k}_${seenH[k]}` : k;
+      });
+
+      // Step 3: collect data rows; stop at first row where <15% of cells are non-empty
+      const stopThreshold = Math.max(1, Math.ceil(modeCount * 0.15));
+      const rows = [];
+      for (let i = headerIdx + 1; i < rawRows.length; i++) {
+        const raw = rawRows[i];
+        if (nonEmpty(raw) < stopThreshold) break;
+        const obj = {};
+        headers.forEach((h, j) => { obj[h] = raw[j] !== undefined ? String(raw[j]) : ''; });
+        rows.push(obj);
+      }
+
+      cb({ headers, rows });
+    },
+    error: (err) => showParseErr('Parse error: ' + err.message),
+  });
+}
+
 // ─────────────────────────────────────────────
 // WELL COLUMN SELECTION UI
 // ─────────────────────────────────────────────
@@ -1139,7 +1229,7 @@ function handleResultFiles(fileList) {
   state.fileColRows = new Map();
   let loaded = 0;
   files.forEach((file, idx) => {
-    parseFile(file, data => {
+    parseFileSmart(file, data => {
       state.resultFiles[idx] = { name: file.name, shortName: file.name.replace(/\.[^.]+$/, ''), data,
         wellCol:  data.headers.find(h => WELL_PATTERNS.test(h.trim()))  || '',
         plateCol: data.headers.find(h => PLATE_PATTERNS.test(h.trim())) || '' };
@@ -1572,7 +1662,7 @@ goStep = function(n) {
   _goStep(n);
   if (n === 0) { syncUploadColHeightsAsync(); }
   if (n === 1) { buildAllFileColSelectors(); populateOmitColSel(); populateDesignColSel(); populateMergeKeySelects(); checkPlateMismatch(); updateMergeKeyInfo(); updateCalcSelects(); }
-  if (n === 3) { populatePrismSelectors(); }
+  if (n === 5) { populatePrismSelectors(); }
 };
 
 // ─────────────────────────────────────────────
@@ -3731,6 +3821,7 @@ function selectPrismType(type) {
   });
   document.getElementById('prismConfigCard').style.display = '';
   document.getElementById('prismOutputCard').style.display = 'none';
+  _updatePzfxBtn(); _updatePrismBtn();
 }
 
 function populatePrismSelectors() {
@@ -4626,6 +4717,7 @@ function renderPrismOutputs(outputs){
   const card=document.getElementById('prismOutputCard');
   card.style.display='';
   card.scrollIntoView({behavior:'smooth',block:'nearest'});
+  _updatePzfxBtn(); _updatePrismBtn();
 }
 function showPrismTab(i){
   _prismActiveTabIdx=i;
@@ -4671,6 +4763,214 @@ function downloadPrismCSV(){
   a.click();URL.revokeObjectURL(a.href);
   _btnOk(_btn);
 }
+// ─────────────────────────────────────────────
+// PZFX EXPORT (XY)
+// ─────────────────────────────────────────────
+function exportPzfxXY(){
+  const _btn=document.getElementById('btnExportPzfx');
+  if(!_prismLastRows||_prismSelectedType!=='xy'){_btnWarn(_btn,'⚠ Generate an XY table first.');return;}
+  const rows=_prismLastRows;
+  if(!rows||rows.length<2){_btnWarn(_btn,'⚠ No data.');return;}
+
+  const xe=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const fmtD=v=>{const n=parseFloat(v);return Number.isFinite(n)?String(n):null;};
+
+  const hdr=rows[0];
+  const dataRows=rows.slice(1);
+  const xColName=String(hdr[0]);
+
+  // Parse groups: consecutive identical header names = replicate sub-columns
+  const groups=[];
+  for(let ci=1;ci<hdr.length;ci++){
+    const nm=String(hdr[ci]);
+    if(groups.length&&groups[groups.length-1].name===nm) groups[groups.length-1].cols.push(ci);
+    else groups.push({name:nm,cols:[ci]});
+  }
+  if(!groups.length){_btnWarn(_btn,'⚠ No groups found.');return;}
+
+  const maxReps=Math.max(...groups.map(g=>g.cols.length));
+  const stamp=new Date().toISOString().slice(0,19);
+
+  // XColumn — Subcolumns="1" and <Title> required by Prism
+  const xCells=dataRows.map(r=>{const n=fmtD(r[0]);return n!==null?`<d>${n}</d>`:'<d/>';}).join('');
+  const xColXML=`<XColumn Width="65" Subcolumns="1" Decimals="6">\n<Title>${xe(xColName)}</Title>\n<Subcolumn>${xCells}</Subcolumn>\n</XColumn>`;
+
+  // YColumn per group, each with maxReps Subcolumns (pad shorter groups with empty cells)
+  const yColsXML=groups.map(g=>{
+    let yc=`<YColumn Width="65" Decimals="6" Subcolumns="${maxReps}">\n<Title>${xe(g.name)}</Title>\n`;
+    for(let si=0;si<maxReps;si++){
+      const ci=g.cols[si];
+      const cells=dataRows.map(r=>{
+        if(ci===undefined)return'<d/>';
+        const n=fmtD(r[ci]);return n!==null?`<d>${n}</d>`:'<d/>';
+      }).join('');
+      yc+=`<Subcolumn>${cells}</Subcolumn>\n`;
+    }
+    yc+='</YColumn>';
+    return yc;
+  }).join('\n');
+
+  const pzfx=[
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<GraphPadPrismFile xmlns="http://graphpad.com/prism/Prism.htm" PrismXMLVersion="5.00">',
+    '<Created>',
+    `<OriginalVersion CreatedByProgram="GraphPad Prism" CreatedByVersion="10.0.0.0" Login="" DateTime="${stamp}"/>`,
+    `<MostRecentVersion CreatedByProgram="GraphPad Prism" CreatedByVersion="10.0.0.0" Login="" DateTime="${stamp}"/>`,
+    '</Created>',
+    '<InfoSequence>',
+    '<Ref ID="Info0" Selected="1"/>',
+    '</InfoSequence>',
+    '<Info ID="Info0">',
+    '<Title>Exported by One-Stop Analysis</Title>',
+    '<Notes/>',
+    '</Info>',
+    '<TableSequence>',
+    '<Ref ID="Table0" Selected="1"/>',
+    '</TableSequence>',
+    `<Table ID="Table0" XFormat="numbers" YFormat="replicates" Replicates="${maxReps}" TableType="XY" EVFormat="AsteriskAfterNumber">`,
+    `<Title>${xe(xColName)}</Title>`,
+    '<RowTitlesColumn Width="93"/>',
+    xColXML,
+    yColsXML,
+    '</Table>',
+    '</GraphPadPrismFile>'
+  ].join('\n');
+
+  const fname='prism_xy_'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'.pzfx';
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([pzfx],{type:'application/xml;charset=utf-8'}));
+  a.download=fname;a.click();URL.revokeObjectURL(a.href);
+  _btnOk(_btn);
+}
+
+// Show/hide .pzfx button based on selected type — currently hidden
+function _updatePzfxBtn(){
+  // .pzfx button is permanently hidden; keeping function for compatibility
+}
+function _updatePrismBtn(){
+  const isXY=(_prismSelectedType==='xy');
+  const btn=document.getElementById('btnExportPrism');
+  if(btn)btn.style.display=isXY?'':'none';
+}
+
+// ─────────────────────────────────────────────
+// PRISM 10 (.prism) EXPORT
+// ─────────────────────────────────────────────
+// Minimal STORE-mode ZIP builder (no compression needed for small JSON/CSV files)
+function _makeZip(files){
+  const enc=new TextEncoder();
+  const T=new Uint32Array(256);
+  for(let i=0;i<256;i++){let c=i;for(let j=0;j<8;j++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);T[i]=c;}
+  const crc32=b=>{let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=T[(c^b[i])&0xFF]^(c>>>8);return(c^0xFFFFFFFF)>>>0;};
+  const entries=[];let off=0;
+  for(const f of files){
+    const name=enc.encode(f.name);
+    const data=f.data instanceof Uint8Array?f.data:enc.encode(String(f.data));
+    const crc=crc32(data);
+    const lh=new Uint8Array(30+name.length);
+    const v=new DataView(lh.buffer);
+    v.setUint32(0,0x04034b50,true);v.setUint16(4,20,true);
+    v.setUint32(14,crc,true);v.setUint32(18,data.length,true);v.setUint32(22,data.length,true);
+    v.setUint16(26,name.length,true);lh.set(name,30);
+    entries.push({lh,data,name,crc,off});off+=lh.length+data.length;
+  }
+  const cds=entries.map(e=>{
+    const cd=new Uint8Array(46+e.name.length),v=new DataView(cd.buffer);
+    v.setUint32(0,0x02014b50,true);v.setUint16(4,20,true);v.setUint16(6,20,true);
+    v.setUint32(16,e.crc,true);v.setUint32(20,e.data.length,true);v.setUint32(24,e.data.length,true);
+    v.setUint16(28,e.name.length,true);v.setUint32(42,e.off,true);
+    cd.set(e.name,46);return cd;
+  });
+  const cdSize=cds.reduce((s,c)=>s+c.length,0);
+  const eocd=new Uint8Array(22),ev=new DataView(eocd.buffer);
+  ev.setUint32(0,0x06054b50,true);ev.setUint16(8,entries.length,true);ev.setUint16(10,entries.length,true);
+  ev.setUint32(12,cdSize,true);ev.setUint32(16,off,true);
+  const parts=[...entries.flatMap(e=>[e.lh,e.data]),...cds,eocd];
+  const total=parts.reduce((s,p)=>s+p.length,0);
+  const buf=new Uint8Array(total);let pos=0;
+  for(const p of parts){buf.set(p,pos);pos+=p.length;}
+  return buf;
+}
+
+
+function exportPrism(){
+  const _btn=document.getElementById('btnExportPrism');
+  if(!_prismLastRows||_prismSelectedType!=='xy'){_btnWarn(_btn,'⚠ Generate an XY table first.');return;}
+  const rows=_prismLastRows;
+  if(!rows||rows.length<2){_btnWarn(_btn,'⚠ No data.');return;}
+
+  const hdr=rows[0],dataRows=rows.slice(1);
+  const xColName=String(hdr[0]);
+  const now=new Date().toISOString().slice(0,19)+'Z';
+  const today=new Date().toISOString().slice(0,10);
+
+  // Parse groups
+  const groups=[];
+  for(let ci=1;ci<hdr.length;ci++){
+    const nm=String(hdr[ci]);
+    if(groups.length&&groups[groups.length-1].name===nm)groups[groups.length-1].cols.push(ci);
+    else groups.push({name:nm,cols:[ci]});
+  }
+  if(!groups.length){_btnWarn(_btn,'⚠ No groups.');return;}
+
+  const maxReps=Math.max(...groups.map(g=>g.cols.length));
+  const numRows=dataRows.length;
+  const newUID=()=>crypto.randomUUID().toUpperCase();
+  const randHex32=()=>Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b=>b.toString(16).padStart(2,'0')).join('');
+
+  const sheetUID=newUID(),tableUID=newUID(),xUID=newUID(),infoUID=newUID();
+  const yUIDs=groups.map(()=>newUID());
+
+  // ── DATA CSV ────────────────────────────────────────────────────────
+  const csvText=dataRows.map(r=>{
+    const v=[r[0]==null?'':r[0]];
+    for(const g of groups)for(let si=0;si<maxReps;si++){const ci=g.cols[si];v.push(ci===undefined||r[ci]==null?'':r[ci]);}
+    return v.join(',');
+  }).join('\n');
+
+  const drRep=(lastRow)=>({"@class":"DriverReplicate","valueType":"real","commonAttributes":["NUMERIC"],"significantDigitsCount":7,"lastRow":lastRow});
+
+  // ── DATASET JSONS ───────────────────────────────────────────────────
+  const xDS={"@class":"DataSet","$id":"sheets/data_sheet/data_table/data_set.schema.json","uid":xUID,"fenID":0,"format":"y_single","title":xColName,"attributes":["DS_ATTR_X"],"replicates":[{...drRep(numRows-1),"firstRow":0}]};
+  const yDSArr=groups.map((g,gi)=>{
+    const base={"@class":"DataSet","$id":"sheets/data_sheet/data_table/data_set.schema.json","uid":yUIDs[gi],"fenID":gi+1,"title":g.name,"attributes":["DS_ATTR_Y"]};
+    if(maxReps<=1)return{...base,"format":"y_single","replicates":[{...drRep(numRows-1),"firstRow":0}]};
+    return{...base,"format":"y_replicates","replicate ranges":Array.from({length:g.cols.length},(_,si)=>({"range":String(si),"replicate":drRep(numRows-1)}))};
+  });
+
+  // ── DATA SHEET ──────────────────────────────────────────────────────
+  const tblSection={"@class":"XYDataTable","$id":"sheets/data_sheet/data_table/data_table.schema.json","uid":tableUID,"format":"xy","dataFormat":maxReps>1?"y_replicates":"y_single",...(maxReps>1?{"replicatesCount":maxReps}:{}),"dataSets":yUIDs,"xDataSetFormat":"y_single","xDataSet":xUID};
+  const sheetJSON={"@class":"DataSheet","$id":"sheets/data_sheet/data_sheet.schema.json","uid":sheetUID,"fenID":0,"title":xColName,"table":tblSection,"font":{"family":"Arial","size":10.0},"titleWidth":113,"xSubColWidth":113,"maxDataSets":2048,"maxRow":500000,"selectionRange":{"startCell":{"row":0,"column":0,"subcolumn":0},"endCell":{"row":0,"column":0,"subcolumn":0}},"anchorRow":0,"anchorColumn":0,"firstSubColumn":0,"xRowWidth":-2,"rowTitlesWidth":74,"subColumnTitleType":"default"};
+
+  // ── PROJECT INFO ────────────────────────────────────────────────────
+  const infoJSON={"@class":"InfoSheet","$id":"sheets/info_sheet/info_sheet.schema.json","uid":infoUID,"fenID":0,"title":"Project info 1","experimentDate":today,"notesText":"Exported by One-Stop Analysis","uiState":{"columnNamesWidth":0.5,"columnValuesWidth":0.5,"constantPanelProportion":0.4},"selectedCellsRange":{"endCell":{"row":0,"column":0},"startCell":{"row":0,"column":0}},"constants":[{"name":"Experiment Date","value":today},{"name":"Experiment ID","value":""},{"name":"Notebook ID","value":""},{"name":"Project","value":""},{"name":"Experimenter","value":""},{"name":"Protocol","value":""},{"name":"X column","value":xColName},{"name":"Groups","value":groups.map(g=>g.name).join(', ')},{"name":"Replicates","value":String(maxReps)},{"name":"Data rows","value":String(numRows)}]};
+
+  // ── DOCUMENT ────────────────────────────────────────────────────────
+  const docJSON={"@class":"Document","$id":"document.schema.json","creationDate":now,"modificationDate":now,"createdBy":{"name":"Prism","user":"","version":"10.5.0.774","platform":"Win"},"modifiedBy":{"name":"Prism","user":"","version":"10.5.0.774","platform":"Win"},"formatVersion":"1-5-0","minFormatVersion":"1-2-0","minPrismVersion":"10.1.0","compatibility":[{"formatVersion":"1-0-0","action":"warningOpen"}],"sheets":{"graphs":[],"analyses":[],"info":[infoUID],"data":[sheetUID]},"uiSettings":{"currentSheetType":"Data","viewMode":"sheet","galleryScaleFactor":100,"nextDataSheetNumber":2,"printer":{"defaultPaperSize":{"width":8.5,"height":11.0},"deviceName":"","driverVersion":0,"specVersion":0,"driverExtra":0},"navigator":{"width":240,"collapsedFolders":{"data":false,"info":false,"analyses":false,"graphs":false,"layouts":false,"dataAndAnalyses":false,"search":false,"family":false}},"currentSheets":{"data":sheetUID,"info":infoUID}},"sheetAttributesMap":{[sheetUID]:{"title":xColName},[infoUID]:{"title":"Project info 1"}}};
+
+  const contentJSON={"$id":"sheets/data_sheet/data_table/data_table_storage.schema.json","numberOfColumns":1+groups.length,"numberOfRows":numRows,"version":1};
+
+  const J=o=>JSON.stringify(o,null,'\t');
+  const enc=new TextEncoder();
+  const zipFiles=[
+    {name:'document.json',                        data:enc.encode(J(docJSON))},
+    {name:`info/${infoUID}/sheet.json`,            data:enc.encode(J(infoJSON))},
+    {name:`data/sheets/${sheetUID}/sheet.json`,    data:enc.encode(J(sheetJSON))},
+    {name:`data/sets/${xUID}.json`,                data:enc.encode(J(xDS))},
+    ...yUIDs.map((uid,gi)=>({name:`data/sets/${uid}.json`,data:enc.encode(J(yDSArr[gi]))})),
+    {name:`data/tables/${tableUID}/content.json`,  data:enc.encode(J(contentJSON))},
+    {name:`data/tables/${tableUID}/data.csv`,      data:enc.encode(csvText)},
+    {name:`data/tables/${tableUID}/data.dt`,       data:enc.encode(randHex32())},
+  ];
+
+  const zip=_makeZip(zipFiles);
+  const fname='prism_xy_'+today.replace(/-/g,'')+'.prism';
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([zip],{type:'application/octet-stream'}));
+  a.download=fname;a.click();URL.revokeObjectURL(a.href);
+  _btnOk(_btn);
+}
+
 // ─────────────────────────────────────────────
 // PLATE MISMATCH DETECTION
 // ─────────────────────────────────────────────
